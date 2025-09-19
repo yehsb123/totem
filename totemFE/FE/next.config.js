@@ -20,10 +20,17 @@ const nextConfig = {
       },
     ],
   },
-  assetPrefix: "./",
-  basePath: "",
   generateBuildId: async () => {
     return "build-" + Date.now();
+  },
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+      };
+    }
+    return config;
   },
 };
 
