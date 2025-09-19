@@ -2,6 +2,7 @@
 const nextConfig = {
   output: "export",
   trailingSlash: true,
+  distDir: "out",
   images: {
     unoptimized: true,
     remotePatterns: [
@@ -19,6 +20,8 @@ const nextConfig = {
       },
     ],
   },
+  assetPrefix: "",
+  basePath: "",
 };
 
 // JavaScript 환경에서는 'module.exports'를 사용해야 합니다.

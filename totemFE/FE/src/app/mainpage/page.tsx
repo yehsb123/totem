@@ -17,7 +17,7 @@ export default function MainPage() {
         priority
         onError={(e) => {
           console.log("이미지 로드 실패, fallback 적용");
-          e.currentTarget.style.display = 'none';
+          e.currentTarget.style.display = "none";
         }}
       />
       {/* Fallback 배경 */}
