@@ -15,6 +15,22 @@ export default function Home() {
         fill
         style={{ objectFit: "cover" }}
         priority
+        onError={(e) => {
+          console.log("이미지 로드 실패, fallback 적용");
+          e.currentTarget.style.display = 'none';
+        }}
+      />
+      {/* Fallback 배경 */}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          zIndex: 1,
+        }}
       />
 
       <div
@@ -24,8 +40,8 @@ export default function Home() {
           left: "50%",
           transform: "translate(-50%, -50%)",
           textAlign: "center",
-          color: "#000",
-          zIndex: 5,
+          color: "#fff",
+          zIndex: 10,
         }}
       >
         <h1
@@ -40,7 +56,10 @@ export default function Home() {
           투어 코스를 만들어보세요
         </h1>
         <button
-          onClick={() => setShowModal(true)}
+          onClick={() => {
+            console.log("버튼 클릭됨!");
+            setShowModal(true);
+          }}
           style={{
             background: "#000",
             color: "#fff",
