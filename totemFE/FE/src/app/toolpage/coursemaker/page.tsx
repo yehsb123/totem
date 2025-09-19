@@ -15,28 +15,8 @@ import update from "immutability-helper";
 import { createPlan, PlanMakeParams, deletePlanDetail } from "./api/planapi";
 import type { Spot } from "./api/planapi";
 
-// 모든 DND 관련 컴포넌트에서 동일하게 임포트하여 사용
-export const ItemTypes = {
-  TOUR_PLACE: "tour_place", // TourList에서 드래그되는 장소
-  SCHEDULED_PLACE: "scheduled_place", // 스케줄 내에서 드래그되는 장소 (재정렬용)
-};
-
-// 각 일차의 스케줄을 나타내는 인터페이스
-interface DaySchedule {
-  date: string; // "YYYY-MM-DD" 형식의 날짜
-  slots: (TourPlace | null)[]; // 각 시간대에 할당된 장소 (또는 null)
-}
-
-// 새로 생성될 코스의 전체 구조를 위한 인터페이스 추가
-export interface CreatedCourse {
-  id: string; // 고유 ID 추가 (저장 및 관리를 위해 필요)
-  courseName: string;
-  startDate: string;
-  endDate: string;
-  pickupLocation: string;
-  schedules: DaySchedule[];
-  // (예: 생성일, 사용자 ID 등)
-}
+// 타입과 상수들을 별도 파일에서 import
+import { ItemTypes, DaySchedule, CreatedCourse } from "./types";
 
 // Kakao Maps API의 전역 객체 'kakao'를 TypeScript가 인식하도록 선언
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -3,7 +3,7 @@
 import React, { useRef } from "react";
 import { useDrop, useDrag } from "react-dnd";
 import { TourPlace } from "../tourapidata";
-import { ItemTypes } from "../page";
+import { ItemTypes } from "../types";
 // import { deletePlanDetail } from "../api/planapi"; // deletePlanDetail API 함수 임포트 (사용하지 않음)
 
 // 스케줄 내에서 드래그 가능한 개별 장소 아이템 컴포넌트
