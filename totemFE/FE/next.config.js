@@ -32,6 +32,10 @@ const nextConfig = {
     }
     return config;
   },
+  // GitHub Pages를 위한 추가 설정
+  env: {
+    NEXT_PUBLIC_BASE_PATH: "",
+  },
 };
 
 // JavaScript 환경에서는 'module.exports'를 사용해야 합니다.
