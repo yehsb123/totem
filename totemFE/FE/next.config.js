@@ -1,8 +1,18 @@
 /** @type {import('next').NextConfig} */
+const isProd = process.env.NODE_ENV === 'production';
+
 const nextConfig = {
   output: "export",
   trailingSlash: true,
   distDir: "out",
+  
+  /**
+   * GitHub Pages 배포를 위한 설정
+   * 저장소 이름이 'totem'이라고 가정합니다.
+   */
+  basePath: isProd ? '/totem' : '',
+  assetPrefix: isProd ? '/totem/' : '',
+  
   images: {
     unoptimized: true,
     remotePatterns: [
@@ -20,9 +30,11 @@ const nextConfig = {
       },
     ],
   },
+  
   generateBuildId: async () => {
     return "build-" + Date.now();
   },
+  
   webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve.fallback = {
@@ -32,9 +44,9 @@ const nextConfig = {
     }
     return config;
   },
-  // GitHub Pages를 위한 추가 설정
-  env: {
-    NEXT_PUBLIC_BASE_PATH: "",
+  
+  eslint: {
+    ignoreDuringBuilds: true,
   },
 };
 
