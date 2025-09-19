@@ -127,9 +127,9 @@ const CsvImportModal = ({
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center">
       <div className="relative p-8 bg-white w-96 mx-auto rounded-lg shadow-xl">
-        <h3 className="text-xl font-bold mb-4">'{tourName}' 리뷰 저장</h3>
+        <h3 className="text-xl font-bold mb-4">&apos;{tourName}&apos; 리뷰 저장</h3>
         <p className="mb-4 text-sm text-gray-600">
-          Google Sheets 'CSV로 게시' 링크를 입력해주세요.
+          Google Sheets &apos;CSV로 게시&apos; 링크를 입력해주세요.
         </p>
         <form onSubmit={handleSubmit}>
           <input
