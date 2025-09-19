@@ -2,8 +2,6 @@
 const nextConfig = {
   output: 'export',
   trailingSlash: true,
-  basePath: '/totem',
-  assetPrefix: '/totem',
   images: {
     unoptimized: true,
     remotePatterns: [
