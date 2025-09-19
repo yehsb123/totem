@@ -5,7 +5,7 @@ import Image from "next/image";
 import React, { useRef, useState, useEffect } from "react";
 import { useDrag } from "react-dnd";
 import { ItemTypes } from "../types";
-import { getSpotList, Spot, SpotLoadParams } from "../api/planapi.ts";
+import { getSpotList, Spot, SpotLoadParams } from "../api/planapi";
 
 // TourPlace 타입을 Spot 타입으로 대체 (API 응답 데이터와 일치하도록)
 interface TourItemProps {
