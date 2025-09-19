@@ -42,11 +42,17 @@ jobs:
       - name: Build
         run: cd totemFE/FE && npm run build
 
-      # 5. 빌드 결과물을 업로드할 준비
+      # 5. index.html을 루트로 복사
+      - name: Copy index.html to root
+        run: |
+          cp totemFE/FE/public/index.html totemFE/FE/out/
+          cp totemFE/FE/public/index.html totemFE/FE/out/index.html
+
+      # 6. 빌드 결과물을 업로드할 준비
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      # 6. 빌드 결과물(out 폴더)을 아티팩트로 업로드
+      # 7. 빌드 결과물(out 폴더)을 아티팩트로 업로드
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
