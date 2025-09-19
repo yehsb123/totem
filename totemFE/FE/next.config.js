@@ -22,6 +22,9 @@ const nextConfig = {
   },
   assetPrefix: "",
   basePath: "",
+  generateBuildId: async () => {
+    return 'build-' + Date.now()
+  },
 };
 
 // JavaScript 환경에서는 'module.exports'를 사용해야 합니다.
