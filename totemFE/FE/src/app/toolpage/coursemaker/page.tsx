@@ -16,7 +16,7 @@ import { createPlan, PlanMakeParams, deletePlanDetail } from "./api/planapi";
 import type { Spot } from "./api/planapi";
 
 // 타입과 상수들을 별도 파일에서 import
-import { ItemTypes, DaySchedule, CreatedCourse } from "./types";
+import { DaySchedule, CreatedCourse } from "./types";
 
 // Kakao Maps API의 전역 객체 'kakao'를 TypeScript가 인식하도록 선언
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
