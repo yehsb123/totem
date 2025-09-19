@@ -20,10 +20,10 @@ const nextConfig = {
       },
     ],
   },
-  assetPrefix: "",
+  assetPrefix: "./",
   basePath: "",
   generateBuildId: async () => {
-    return 'build-' + Date.now()
+    return "build-" + Date.now();
   },
 };
 
