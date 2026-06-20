@@ -1,4 +1,4 @@
-import axios from "axios";
+import { apiGet, apiPost, apiPut, apiDelete } from "@/services/apiClient";
 
 export interface Spot {
   addr1: string;
@@ -38,33 +38,27 @@ export interface SpotLoadParams {
   lclsSystm3?: string;
 }
 
-const SPOT_API_BASE_URL = "http://localhost:8000/api/spot/v1";
-
 export const getSpotList = async (
   params: SpotLoadParams
 ): Promise<Spot[] | null> => {
   try {
-    const url = `${SPOT_API_BASE_URL}/${params.lang}`;
-    const queryParams = {
-      ...params,
-      MobileOS: "WEB",
-      MobileAPP: "ToTem",
-      _type: "json",
-      serviceKey: "{key}",
-    };
-    const response = await axios.get<Spot[]>(url, { params: queryParams });
-    return response.data;
+    const queryParams = new URLSearchParams();
+    queryParams.set("MobileOS", "WEB");
+    queryParams.set("MobileAPP", "ToTem");
+    queryParams.set("_type", "json");
+    queryParams.set("serviceKey", "{key}");
+    queryParams.set("sigunguCode", String(params.sigunguCode));
+    queryParams.set("lclsSystm1", params.lclsSystm1);
+    if (params.numOfRows) queryParams.set("numOfRows", String(params.numOfRows));
+    if (params.pageNo) queryParams.set("pageNo", String(params.pageNo));
+    if (params.arrange) queryParams.set("arrange", params.arrange);
+    if (params.lclsSystm2) queryParams.set("lclsSystm2", params.lclsSystm2);
+    if (params.lclsSystm3) queryParams.set("lclsSystm3", params.lclsSystm3);
+
+    const path = `/api/spot/v1/${params.lang}?${queryParams.toString()}`;
+    return await apiGet<Spot[]>(path);
   } catch (error) {
-    if (axios.isAxiosError(error)) {
-      if (error.response?.status === 204) {
-        console.log("API 응답 데이터가 비어 있습니다.");
-        return null;
-      } else {
-        console.error("API 호출 중 오류 발생:", error.message);
-      }
-    } else {
-      console.error("알 수 없는 오류 발생:", error);
-    }
+    console.error("API 호출 중 오류 발생:", error);
     return null;
   }
 };
@@ -92,30 +86,14 @@ export interface PlanMakeResponse {
   note: string;
 }
 
-const PLAN_API_BASE_URL = "http://localhost:8000/api/plan";
-
 export const createPlan = async (
   params: PlanMakeParams,
-  accessToken: string
+  _accessToken?: string
 ): Promise<PlanMakeResponse | null> => {
   try {
-    const response = await axios.post<PlanMakeResponse>(
-      `${PLAN_API_BASE_URL}/v1`,
-      params,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Authentication: accessToken,
-        },
-      }
-    );
-    return response.data;
+    return await apiPost<PlanMakeResponse>("/api/plan/v1", params);
   } catch (error) {
-    if (axios.isAxiosError(error)) {
-      console.error("API 호출 오류:", error.response?.data);
-    } else {
-      console.error("예상치 못한 오류 발생:", error);
-    }
+    console.error("API 호출 오류:", error);
     return null;
   }
 };
@@ -152,27 +130,12 @@ export interface PlanLoadResponse {
  */
 export const getPlan = async (
   planId: number,
-  accessToken: string
+  _accessToken?: string
 ): Promise<PlanLoadResponse | null> => {
   try {
-    const url = `${PLAN_API_BASE_URL}/${planId}/v1`;
-    const response = await axios.get<PlanLoadResponse>(url, {
-      headers: {
-        "Content-Type": "application/json",
-        Authentication: accessToken,
-      },
-    });
-    return response.data;
+    return await apiGet<PlanLoadResponse>(`/api/plan/${planId}/v1`);
   } catch (error) {
-    if (axios.isAxiosError(error)) {
-      if (error.response?.status === 404) {
-        console.error("해당 투어 계획을 찾을 수 없습니다.");
-      } else {
-        console.error("API 호출 중 오류 발생:", error.message);
-      }
-    } else {
-      console.error("알 수 없는 오류 발생:", error);
-    }
+    console.error("API 호출 중 오류 발생:", error);
     return null;
   }
 };
@@ -189,27 +152,12 @@ export const getPlan = async (
 export const updatePlan = async (
   planId: number,
   params: PlanMakeParams,
-  accessToken: string
+  _accessToken?: string
 ): Promise<PlanMakeResponse | null> => {
   try {
-    const url = `${PLAN_API_BASE_URL}/${planId}/v1`;
-    const response = await axios.put<PlanMakeResponse>(url, params, {
-      headers: {
-        "Content-Type": "application/json",
-        Authentication: accessToken,
-      },
-    });
-    return response.data;
+    return await apiPut<PlanMakeResponse>(`/api/plan/${planId}/v1`, params);
   } catch (error) {
-    if (axios.isAxiosError(error)) {
-      if (error.response?.status === 404) {
-        console.error("해당 투어 계획을 찾을 수 없습니다.");
-      } else {
-        console.error("API 호출 중 오류 발생:", error.message);
-      }
-    } else {
-      console.error("알 수 없는 오류 발생:", error);
-    }
+    console.error("API 호출 중 오류 발생:", error);
     return null;
   }
 };
@@ -226,27 +174,12 @@ export interface PlanDeleteResponse {
  */
 export const deletePlan = async (
   planId: number,
-  accessToken: string
+  _accessToken?: string
 ): Promise<PlanDeleteResponse | null> => {
   try {
-    const url = `${PLAN_API_BASE_URL}/${planId}/v1`;
-    const response = await axios.delete<PlanDeleteResponse>(url, {
-      headers: {
-        "Content-Type": "application/json",
-        Authentication: accessToken,
-      },
-    });
-    return response.data;
+    return await apiDelete<PlanDeleteResponse>(`/api/plan/${planId}/v1`);
   } catch (error) {
-    if (axios.isAxiosError(error)) {
-      if (error.response?.status === 404) {
-        console.error("해당 투어 계획을 찾을 수 없습니다.");
-      } else {
-        console.error("API 호출 중 오류 발생:", error.message);
-      }
-    } else {
-      console.error("알 수 없는 오류 발생:", error);
-    }
+    console.error("API 호출 중 오류 발생:", error);
     return null;
   }
 };
@@ -275,27 +208,15 @@ export interface PlanDetailMakeResponse {
 export const createPlanDetail = async (
   planId: number,
   params: PlanDetailMakeParams,
-  accessToken: string
+  _accessToken?: string
 ): Promise<PlanDetailMakeResponse | null> => {
   try {
-    const url = `${PLAN_API_BASE_URL}/${planId}/date/v1`;
-    const response = await axios.post<PlanDetailMakeResponse>(url, params, {
-      headers: {
-        "Content-Type": "application/json",
-        Authentication: accessToken,
-      },
-    });
-    return response.data;
+    return await apiPost<PlanDetailMakeResponse>(
+      `/api/plan/${planId}/date/v1`,
+      params
+    );
   } catch (error) {
-    if (axios.isAxiosError(error)) {
-      if (error.response?.status === 404) {
-        console.error("해당 투어 계획을 찾을 수 없습니다.");
-      } else {
-        console.error("API 호출 중 오류 발생:", error.message);
-      }
-    } else {
-      console.error("알 수 없는 오류 발생:", error);
-    }
+    console.error("API 호출 중 오류 발생:", error);
     return null;
   }
 };
@@ -312,27 +233,14 @@ export type PlanDetailLoadResponse = PlanDetailMakeResponse;
 export const getPlanDetail = async (
   planId: number,
   day: number,
-  accessToken: string
+  _accessToken?: string
 ): Promise<PlanDetailLoadResponse | null> => {
   try {
-    const url = `${PLAN_API_BASE_URL}/${planId}/date/${day}/v1`;
-    const response = await axios.get<PlanDetailLoadResponse>(url, {
-      headers: {
-        "Content-Type": "application/json",
-        Authentication: accessToken,
-      },
-    });
-    return response.data;
+    return await apiGet<PlanDetailLoadResponse>(
+      `/api/plan/${planId}/date/${day}/v1`
+    );
   } catch (error) {
-    if (axios.isAxiosError(error)) {
-      if (error.response?.status === 404) {
-        console.error("해당 투어 계획 또는 일차를 찾을 수 없습니다.");
-      } else {
-        console.error("API 호출 중 오류 발생:", error.message);
-      }
-    } else {
-      console.error("알 수 없는 오류 발생:", error);
-    }
+    console.error("API 호출 중 오류 발생:", error);
     return null;
   }
 };
@@ -353,27 +261,15 @@ export const updatePlanDetail = async (
   planId: number,
   day: number,
   params: PlanDetailUpdateParams,
-  accessToken: string
+  _accessToken?: string
 ): Promise<PlanDetailUpdateResponse | null> => {
   try {
-    const url = `${PLAN_API_BASE_URL}/${planId}/date/${day}/v1`;
-    const response = await axios.put<PlanDetailUpdateResponse>(url, params, {
-      headers: {
-        "Content-Type": "application/json",
-        Authentication: accessToken,
-      },
-    });
-    return response.data;
+    return await apiPut<PlanDetailUpdateResponse>(
+      `/api/plan/${planId}/date/${day}/v1`,
+      params
+    );
   } catch (error) {
-    if (axios.isAxiosError(error)) {
-      if (error.response?.status === 404) {
-        console.error("해당 투어 계획 또는 일차를 찾을 수 없습니다.");
-      } else {
-        console.error("API 호출 중 오류 발생:", error.message);
-      }
-    } else {
-      console.error("알 수 없는 오류 발생:", error);
-    }
+    console.error("API 호출 중 오류 발생:", error);
     return null;
   }
 };
@@ -390,27 +286,14 @@ export type PlanDetailDeleteResponse = PlanDetailMakeResponse;
 export const deletePlanDetail = async (
   planId: number,
   day: number,
-  accessToken: string
+  _accessToken?: string
 ): Promise<PlanDetailDeleteResponse | null> => {
   try {
-    const url = `${PLAN_API_BASE_URL}/${planId}/date/${day}/v1`;
-    const response = await axios.delete<PlanDetailDeleteResponse>(url, {
-      headers: {
-        "Content-Type": "application/json",
-        Authentication: accessToken,
-      },
-    });
-    return response.data;
+    return await apiDelete<PlanDetailDeleteResponse>(
+      `/api/plan/${planId}/date/${day}/v1`
+    );
   } catch (error) {
-    if (axios.isAxiosError(error)) {
-      if (error.response?.status === 404) {
-        console.error("해당 투어 계획 또는 일차를 찾을 수 없습니다.");
-      } else {
-        console.error("API 호출 중 오류 발생:", error.message);
-      }
-    } else {
-      console.error("알 수 없는 오류 발생:", error);
-    }
+    console.error("API 호출 중 오류 발생:", error);
     return null;
   }
 };
