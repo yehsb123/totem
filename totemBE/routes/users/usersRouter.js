@@ -1,34 +1,28 @@
 import express from "express";
-import { register, login } from "../../controller/users/usersController.js";
+import authGuard from "../../middlewares/authGuard.js";
+import {
+  getProfile,
+  updateProfile,
+  changePassword,
+  deleteAccount,
+  findEmail,
+} from "../../controller/users/usersController.js";
 
 const usersRouter = express.Router();
 
-usersRouter.post("/register", register);
-usersRouter.post("/login", login);
+// 프로필 조회
+usersRouter.get("/me", authGuard, getProfile);
+
+// 프로필 수정
+usersRouter.put("/me", authGuard, updateProfile);
+
+// 비밀번호 변경
+usersRouter.put("/me/password", authGuard, changePassword);
+
+// 회원 탈퇴
+usersRouter.delete("/me", authGuard, deleteAccount);
+
+// 아이디 찾기 (비로그인)
+usersRouter.post("/find-email", findEmail);
 
 export default usersRouter;
-
-//회원정보 수정
-// usersRouter.put(
-//   "/modify",
-//   passport.authenticate("jwt", { session: false }),
-//   modify
-// );
-
-//회원탈퇴
-// usersRouter.delete(
-//   "/remove",
-//   passport.authenticate("jwt", { session: false }),
-//   remove
-// );
-
-//아이디 찾기
-// usersRouter.post("/find-id", findId);
-
-// 프로필 변경
-// usersRouter.post(
-//   "/picture",
-//   passport.authenticate("jwt", { session: false }),
-//   uploadMiddleWare,
-//   updatePicture
-// );

@@ -1,6 +1,8 @@
 <div align="center">
 
-# 🏛️ Totem
+<img src="totemFE/FE/public/TOTEM 로고.png" alt="Totem Logo" width="200" />
+
+# Totem
 
 **B2B SaaS Platform for Tour & Course Management**
 

@@ -1,10 +1,8 @@
 import Plans from "../../models/plans/plansSchema.js";
-import Course from "../../models/plans/plansSchema.js"; // TODO: Course는 별도 스키마에서 가져와야 함
 
 export const createPlan = async (req, res) => {
   try {
     const ownerId = req.user._id;
-    // 허용된 필드만 명시적으로 추출
     const { title, startDate, endDate, note, days } = req.body;
 
     const plan = await Plans.create({
@@ -49,7 +47,6 @@ export const getPlanById = async (req, res) => {
 
 export const updatePlan = async (req, res) => {
   try {
-    // 허용된 필드만 명시적으로 추출
     const { title, startDate, endDate, note, days } = req.body;
     const updateData = {};
 
@@ -148,7 +145,6 @@ export const updatePlanDay = async (req, res) => {
       }
     }
 
-    // Object.assign을 사용하여 안전하게 업데이트
     Object.assign(plan.days[idx], req.body);
     await plan.save();
     return res.status(200).json(plan.days[idx]);
@@ -178,7 +174,6 @@ export const deletePlanDay = async (req, res) => {
 
 // ==================== 코스 관련 함수들 ====================
 
-// 코스 생성
 export const createCourse = async (req, res) => {
   try {
     const {
@@ -193,9 +188,9 @@ export const createCourse = async (req, res) => {
       timeSlots,
       schedules,
     } = req.body;
-    const ownerId = req.user._id; // JWT에서 추출한 사용자 ID
+    const ownerId = req.user._id;
 
-    const course = new Course({
+    const course = new Plans({
       title,
       startDate,
       endDate,
@@ -221,18 +216,16 @@ export const createCourse = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "코스 생성 중 오류가 발생했습니다.",
-      error: error.message,
     });
   }
 };
 
-// 코스 조회 (단일)
 export const getCourse = async (req, res) => {
   try {
     const { courseId } = req.params;
     const ownerId = req.user._id;
 
-    const course = await Course.findOne({ _id: courseId, ownerId });
+    const course = await Plans.findOne({ _id: courseId, ownerId });
 
     if (!course) {
       return res.status(404).json({
@@ -241,45 +234,33 @@ export const getCourse = async (req, res) => {
       });
     }
 
-    // 조회 응답 형식으로 변환
-    const responseData = {
-      id: course._id,
-      title: course.title,
-      startDate: course.startDate,
-      endDate: course.endDate,
-      pickupLocation: course.pickupLocation,
-      createdAt: course.createdAt,
-      days: course.days || [],
-    };
-
     res.status(200).json({
       success: true,
-      data: responseData,
+      data: course,
     });
   } catch (error) {
     console.error("코스 조회 오류:", error);
     res.status(500).json({
       success: false,
       message: "코스 조회 중 오류가 발생했습니다.",
-      error: error.message,
     });
   }
 };
 
-// 코스 목록 조회 (페이지네이션)
 export const getCourses = async (req, res) => {
   try {
     const ownerId = req.user._id;
-    const { page, limit } = req.pagination || { page: 1, limit: 10 }; // 기본값 설정
+    const { page, limit } = req.pagination || { page: 1, limit: 10 };
     const skip = (page - 1) * limit;
 
-    const courses = await Course.find({ ownerId })
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .select("title startDate endDate pickupLocation createdAt");
-
-    const total = await Course.countDocuments({ ownerId });
+    const [courses, total] = await Promise.all([
+      Plans.find({ ownerId })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .select("title startDate endDate pickupLocation createdAt"),
+      Plans.countDocuments({ ownerId }),
+    ]);
 
     res.status(200).json({
       success: true,
@@ -298,21 +279,18 @@ export const getCourses = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "코스 목록 조회 중 오류가 발생했습니다.",
-      error: error.message,
     });
   }
 };
 
-// 코스 수정
 export const updateCourse = async (req, res) => {
   try {
     const { courseId } = req.params;
     const ownerId = req.user._id;
-    const updateData = req.body;
 
-    const course = await Course.findOneAndUpdate(
+    const course = await Plans.findOneAndUpdate(
       { _id: courseId, ownerId },
-      updateData,
+      req.body,
       { new: true, runValidators: true }
     );
 
@@ -333,18 +311,16 @@ export const updateCourse = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "코스 수정 중 오류가 발생했습니다.",
-      error: error.message,
     });
   }
 };
 
-// 코스 삭제
 export const deleteCourse = async (req, res) => {
   try {
     const { courseId } = req.params;
     const ownerId = req.user._id;
 
-    const course = await Course.findOneAndDelete({ _id: courseId, ownerId });
+    const course = await Plans.findOneAndDelete({ _id: courseId, ownerId });
 
     if (!course) {
       return res.status(404).json({
@@ -362,7 +338,6 @@ export const deleteCourse = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "코스 삭제 중 오류가 발생했습니다.",
-      error: error.message,
     });
   }
 };

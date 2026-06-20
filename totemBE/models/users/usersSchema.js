@@ -2,11 +2,31 @@ import mongoose from "mongoose";
 
 const usersSchema = new mongoose.Schema(
   {
-    email: { type: String, required: true, unique: true },
-    password: { type: String },
-    name: { type: String, required: true },
-    companyName: { type: String },
-    phone: { type: String },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+      match: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+    },
+    password: { type: String, required: true },
+    name: { type: String, required: true, trim: true },
+    companyName: { type: String, trim: true },
+    phone: {
+      type: String,
+      match: /^[0-9\-+() ]{8,20}$/,
+    },
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
+    },
+    status: {
+      type: String,
+      enum: ["active", "suspended"],
+      default: "active",
+    },
 
     // --- [추가] SettingsPage의 '알림 설정'을 위한 필드 ---
     notifications: {
