@@ -1,0 +1,30 @@
+{
+  "name": "@totem/web",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Totem 메인(마케팅·로그인) 사이트 — Vercel 배포",
+  "scripts": {
+    "dev": "next dev -p 3100",
+    "build": "next build",
+    "start": "next start -p 3100",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@totem/shared": "*",
+    "next": "^15.4.4",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^22",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "^15.4.4",
+    "tailwindcss": "^4.1.11",
+    "typescript": "^5"
+  }
+}

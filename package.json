@@ -1,0 +1,22 @@
+{
+  "name": "totem",
+  "private": true,
+  "description": "Totem — 투어·코스 운영 B2B SaaS (web · console · api 모노레포)",
+  "engines": {
+    "node": ">=22"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:api": "npm run dev -w @totem/api",
+    "dev:web": "npm run dev -w @totem/web",
+    "dev:console": "npm run dev -w @totem/console",
+    "build": "npm run build --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "seed": "npm run seed -w @totem/api"
+  }
+}
