@@ -1,0 +1,46 @@
+# 모든 PR 과 dev·main push 에서 타입검사·테스트·빌드를 돌린다. 하나라도 실패하면 머지하지 않는다.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [dev, main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: 의존성 설치
+        run: npm ci
+
+      - name: 타입 검사 (shared · api · web · console)
+        run: npm run typecheck
+
+      - name: API 테스트 (인메모리 MongoDB)
+        run: npm run test -w @totem/api
+
+      - name: API 빌드
+        run: npm run build -w @totem/api
+
+      - name: 메인(web) 빌드
+        run: npm run build -w @totem/web
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+
+      - name: 콘솔(console) 정적 export 빌드
+        run: npm run build -w @totem/console
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+          NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
