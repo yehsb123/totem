@@ -1,145 +1,145 @@
-"use client";
+import { API_PREFIX, ROUTES } from "@totem/shared";
+import type { Metadata } from "next";
+import type { ReactNode } from "react";
+import BackLink from "../BackLink";
 
-import React from "react";
-import { useRouter } from "next/navigation";
+export const metadata: Metadata = {
+  title: "API 문서",
+  description: "TOTEM API 의 인증 방식, 응답 형식, 코스·투어·일정 주요 엔드포인트를 안내합니다.",
+  alternates: { canonical: "/resources/api" },
+};
 
-export default function APIDocsPage() {
-  const router = useRouter();
+// 경로는 서버·클라이언트가 함께 쓰는 @totem/shared 의 ROUTES 에서 가져온다 (문서와 실제 경로 불일치 방지)
+const p = (path: string) => `${API_PREFIX}${path}`;
 
+const ENDPOINTS: { method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE"; path: string; desc: string }[] = [
+  { method: "POST", path: p(ROUTES.auth.login), desc: "이메일·비밀번호 로그인 (토큰 발급)" },
+  { method: "POST", path: p(ROUTES.auth.refresh), desc: "refresh token 으로 토큰 재발급" },
+  { method: "GET", path: p(ROUTES.users.me), desc: "내 프로필 조회" },
+  { method: "GET", path: p(ROUTES.courses.list), desc: "코스 목록 (page, limit, q)" },
+  { method: "POST", path: p(ROUTES.courses.list), desc: "코스 생성 (선택적으로 투어 동시 생성)" },
+  { method: "GET", path: p(ROUTES.courses.detail(":id")), desc: "코스 상세" },
+  { method: "GET", path: p(ROUTES.tours.list), desc: "투어 목록 (상태·유형 필터)" },
+  { method: "GET", path: p(ROUTES.tours.reviews(":tourId")), desc: "투어별 리뷰 목록" },
+  { method: "GET", path: p(ROUTES.schedule.events), desc: "일정(캘린더) 이벤트 목록" },
+  { method: "GET", path: p(ROUTES.dashboard.overview), desc: "관광 데이터 대시보드 요약" },
+];
+
+const METHOD_STYLE: Record<string, string> = {
+  GET: "bg-emerald-100 text-emerald-700",
+  POST: "bg-sky-100 text-sky-700",
+  PUT: "bg-amber-100 text-amber-700",
+  PATCH: "bg-amber-100 text-amber-700",
+  DELETE: "bg-red-100 text-red-700",
+};
+
+function Method({ m }: { m: string }) {
   return (
-    <div className="bg-white min-h-screen px-5 py-20 text-gray-800 font-sans md:px-10 lg:px-20">
-      <div className="max-w-4xl mx-auto">
-        <button
-          onClick={() => router.back()}
-          className="mb-8 flex items-center text-indigo-500 hover:text-indigo-600 transition-colors"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5 mr-1"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fillRule="evenodd"
-              d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
-              clipRule="evenodd"
-            />
-          </svg>
-          뒤로가기
-        </button>
+    <span className={`inline-block min-w-14 rounded px-2 py-0.5 text-center font-mono text-xs font-bold ${METHOD_STYLE[m]}`}>
+      {m}
+    </span>
+  );
+}
 
-        <h1 className="text-4xl font-extrabold text-center mb-4">API 문서</h1>
-        <p className="text-lg text-gray-600 text-center mb-12">
-          TOTEM API를 사용하여 외부 서비스와 연동하고, 코스를 관리하세요.
+function Code({ children }: { children: string }) {
+  return (
+    <pre className="overflow-x-auto rounded-lg bg-slate-900 p-4 text-sm leading-relaxed text-slate-100">
+      <code>{children}</code>
+    </pre>
+  );
+}
+
+function Section({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <section className="mb-12">
+      <h2 className="mb-4 text-2xl font-bold text-slate-900">{title}</h2>
+      <div className="space-y-4 rounded-xl bg-slate-50 p-6 text-slate-700">{children}</div>
+    </section>
+  );
+}
+
+export default function ApiDocsPage() {
+  return (
+    <div className="bg-white px-4 py-20 text-slate-800 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-4xl">
+        <BackLink />
+
+        <h1 className="text-center text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">API 문서</h1>
+        <p className="mb-12 mt-4 text-center text-base text-slate-600 sm:text-lg">
+          TOTEM API 로 코스·투어·일정 데이터를 조회하고 관리하는 방법을 안내합니다.
         </p>
 
-        {/* 1. 인증 섹션 */}
-        <div className="mb-12">
-          <h2 className="text-2xl font-bold mb-4">1. 인증 (Authentication)</h2>
-          <div className="bg-gray-100 p-6 rounded-lg">
-            <p className="text-gray-700 mb-4">
-              모든 API 요청은 API 키를 포함해야 합니다. API 키는 프로필 설정
-              페이지에서 발급받을 수 있습니다.
-            </p>
-            <div className="bg-gray-200 p-4 rounded-md">
-              <span className="font-mono text-sm">
-                Header:{" "}
-                <span className="text-indigo-600">
-                  X-API-KEY: your_api_key_here
-                </span>
-              </span>
-            </div>
+        <Section title="1. 기본 규칙">
+          <p>
+            모든 경로는 <code className="font-mono text-indigo-600">{API_PREFIX}</code> 아래에 있으며 요청·응답 본문은
+            JSON 입니다. 성공 응답은 <code className="font-mono">data</code>(목록이면 <code className="font-mono">meta</code>{" "}
+            포함)로, 실패 응답은 <code className="font-mono">error</code> 로 감싸서 돌려줍니다.
+          </p>
+          <Code>{`// 성공 (목록)
+{ "data": [ ... ], "meta": { "page": 1, "limit": 20, "total": 42, "totalPages": 3 } }
+
+// 실패
+{ "error": { "code": "VALIDATION_ERROR", "message": "이메일 형식이 올바르지 않습니다." } }`}</Code>
+        </Section>
+
+        <Section title="2. 인증">
+          <p>
+            로그인으로 발급받은 access token 을 <code className="font-mono">Authorization</code> 헤더에 담아 보냅니다.
+            access token 이 만료되면(401) refresh token 으로 재발급받습니다.
+          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            <Method m="POST" />
+            <span className="font-mono text-sm">{p(ROUTES.auth.login)}</span>
           </div>
-        </div>
+          <Code>{`// 요청
+{ "email": "you@agency.com", "password": "********" }
 
-        {/* 2. 코스 목록 조회 섹션 */}
-        <div className="mb-12">
-          <h2 className="text-2xl font-bold mb-4">2. 코스 목록 조회</h2>
-          <div className="bg-gray-100 p-6 rounded-lg">
-            <p className="text-gray-700 mb-4">
-              사용자가 생성한 모든 코스 목록을 가져옵니다.
-            </p>
-            <div className="mb-4">
-              <span className="font-bold text-sm bg-green-500 text-white px-2 py-1 rounded-full">
-                GET
-              </span>
-              <span className="font-mono ml-2 text-sm">/api/v1/courses</span>
-            </div>
+// 응답
+{ "data": { "accessToken": "eyJ...", "refreshToken": "...", "expiresIn": 900, "user": { ... } } }
 
-            <h3 className="text-lg font-semibold mt-6 mb-2">응답 (Response)</h3>
-            <div className="bg-gray-800 text-white p-4 rounded-md overflow-x-auto">
-              <pre>
-                {`{
-  "status": "success",
+// 이후 요청 헤더
+Authorization: Bearer <accessToken>`}</Code>
+        </Section>
+
+        <Section title="3. 코스 목록 조회">
+          <div className="flex flex-wrap items-center gap-2">
+            <Method m="GET" />
+            <span className="font-mono text-sm">{p(ROUTES.courses.list)}?page=1&amp;limit=20</span>
+          </div>
+          <Code>{`{
   "data": [
     {
-      "id": "course-01",
-      "title": "서울 도심 투어",
-      "startDate": "2025-09-01",
-      "endDate": "2025-09-03"
-    },
-    {
-      "id": "course-02",
+      "id": "66f0c2a1b3e4d5f6a7b8c9d0",
       "title": "제주도 힐링 코스",
       "startDate": "2025-10-15",
-      "endDate": "2025-10-18"
+      "endDate": "2025-10-18",
+      "pickupLocation": "제주공항",
+      "placeCount": 9,
+      "createdAt": "2025-09-20T02:10:00.000Z",
+      "updatedAt": "2025-09-20T02:10:00.000Z"
     }
-  ]
-}`}
-              </pre>
-            </div>
-          </div>
-        </div>
+  ],
+  "meta": { "page": 1, "limit": 20, "total": 1, "totalPages": 1 }
+}`}</Code>
+        </Section>
 
-        <div className="mb-12">
-          <h2 className="text-2xl font-bold mb-4">3. 새로운 코스 생성</h2>
-          <div className="bg-gray-100 p-6 rounded-lg">
-            <p className="text-gray-700 mb-4">새로운 여행 코스를 생성합니다.</p>
-            <div className="mb-4">
-              <span className="font-bold text-sm bg-blue-500 text-white px-2 py-1 rounded-full">
-                POST
-              </span>
-              <span className="font-mono ml-2 text-sm">/api/v1/courses</span>
-            </div>
+        <Section title="4. 주요 엔드포인트">
+          <ul className="divide-y divide-slate-200">
+            {ENDPOINTS.map((e) => (
+              <li key={`${e.method} ${e.path}`} className="flex flex-col gap-1 py-2.5 sm:flex-row sm:items-center sm:gap-3">
+                <span className="flex items-center gap-2">
+                  <Method m={e.method} />
+                  <span className="break-all font-mono text-sm text-slate-900">{e.path}</span>
+                </span>
+                <span className="text-sm text-slate-500 sm:ml-auto">{e.desc}</span>
+              </li>
+            ))}
+          </ul>
+        </Section>
 
-            <h3 className="text-lg font-semibold mt-6 mb-2">
-              요청 본문 (Request Body)
-            </h3>
-            <div className="bg-gray-800 text-white p-4 rounded-md overflow-x-auto">
-              <pre>
-                {`{
-  "title": "부산 해안 투어",
-  "startDate": "2025-11-20",
-  "endDate": "2025-11-22",
-  "destinations": [
-    { "name": "해운대", "lat": 35.163, "lng": 129.161 },
-    { "name": "광안리", "lat": 35.153, "lng": 129.119 }
-  ]
-}`}
-              </pre>
-            </div>
-
-            <h3 className="text-lg font-semibold mt-6 mb-2">응답 (Response)</h3>
-            <div className="bg-gray-800 text-white p-4 rounded-md overflow-x-auto">
-              <pre>
-                {`{
-  "status": "success",
-  "message": "코스가 성공적으로 생성되었습니다.",
-  "courseId": "course-03"
-}`}
-              </pre>
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <h2 className="text-2xl font-bold mb-4">4. 기타 API 및 지원</h2>
-          <p className="text-gray-700">
-            이 페이지의 내용은 B2B SaaS 플랫폼 TOTEM 의 가상의 예시를 기반으로
-            작성되었습니다. 실제 서비스의 API 엔드포인트, 요청 및 응답 형식은
-            다를 수 있으며, 개발 가이드는 실제 문서를 참고해 주시기 바랍니다.
-          </p>
-        </div>
+        <p className="text-sm text-slate-500">
+          외부 연동용 API 키 발급은 준비 중입니다. 현재는 TOTEM 계정으로 로그인해 발급받은 토큰으로 호출할 수 있습니다.
+        </p>
       </div>
     </div>
   );
