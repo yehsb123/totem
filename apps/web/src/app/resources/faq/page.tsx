@@ -1,7 +1,11 @@
-"use client";
+import type { Metadata } from "next";
+import BackLink from "../BackLink";
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+export const metadata: Metadata = {
+  title: "자주 묻는 질문",
+  description: "TOTEM 서비스 소개, 코스메이커 사용법, 요금제, 고객 지원, 데이터 업데이트 주기 등 자주 묻는 질문과 답변.",
+  alternates: { canonical: "/resources/faq" },
+};
 
 interface FAQItem {
   id: number;
@@ -43,78 +47,34 @@ const faqs: FAQItem[] = [
 ];
 
 export default function FAQPage() {
-  const router = useRouter();
-  const [openId, setOpenId] = useState<number | null>(null);
-
-  const toggleAnswer = (id: number) => {
-    setOpenId(openId === id ? null : id);
-  };
-
   return (
-    <div className="bg-white min-h-screen px-5 py-20 text-gray-800 font-sans md:px-10 lg:px-20">
-      <div className="max-w-4xl mx-auto">
-        <button
-          onClick={() => router.back()}
-          className="mb-8 flex items-center text-indigo-500 hover:text-indigo-600 transition-colors"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5 mr-1"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fillRule="evenodd"
-              d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
-              clipRule="evenodd"
-            />
-          </svg>
-          뒤로가기
-        </button>
+    <div className="bg-white px-4 py-20 text-slate-800 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-3xl">
+        <BackLink />
 
-        <h1 className="text-4xl font-extrabold text-center mb-4">
-          자주 묻는 질문
-        </h1>
-        <p className="text-lg text-gray-600 text-center mb-12">
+        <h1 className="text-center text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">자주 묻는 질문</h1>
+        <p className="mb-12 mt-4 text-center text-base text-slate-600 sm:text-lg">
           TOTEM에 대해 자주 묻는 질문들을 모아두었습니다.
         </p>
 
-        <div className="space-y-4">
+        <div className="divide-y divide-slate-200 rounded-xl border border-slate-200">
           {faqs.map((faq) => (
-            <div
-              key={faq.id}
-              className="border-b border-gray-200 cursor-pointer"
-            >
-              <div
-                className="flex justify-between items-center p-4 bg-gray-50 rounded-t-lg transition-colors hover:bg-gray-100"
-                onClick={() => toggleAnswer(faq.id)}
-              >
-                <h3 className="text-lg font-semibold text-gray-800">
-                  {faq.question}
-                </h3>
+            <details key={faq.id} className="group">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 transition-colors hover:bg-slate-50 [&::-webkit-details-marker]:hidden">
+                <h2 className="text-base font-semibold text-slate-900 sm:text-lg">{faq.question}</h2>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className={`h-6 w-6 text-indigo-500 transform transition-transform duration-200 ${
-                    openId === faq.id ? "rotate-180" : ""
-                  }`}
+                  className="size-5 shrink-0 text-indigo-500 transition-transform duration-200 group-open:rotate-180"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
+                  aria-hidden
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
-              </div>
-              {openId === faq.id && (
-                <div className="p-4 bg-white rounded-b-lg text-gray-700 leading-relaxed">
-                  {faq.answer}
-                </div>
-              )}
-            </div>
+              </summary>
+              <p className="px-5 pb-5 leading-relaxed text-slate-700">{faq.answer}</p>
+            </details>
           ))}
         </div>
       </div>
