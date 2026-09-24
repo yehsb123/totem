@@ -1,0 +1,21 @@
+{
+  "name": "@totem/shared",
+  "version": "0.2.0",
+  "private": true,
+  "description": "web·console·api 가 함께 쓰는 API 계약(zod 스키마·타입·경로)과 HTTP 클라이언트",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "typescript": "^5"
+  }
+}
