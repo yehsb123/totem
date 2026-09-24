@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { ROUTES, directionsRequest, localSearchQuery, type DirectionsResult, type LocalSearchItem } from "@totem/shared";
+import { ROUTES, directionsRequest, kakaoCategory, localSearchQuery, type DirectionsResult, type LocalSearchItem } from "@totem/shared";
 import { env } from "../../config/env";
 import { HttpError, notConfigured, ok, parse, upstream } from "../../lib/http";
 import { requireAuth } from "../../middlewares/auth";
@@ -40,6 +40,7 @@ mapsRouter.get(ROUTES.maps.localSearch, async (req, res) => {
       road_address_name: string;
       phone: string;
       category_name: string;
+      category_group_code: string;
       x: string;
       y: string;
       place_url: string;
@@ -52,6 +53,7 @@ mapsRouter.get(ROUTES.maps.localSearch, async (req, res) => {
     roadAddress: d.road_address_name || null,
     phone: d.phone || null,
     categoryName: d.category_name,
+    category: kakaoCategory(d.category_group_code),
     mapX: Number(d.x),
     mapY: Number(d.y),
     url: d.place_url,

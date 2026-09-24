@@ -85,7 +85,9 @@ export function useCourseEditor(courseId: string | null) {
       mutateDay((slots) => {
         const err = placementError(place, slotIndex);
         if (err) return err;
-        if (slots.some((p, i) => i !== slotIndex && p?.placeId && p.placeId === place.placeId)) return "같은 날에 이미 담긴 장소입니다.";
+        // 장소 캐시(placeId)·카카오 검색(contentId=kakao:…) 어느 쪽에서 온 장소든 같은 곳이면 막는다
+        const key = (x: CoursePlace) => x.placeId ?? x.contentId;
+        if (key(place) && slots.some((p, i) => i !== slotIndex && p && key(p) === key(place))) return "같은 날에 이미 담긴 장소입니다.";
         slots[slotIndex] = place;
         return slots;
       }),

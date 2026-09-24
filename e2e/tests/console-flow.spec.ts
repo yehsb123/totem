@@ -111,6 +111,16 @@ test.describe.serial("메인 → 콘솔 전체 흐름", () => {
     await expect(page.getByRole("button", { name: "코스 생성 완료" })).toBeVisible();
   });
 
+  test("코스메이커 카카오 검색: 서버 키가 없으면 안내만 보이고 관광정보 탭으로 돌아올 수 있다", async () => {
+    await page.goto(`${CONSOLE}/coursemaker/`);
+    await page.getByRole("tab", { name: "카카오 검색" }).click();
+    await page.getByPlaceholder("가게·장소 이름 (예: 제주 흑돼지)").fill("흑돼지");
+    await page.getByRole("button", { name: "검색", exact: true }).click();
+    await expect(page.getByText("카카오 검색이 서버에 설정되지 않았습니다.")).toBeVisible();
+    await page.getByRole("tab", { name: "관광정보" }).click();
+    await expect(page.getByText("성산일출봉").first()).toBeVisible();
+  });
+
   test("일정표: 코스 일정표가 일차·시간대·장소로 나온다", async () => {
     await page.getByRole("link", { name: "투어관리" }).click();
     await page.locator("tr", { hasText: "제주 동부 2박 3일" }).getByRole("link", { name: "일정표" }).click();

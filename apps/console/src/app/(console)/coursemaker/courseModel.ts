@@ -1,4 +1,4 @@
-import { DEFAULT_TIME_SLOTS, HOTEL_SLOT_INDEX, enumerateDates, type Course, type CourseDay, type CoursePlace, type Place } from "@totem/shared";
+import { DEFAULT_TIME_SLOTS, HOTEL_SLOT_INDEX, enumerateDates, type Course, type CourseDay, type CoursePlace, type LocalSearchItem, type Place } from "@totem/shared";
 
 /** 편집 중인 하루: 시간대 칸마다 장소 또는 빈칸(null) */
 export interface EditorDay {
@@ -29,6 +29,20 @@ export function snapshot(p: Place): CoursePlace {
     mapX: p.mapX,
     mapY: p.mapY,
     imageUrl: p.thumbnailUrl ?? p.imageUrl,
+  };
+}
+
+/** 카카오 로컬 검색 결과 → 코스 장소. 장소 캐시에 없는 곳이라 placeId 는 없고 contentId 에 출처를 남긴다 */
+export function snapshotFromKakao(k: LocalSearchItem): CoursePlace {
+  return {
+    placeId: null,
+    contentId: `kakao:${k.id}`,
+    title: k.name,
+    addr1: k.roadAddress ?? k.address,
+    category: k.category,
+    mapX: k.mapX,
+    mapY: k.mapY,
+    imageUrl: null,
   };
 }
 

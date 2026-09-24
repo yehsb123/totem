@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { baseEntity, paginationQuery } from "./common";
-import { PLACE_CATEGORIES, PLACE_SORTS } from "./enums";
+import { PLACE_CATEGORIES, PLACE_SORTS, type PlaceCategory } from "./enums";
 
 /**
  * 장소 = 한국관광공사 TourAPI 데이터를 서버가 동기화해 둔 캐시.
@@ -49,6 +49,26 @@ export interface PlaceSyncResult {
   modified: number;
 }
 
+/**
+ * 카카오 업종 그룹 코드 → 코스메이커 분류.
+ * FD6 음식점 · CE7 카페 · AD5 숙박 · AT4 관광명소 · CT1 문화시설 · 그 외(편의점·주차장 등) etc
+ */
+export function kakaoCategory(groupCode: string | null | undefined): PlaceCategory {
+  switch (groupCode) {
+    case "FD6":
+      return "restaurant";
+    case "CE7":
+      return "cafe";
+    case "AD5":
+      return "hotel";
+    case "AT4":
+    case "CT1":
+      return "attraction";
+    default:
+      return "etc";
+  }
+}
+
 /** GET /maps/local-search — 카카오 로컬 키워드 검색 프록시 (REST 키는 서버에만 둔다) */
 export const localSearchQuery = z.object({
   query: z.string().trim().min(1).max(100),
@@ -64,6 +84,8 @@ export interface LocalSearchItem {
   roadAddress: string | null;
   phone: string | null;
   categoryName: string;
+  /** 카카오 업종 그룹 코드를 코스메이커 분류로 바꾼 값 (숙소 칸 규칙에 쓰인다) */
+  category: PlaceCategory;
   mapX: number;
   mapY: number;
   url: string;
