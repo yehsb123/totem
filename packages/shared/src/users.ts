@@ -10,7 +10,8 @@ export type NotificationPrefs = z.infer<typeof notificationPrefs>;
 
 /** GET /users/me 응답 — 설정 > 계정 관리, 콘솔 헤더 인사말에 사용 */
 export const userProfile = baseEntity.extend({
-  email: z.string(),
+  /** 카카오 가입자는 이메일 제공 동의를 안 하면 null */
+  email: z.string().nullable(),
   name: z.string(),
   phone: z.string().nullable(),
   role: z.enum(USER_ROLES),
