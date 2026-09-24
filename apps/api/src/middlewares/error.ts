@@ -5,8 +5,10 @@ import { isProd } from "../config/env";
 import { HttpError } from "../lib/http";
 import { logger } from "../lib/logger";
 
+const requestIdOf = (req: Request) => (req.id === undefined ? undefined : String(req.id));
+
 export function notFoundHandler(req: Request, res: Response) {
-  const body: ApiErrorBody = { error: { code: "NOT_FOUND", message: `요청한 경로가 없습니다: ${req.method} ${req.path}` } };
+  const body: ApiErrorBody = { error: { code: "NOT_FOUND", message: `요청한 경로가 없습니다: ${req.method} ${req.path}`, requestId: requestIdOf(req) } };
   res.status(404).json(body);
 }
 
@@ -36,8 +38,10 @@ export function errorHandler(err: unknown, req: Request, res: Response, _next: N
     body = { error: { code: "VALIDATION_ERROR", message: "요청 본문이 너무 큽니다." } };
   }
 
+  body.error.requestId = requestIdOf(req);
   if (status >= 500) {
-    logger.error({ err, method: req.method, path: req.path }, "처리되지 않은 오류");
+    // req.log 는 요청 ID·사용자가 붙은 로거 (pino-http). 없으면 기본 로거
+    (req.log ?? logger).error({ err }, "처리되지 않은 오류");
     if (!isProd && err instanceof Error) body.error.details = { stack: err.stack };
   }
   res.status(status).json(body);

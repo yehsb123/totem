@@ -1,4 +1,4 @@
-import { ApiError, createApiClient } from "@totem/shared";
+import { ApiError, createApiClient, describeApiError } from "@totem/shared";
 import { env } from "./env";
 
 /** 로그인이 풀렸을 때 메인 사이트 로그인으로 보낸다 (돌아올 경로를 함께 넘김) */
@@ -14,11 +14,7 @@ export const api = createApiClient({
 });
 
 /** 화면에 보여줄 오류 문구 */
-export function errorMessage(e: unknown, fallback = "알 수 없는 오류가 발생했습니다."): string {
-  if (e instanceof ApiError) return e.message;
-  if (e instanceof Error && e.message) return e.message;
-  return fallback;
-}
+export const errorMessage = describeApiError;
 
 /** 서버가 준 필드별 검증 오류 → { 필드경로: 메시지 } */
 export function fieldErrors(e: unknown): Record<string, string> {

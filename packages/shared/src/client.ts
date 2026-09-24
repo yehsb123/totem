@@ -50,10 +50,25 @@ export class ApiError extends Error {
     public readonly code: ErrorCode | "NETWORK_ERROR",
     message: string,
     public readonly details?: unknown,
+    /** 문의할 때 알려주면 서버 로그에서 바로 찾을 수 있는 ID */
+    public readonly requestId?: string,
   ) {
     super(message);
     this.name = "ApiError";
   }
+}
+
+/**
+ * 화면에 보여줄 오류 문구 (web·console 공통).
+ * 서버 오류(5xx)면 "오류 ID" 를 덧붙인다 — 사용자가 이 값을 알려주면 서버 로그(X-Request-Id)에서 바로 찾을 수 있다.
+ */
+export function describeApiError(e: unknown, fallback = "알 수 없는 오류가 발생했습니다."): string {
+  if (e instanceof ApiError) {
+    const msg = e.message || fallback;
+    return e.status >= 500 && e.requestId ? `${msg} (오류 ID: ${e.requestId.slice(0, 8)})` : msg;
+  }
+  if (e instanceof Error && e.message) return e.message;
+  return fallback;
 }
 
 export interface TokenStore {
@@ -176,7 +191,13 @@ export function createApiClient(options: ApiClientOptions) {
     const json = (await res.json().catch(() => null)) as ApiSuccess<T> | ApiErrorBody | null;
     if (!res.ok || !json || "error" in json) {
       const err = json && "error" in json ? json.error : null;
-      throw new ApiError(res.status, err?.code ?? "INTERNAL_ERROR", err?.message ?? `요청 실패 (${res.status})`, err?.details);
+      throw new ApiError(
+        res.status,
+        err?.code ?? "INTERNAL_ERROR",
+        err?.message ?? `요청 실패 (${res.status})`,
+        err?.details,
+        err?.requestId ?? res.headers.get("x-request-id") ?? undefined,
+      );
     }
     return json;
   }

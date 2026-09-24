@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import cors from "cors";
 import express, { Router } from "express";
 import rateLimit from "express-rate-limit";
@@ -19,12 +20,38 @@ import { scheduleRouter } from "./modules/schedule/router";
 import { toursRouter } from "./modules/tours/router";
 import { usersRouter } from "./modules/users/router";
 
+const REQUEST_ID_RE = /^[A-Za-z0-9._-]{8,64}$/;
+
 export function createApp() {
   const app = express();
   app.disable("x-powered-by");
   app.set("trust proxy", env.TRUST_PROXY);
 
-  app.use(pinoHttp({ logger, autoLogging: { ignore: (req) => req.url === `${API_PREFIX}${ROUTES.health}` } }));
+  app.use(
+    pinoHttp({
+      logger,
+      // 앞단(로드밸런서·프록시)이 준 X-Request-Id 가 안전한 형식이면 이어 쓰고, 아니면 새로 만든다
+      genReqId(req, res) {
+        const incoming = req.headers["x-request-id"];
+        const id = typeof incoming === "string" && REQUEST_ID_RE.test(incoming) ? incoming : randomUUID();
+        res.setHeader("X-Request-Id", id);
+        return id;
+      },
+      autoLogging: { ignore: (req) => req.url === `${API_PREFIX}${ROUTES.health}` },
+      customLogLevel: (_req, res, err) => (err || res.statusCode >= 500 ? "error" : res.statusCode >= 400 ? "warn" : "info"),
+      customSuccessMessage: (req, res) => `${req.method} ${req.url} ${res.statusCode}`,
+      customErrorMessage: (req, res) => `${req.method} ${req.url} ${res.statusCode}`,
+      // 누가(조직·사용자) 보낸 요청인지 — requireAuth 를 통과한 요청만 값이 있다
+      customProps: (req) => {
+        const auth = (req as { auth?: { userId: unknown; organizationId: unknown } }).auth;
+        return auth ? { userId: String(auth.userId), orgId: String(auth.organizationId) } : {};
+      },
+      serializers: {
+        req: (req) => ({ id: req.id, method: req.method, url: req.url, ip: req.remoteAddress }),
+        res: (res) => ({ statusCode: res.statusCode }),
+      },
+    }),
+  );
   app.use(helmet());
   app.use(
     cors({
@@ -34,7 +61,9 @@ export function createApp() {
         cb(null, false);
       },
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-      allowedHeaders: ["Content-Type", "Authorization"],
+      allowedHeaders: ["Content-Type", "Authorization", "X-Request-Id"],
+      // 브라우저(콘솔)가 오류 화면에 요청 ID 를 보여줄 수 있도록
+      exposedHeaders: ["X-Request-Id"],
       maxAge: 600,
     }),
   );

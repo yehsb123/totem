@@ -43,6 +43,8 @@ export interface ApiErrorBody {
     code: ErrorCode;
     message: string;
     details?: unknown;
+    /** 서버 로그에서 이 요청을 찾는 ID (응답 헤더 X-Request-Id 와 같다) */
+    requestId?: string;
   };
 }
 

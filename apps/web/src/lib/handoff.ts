@@ -1,4 +1,4 @@
-import { ApiError } from "@totem/shared";
+import { describeApiError } from "@totem/shared";
 import { api } from "./api";
 import { env } from "./env";
 
@@ -35,9 +35,5 @@ export async function redirectToConsole(next?: string | null): Promise<void> {
   window.location.href = buildConsoleCallbackUrl(code, next);
 }
 
-/** 화면에 보여줄 오류 문구 */
-export function errorMessage(error: unknown, fallback = "알 수 없는 오류가 발생했습니다."): string {
-  if (error instanceof ApiError) return error.message || fallback;
-  if (error instanceof Error && error.message) return error.message;
-  return fallback;
-}
+/** 화면에 보여줄 오류 문구 — 콘솔과 같은 규칙(서버 오류면 오류 ID 덧붙임) */
+export const errorMessage = describeApiError;
