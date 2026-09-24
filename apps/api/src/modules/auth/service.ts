@@ -72,8 +72,9 @@ export async function issueSession(
 ): Promise<AuthSession> {
   const user = await User.findById(userId).select("+passwordHash").lean();
   if (!user || user.status !== "active") throw unauthorized("사용할 수 없는 계정입니다.");
-  const org = await Organization.findById(user.organizationId).select("name").lean();
+  const org = await Organization.findById(user.organizationId).select("name deletedAt").lean();
   if (!org) throw new HttpError(500, "INTERNAL_ERROR", "소속 조직 정보를 찾을 수 없습니다.");
+  if (org.deletedAt) throw unauthorized("삭제된 조직입니다.");
 
   const refreshToken = randomToken(48);
   await Session.create({

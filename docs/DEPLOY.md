@@ -48,6 +48,7 @@ docker run -p 8000:8000 --env-file apps/api/.env totem-api
 - 프록시 뒤면 `TRUST_PROXY=1`
 - 최초 1회 `npm run seed -w @totem/api` (대시보드 통계·장소 샘플), 이후 관리자 계정으로 `POST /places/sync` 로 TourAPI 전체 동기화
 - 헬스체크: `GET /api/v1/health` → 200 이면 정상 (DB 끊기면 503)
+- 삭제된 조직 정리: `node dist/db/purge-run.js` 를 하루 1회 예약 실행 (호스팅의 cron·스케줄러). 여러 번 돌아도 안전
 
 ## 4. 외부 콘솔 설정
 

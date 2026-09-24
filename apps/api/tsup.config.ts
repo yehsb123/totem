@@ -2,7 +2,7 @@ import { defineConfig } from "tsup";
 
 // @totem/shared 는 TS 소스 패키지라 번들에 포함시킨다 (런타임에 별도 빌드 불필요)
 export default defineConfig({
-  entry: ["src/server.ts", "src/db/seed/run.ts"],
+  entry: ["src/server.ts", "src/db/seed/run.ts", "src/db/purge-run.ts"],
   format: ["esm"],
   target: "node22",
   platform: "node",

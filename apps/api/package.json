@@ -10,7 +10,8 @@
     "start": "node dist/server.js",
     "seed": "tsx src/db/seed/run.ts",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "purge": "tsx src/db/purge-run.ts"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",

@@ -4,7 +4,7 @@ import { Types } from "mongoose";
 import type { UserRole } from "@totem/shared";
 import { env } from "../config/env";
 import { HttpError, forbidden, unauthorized } from "../lib/http";
-import { User } from "../db/models";
+import { Organization, User } from "../db/models";
 
 export interface AuthContext {
   userId: Types.ObjectId;
@@ -55,6 +55,8 @@ export async function requireAuth(req: Request, _res: Response, next: NextFuncti
 
   const user = await User.findById(claims.sub).select("status role organizationId").lean();
   if (!user || user.status !== "active") throw unauthorized("사용할 수 없는 계정입니다.");
+  // 조직이 삭제 표시되면 남아 있는 토큰으로도 그 조직 데이터에 접근할 수 없다 (방어 한 겹 더)
+  if (!(await Organization.exists({ _id: user.organizationId, deletedAt: null }))) throw unauthorized("삭제된 조직입니다.");
 
   req.auth = { userId: user._id, organizationId: user.organizationId, role: user.role as UserRole };
   next();

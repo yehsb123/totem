@@ -62,6 +62,9 @@ const schema = z.object({
   REVIEW_IMPORT_ALLOWED_HOSTS: csv.default("docs.google.com,googleusercontent.com"),
   REVIEW_IMPORT_MAX_BYTES: z.coerce.number().int().default(2_000_000),
 
+  /** 삭제 표시된 조직을 영구 삭제하기까지의 유예 일수 (npm run purge) — 기간은 책임님 결정 사항 */
+  ORG_PURGE_AFTER_DAYS: z.coerce.number().int().min(1).max(3650).default(30),
+
   /** 시드 데모 계정 비밀번호 (비우면 시드가 데모 계정을 만들지 않는다) */
   SEED_DEMO_PASSWORD: z.string().default(""),
 });

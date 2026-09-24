@@ -7,7 +7,7 @@ import {
   withdrawRequest,
 } from "@totem/shared";
 import { HttpError, badRequest, conflict, noContent, notFound, ok, parse } from "../../lib/http";
-import { Organization, User } from "../../db/models";
+import { Invitation, Organization, User } from "../../db/models";
 import { toUserProfile } from "../../db/serialize";
 import { authOf, requireAuth } from "../../middlewares/auth";
 import { hashPassword, revokeAllSessions, verifyPassword } from "../auth/service";
@@ -80,6 +80,8 @@ usersRouter.delete(ROUTES.users.me, async (req, res) => {
     const others = await User.countDocuments({ organizationId, _id: { $ne: userId }, status: "active" });
     if (others > 0) throw conflict("조직에 다른 멤버가 있어 탈퇴할 수 없습니다. 설정 > 멤버 관리에서 소유권을 다른 멤버에게 이전한 뒤 탈퇴해주세요.");
     await Organization.updateOne({ _id: organizationId }, { $set: { deletedAt: new Date() } });
+    // 삭제된 조직으로의 대기 중 초대는 무효 (미리보기·수락도 막혀 있지만 이력상 '취소'로 남긴다)
+    await Invitation.updateMany({ organizationId, acceptedAt: null, revokedAt: null }, { $set: { revokedAt: new Date() } });
   }
 
   await User.updateOne(

@@ -38,6 +38,7 @@
 | `KAKAO_REST_API_KEY` | 지도검색·길찾기·카카오로그인 시 | | 카카오 디벨로퍼스 > 앱 키 > **REST API 키** |
 | `KAKAO_CLIENT_SECRET` | | | 카카오 로그인 > 보안 > Client Secret 을 켠 경우만 |
 | `KAKAO_REDIRECT_URIS` | 카카오로그인 시 | | 허용할 redirect URI (쉼표 구분). 카카오 콘솔에 등록한 값과 **정확히 같게**: `https://<web 도메인>/auth/kakao/callback` |
+| `ORG_PURGE_AFTER_DAYS` | | `30` | 삭제 표시된 조직을 영구 삭제하기까지 유예 일수 (`npm run purge -w @totem/api`). 결제 기록은 보존 |
 | `REVIEW_IMPORT_ALLOWED_HOSTS` | | `docs.google.com,googleusercontent.com` | 리뷰 CSV 를 받아올 수 있는 호스트 (하위 도메인 포함) |
 | `REVIEW_IMPORT_MAX_BYTES` | | `2000000` | |
 

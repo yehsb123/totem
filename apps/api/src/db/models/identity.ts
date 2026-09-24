@@ -11,9 +11,12 @@ const organizationSchema = new Schema(
     plan: { type: String, enum: PLAN_TIERS, default: "trial" },
     ownerId: { type: Schema.Types.ObjectId, ref: "User", default: null },
     deletedAt: { type: Date, default: null },
+    /** 영구 삭제(purge) 된 시각 — 이후 이 문서는 결제 기록이 참조하는 표지로만 남는다 */
+    purgedAt: { type: Date, default: null },
   },
   { timestamps: true },
 );
+organizationSchema.index({ deletedAt: 1, purgedAt: 1 });
 export const Organization = model("Organization", organizationSchema, "organizations");
 export type OrganizationDoc = InferSchemaType<typeof organizationSchema> & { _id: Types.ObjectId };
 
