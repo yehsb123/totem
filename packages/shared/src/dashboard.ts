@@ -21,7 +21,7 @@ export const monthlyTourismStats = z.object({
   snsMentions: z.number(),
   companionTypes: z.array(nameValue),
   travelTypes: z.array(nameValue),
-  /** 관광소비(국내·국외) — 단위: 천원 (원본 데이터 기준) */
+  /** 관광소비(국내·국외) — 원본 데이터 값 그대로. 화면은 "원" 으로 표시 (원본 단위 미검증: docs/AUDIT.md 참고) */
   domesticSpending: z.object({ total: z.number(), byCategory: z.array(categoryAmount) }),
   internationalSpending: z.object({ total: z.number(), byCategory: z.array(categoryAmount) }),
   source: z.string(),

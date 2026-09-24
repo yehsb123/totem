@@ -1,0 +1,167 @@
+"use client";
+
+import Script from "next/script";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useRef, useState } from "react";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
+import { MAX_COURSE_DAYS, NATIONS, NATION_LABELS, type CoursePlace, type Nation } from "@totem/shared";
+import { ErrorState, LoadingState, btn, inputClass, useToast } from "@/components/ui";
+import { errorMessage } from "@/lib/api";
+import { addDays } from "@/lib/format";
+import { env } from "@/lib/env";
+import DayPanel from "./components/DayPanel";
+import PlacePanel from "./components/PlacePanel";
+import { useCourseEditor } from "./hooks/useCourseEditor";
+import { useKakaoMap } from "./hooks/useKakaoMap";
+
+function CourseMaker() {
+  const courseId = useSearchParams().get("courseId");
+  const router = useRouter();
+  const toast = useToast();
+  const c = useCourseEditor(courseId);
+  const map = useKakaoMap(c.current);
+  const [saving, setSaving] = useState(false);
+  const backend = useRef(HTML5Backend);
+
+  const notify = useCallback((err: string | null) => err && toast.error(err), [toast]);
+  const onDropPlace = useCallback((i: number, p: CoursePlace) => {
+    notify(c.dropPlace(i, p));
+    map.clearFocus();
+  }, [c, map, notify]);
+  const onMove = useCallback((from: number, to: number) => notify(c.moveSlot(from, to)), [c, notify]);
+
+  const save = async () => {
+    const err = c.validate();
+    if (err) return toast.error(err);
+    setSaving(true);
+    try {
+      const { course, createdTour } = await c.save();
+      toast.success(createdTour ? "코스를 저장하고 투어관리에 등록했습니다." : "코스를 저장했습니다.");
+      if (createdTour) router.push("/tours/");
+      else if (!courseId) router.replace(`/coursemaker/?courseId=${course.id}`);
+    } catch (e) {
+      toast.error(errorMessage(e));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (c.loading) return <LoadingState text="코스를 불러오는 중…" />;
+  if (c.loadError) return <ErrorState message={c.loadError} />;
+
+  return (
+    <DndProvider backend={backend.current}>
+      {env.kakaoMapAppKey && (
+        <Script
+          src={`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${env.kakaoMapAppKey}&autoload=false`}
+          strategy="afterInteractive"
+          onReady={map.init}
+          onError={() => toast.error("카카오 지도를 불러오지 못했습니다. 앱 키와 등록 도메인을 확인해주세요.")}
+        />
+      )}
+      <div className="flex h-[calc(100vh-3.5rem)] flex-col">
+        <div className="flex flex-shrink-0 flex-wrap items-end gap-3 border-b border-slate-200 bg-white px-4 py-3">
+          <label className="text-xs font-medium text-slate-600">
+            코스 이름
+            <input className={`${inputClass} mt-1 w-56`} value={c.title} onChange={(e) => c.setTitle(e.target.value)} placeholder="예: 제주 동부 2박 3일" />
+          </label>
+          <label className="text-xs font-medium text-slate-600">
+            픽업 장소
+            <input className={`${inputClass} mt-1 w-48`} value={c.pickupLocation} onChange={(e) => c.setPickupLocation(e.target.value)} placeholder="예: 제주공항 3번 게이트" />
+          </label>
+          <label className="text-xs font-medium text-slate-600">
+            고객 국가
+            <select className={`${inputClass} mt-1 w-28`} value={c.nation} onChange={(e) => c.setNation(e.target.value as Nation)}>
+              {NATIONS.map((n) => (
+                <option key={n} value={n}>
+                  {NATION_LABELS[n]}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="text-xs font-medium text-slate-600">
+            기간
+            <div className="mt-1 flex items-center gap-1">
+              <input
+                type="date"
+                className={`${inputClass} w-[150px]`}
+                value={c.startDate}
+                onChange={(e) => {
+                  const s = e.target.value;
+                  // 시작일을 종료일 뒤로 옮기면 종료일을 같은 날로 맞춘다 (구 코드는 경고 후 둘 다 지웠다)
+                  c.setPeriod(s, c.endDate < s ? s : c.endDate);
+                }}
+              />
+              <span className="text-slate-400">~</span>
+              <input type="date" className={`${inputClass} w-[150px]`} value={c.endDate} min={c.startDate} max={c.startDate ? addDays(c.startDate, MAX_COURSE_DAYS - 1) : undefined} onChange={(e) => c.setPeriod(c.startDate, e.target.value)} />
+            </div>
+          </label>
+          {!c.isEdit && (
+            <div className="flex items-end gap-2 rounded-md border border-slate-200 px-3 py-1.5">
+              <label className="flex items-center gap-1.5 pb-2 text-xs font-medium text-slate-700">
+                <input type="checkbox" checked={c.tour.enabled} onChange={(e) => c.setTour({ ...c.tour, enabled: e.target.checked })} />
+                투어관리에 등록
+              </label>
+              {c.tour.enabled && (
+                <>
+                  <label className="text-xs text-slate-600">
+                    타입
+                    <input className={`${inputClass} mt-1 w-20 py-1`} value={c.tour.type} onChange={(e) => c.setTour({ ...c.tour, type: e.target.value })} />
+                  </label>
+                  <label className="text-xs text-slate-600">
+                    담당자
+                    <input className={`${inputClass} mt-1 w-20 py-1`} value={c.tour.managerName} onChange={(e) => c.setTour({ ...c.tour, managerName: e.target.value })} />
+                  </label>
+                  <label className="text-xs text-slate-600">
+                    예상 인원
+                    <input type="number" min={0} className={`${inputClass} mt-1 w-20 py-1`} value={c.tour.capacity} onChange={(e) => c.setTour({ ...c.tour, capacity: Math.max(0, Number(e.target.value)) })} />
+                  </label>
+                </>
+              )}
+            </div>
+          )}
+          <div className="ml-auto flex items-center gap-2">
+            <span className="text-xs text-slate-500">
+              {c.days.length}일 · 장소 {c.placeCount}곳{c.dirty && " · 저장 안 됨"}
+            </span>
+            <button className={btn.primary} onClick={save} disabled={saving}>
+              {saving ? "저장 중…" : c.isEdit ? "변경사항 저장" : "코스 생성 완료"}
+            </button>
+          </div>
+        </div>
+
+        <div className="flex min-h-0 flex-1">
+          <PlacePanel onPlaceClick={map.focus} />
+          <main className="relative flex-1 border-r border-slate-200 bg-blue-50">
+            <div ref={map.containerRef} className="h-full w-full" />
+            {!map.ready && (
+              <div className="absolute inset-0 flex items-center justify-center p-6 text-center text-sm text-slate-500">
+                {env.kakaoMapAppKey ? "지도 불러오는 중…" : "지도 키(NEXT_PUBLIC_KAKAO_MAP_APP_KEY)가 설정되지 않아 지도를 표시하지 않습니다. 코스 편집은 그대로 가능합니다."}
+              </div>
+            )}
+          </main>
+          <DayPanel
+            day={c.current}
+            dayIndex={c.dayIndex}
+            dayCount={c.days.length}
+            timeSlots={c.timeSlots}
+            onPrev={() => c.setDayIndex(Math.max(0, c.dayIndex - 1))}
+            onNext={() => c.setDayIndex(Math.min(c.days.length - 1, c.dayIndex + 1))}
+            onDropPlace={onDropPlace}
+            onMove={onMove}
+            onRemove={c.removeSlot}
+          />
+        </div>
+      </div>
+    </DndProvider>
+  );
+}
+
+export default function CourseMakerPage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <CourseMaker />
+    </Suspense>
+  );
+}
