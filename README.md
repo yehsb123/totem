@@ -1,110 +1,77 @@
-<div align="center">
-
-<img src="totemFE/FE/public/TOTEM 로고.png" alt="Totem Logo" width="200" />
-
 # Totem
 
-**B2B SaaS Platform for Tour & Course Management**
+투어·코스 운영 B2B SaaS — 코스 설계(코스메이커), 투어 회차·좌석 관리, 일정 달력, 리뷰 수집, 지역 관광 통계 대시보드.
 
-[![Deploy](https://github.com/yehsb123/totem/actions/workflows/deploy.yml/badge.svg)](https://github.com/yehsb123/totem/actions/workflows/deploy.yml)
+| 앱 | 역할 | 기술 | 배포 |
+|---|---|---|---|
+| `apps/web` | 메인 사이트: 서비스 소개·가격·리소스, 로그인·회원가입 | Next.js 15 · React 19 · Tailwind 4 | Vercel |
+| `apps/console` | 로그인 후 기능 화면 6종 | Next.js 15 (정적 export) · react-dnd · Recharts · Kakao Maps | GitHub Actions → GitHub Pages |
+| `apps/api` | REST API | Express 5 · TypeScript · Mongoose(MongoDB) · zod · pino | 미정 (Dockerfile 준비) |
+| `packages/shared` | API 계약 (zod 스키마·타입·경로) + HTTP 클라이언트 | TypeScript · zod | web·console·api 가 함께 사용 |
 
-Next.js · Express · MongoDB · Tailwind CSS
-
-</div>
-
----
-
-## Overview
-
-Totem은 투어·코스 관리, 일정 스케줄링, 대시보드 시각화를 제공하는 B2B SaaS 플랫폼입니다.
-
-## Tech Stack
-
-| Layer | Stack |
-|-------|-------|
-| **Frontend** | Next.js 15 · React 19 · TypeScript · Tailwind CSS 4 |
-| **Backend** | Express 5 · Node.js · Mongoose (MongoDB) |
-| **Auth** | JWT · bcrypt |
-| **Visualization** | Recharts · D3.js · Three.js |
-| **UI Components** | Lucide Icons · FullCalendar · DnD Kit |
-| **Security** | Helmet · Rate Limiting · CORS |
-| **Deploy** | GitHub Pages (FE) · GitHub Actions CI/CD |
-
-## Project Structure
+## 구조
 
 ```
 totem/
-├── totemFE/
-│   ├── FE/                     # Main frontend (Next.js)
-│   │   └── src/app/
-│   │       ├── mainpage/       # Landing & service intro
-│   │       │   ├── pricing/    # Pricing plans
-│   │       │   └── resources/  # Resources
-│   │       └── toolpage/       # Core application
-│   │           ├── dashboard/  # Analytics dashboard
-│   │           ├── coursemaker/ # Course builder
-│   │           ├── tour/       # Tour management
-│   │           ├── schedule/   # Schedule calendar
-│   │           ├── review/     # Review system
-│   │           └── setting/    # User settings
-│   └── my-dashboard-app/      # Dashboard prototype
-│
-├── totemBE/                    # Backend API server
-│   ├── routes/
-│   │   ├── auth/               # Authentication
-│   │   ├── users/              # User management
-│   │   ├── tour/               # Tour endpoints
-│   │   ├── courses/            # Course endpoints
-│   │   └── plan/               # Plan endpoints
-│   ├── models/                 # Mongoose schemas
-│   ├── controller/             # Business logic
-│   └── middlewares/            # Error handling
-│
-└── .github/workflows/         # CI/CD pipeline
+├─ apps/
+│  ├─ api/
+│  │  ├─ src/
+│  │  │  ├─ config/env.ts        환경변수 정의·검증 (운영 필수값 없으면 기동 거부)
+│  │  │  ├─ db/models/           MongoDB 컬렉션 14종 (docs/DATABASE.md)
+│  │  │  ├─ db/serialize.ts      DB 문서 → API 응답 변환
+│  │  │  ├─ db/seed/             대시보드 통계·장소 샘플·데모 조직
+│  │  │  ├─ middlewares/         인증(requireAuth·requireRole)·에러
+│  │  │  ├─ modules/<도메인>/     auth·users·billing·places·maps·courses·tours·reviews·schedule·dashboard
+│  │  │  ├─ app.ts · server.ts
+│  │  └─ test/                   vitest + supertest (인메모리 MongoDB)
+│  ├─ web/src/app/               /, /pricing, /resources/*, /features/*, /auth/kakao/callback
+│  └─ console/src/
+│     ├─ app/(console)/          schedule · dashboard · coursemaker · tours · reviews · settings
+│     ├─ app/auth/callback/      메인에서 넘어온 로그인 인계 코드 교환
+│     ├─ components/             ConsoleShell(사이드바·헤더) · ui(모달·버튼·토스트)
+│     └─ lib/                    env · api(클라이언트) · session(인증 게이트) · format
+├─ packages/shared/src/          auth · users · billing · places · courses · tours · reviews · schedules · dashboard · routes · client
+├─ docs/                         AUDIT · BACKLOG · API · DATABASE · ENV · DEPLOY · WORKLOG
+└─ .github/workflows/            ci.yml · deploy-console.yml
 ```
 
-## Getting Started
+## 시작하기
 
-### Prerequisites
-
-- Node.js 20+
-- MongoDB
-
-### Backend
+Node 22 (`.nvmrc`). 모든 명령은 **레포 루트**에서.
 
 ```bash
-cd totemBE
-cp .env.example .env    # Configure your environment variables
 npm install
-npm run dev             # http://localhost:8000
+npm run dev:api        # http://localhost:8000/api/v1/health
+npm run dev:web        # http://localhost:3100
+npm run dev:console    # http://localhost:3200
 ```
 
-### Frontend
+- `apps/api/.env` 의 `MONGO_URI` 를 비워 두면 **인메모리 MongoDB + 데모 데이터**로 뜬다 → 데모 계정 `demo@totem.dev` / `demo1234`
+- 환경변수: 각 앱의 `.env.example` 복사 → 설명은 [`docs/ENV.md`](docs/ENV.md)
 
-```bash
-cd totemFE/FE
-npm install
-npm run dev             # http://localhost:3000
-```
+| 명령 | 내용 |
+|---|---|
+| `npm run typecheck` | 전 패키지 타입 검사 |
+| `npm run test` | API 테스트 |
+| `npm run build` | 전 앱 빌드 |
+| `npm run seed` | MONGO_URI DB 에 공용 데이터 시드 (`SEED_DEMO_PASSWORD` 있으면 데모 조직) |
 
-## API Endpoints
+## 문서
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `*` | `/auth/**` | 인증 (로그인/회원가입) |
-| `*` | `/users/**` | 사용자 관리 |
-| `*` | `/tour/**` | 투어 CRUD |
-| `*` | `/courses/**` | 코스 CRUD |
+| 문서 | 내용 |
+|---|---|
+| [docs/AUDIT.md](docs/AUDIT.md) | 재구성 전 소스 정합성 점검 결과 (보안·계약 불일치·로직 오류) |
+| [docs/BACKLOG.md](docs/BACKLOG.md) | 작업 백로그와 진행 상태 |
+| [docs/API.md](docs/API.md) | 엔드포인트 ↔ 화면 매핑, 응답·오류 형식, 로그인 흐름 |
+| [docs/DATABASE.md](docs/DATABASE.md) | 컬렉션 ↔ 화면, 필드·인덱스·규칙 |
+| [docs/ENV.md](docs/ENV.md) | 환경변수 전체 (어디에 두는지, 구 이름 대응표) |
+| [docs/DEPLOY.md](docs/DEPLOY.md) | Vercel·GitHub Pages·API 배포 설정, 롤백 |
 
-## Key Features
+## 개발 규칙
 
-- **🗺️ Tour Management** — 투어 생성·편집·관리
-- **📚 Course Builder** — 드래그 앤 드롭 기반 코스 제작
-- **📅 Schedule** — FullCalendar 기반 일정 관리
-- **📊 Dashboard** — Recharts·D3 기반 데이터 시각화
-- **💳 Pricing Plans** — 구독 플랜 관리
-- **🔐 Auth** — JWT 기반 인증 시스템
-
-## License
+- `dev` 에서 작업 → PR → `main` 머지 = 운영 배포. CI(타입·테스트·빌드) 통과 필수
+- 커밋은 Conventional Commits (`feat:` `fix:` `refactor:` `docs:` `ci:` `chore:`)
+- API 경로·필드는 `packages/shared` 에서만 정의한다
+- 비밀값은 커밋하지 않는다. `NEXT_PUBLIC_*` 에 비밀값을 넣지 않는다
 
 This project is private and proprietary.

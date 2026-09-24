@@ -35,7 +35,7 @@
 | API-080 | ✅ | 시드: 데모 조직·계정·라벨·장소·코스·투어·리뷰·결제·통계 |
 | API-090 | ✅ | 테스트: vitest + supertest + 인메모리 Mongo (인증·권한·조직 격리·코스 규칙) |
 
-## 2. 메인 사이트 (apps/web, Vercel) — 담당 S
+## 2. 메인 사이트 (apps/web, Vercel) — 담당 S → 작업 에이전트(격리 워크트리)가 수행 🔄
 
 | ID | 상태 | 내용 |
 |---|---|---|
@@ -47,29 +47,29 @@
 | WEB-006 | ⏳ | SEO: 페이지별 metadata, OG 이미지, favicon |
 | WEB-007 | ⏳ | Vercel: Root Directory `apps/web`, env 3종 등록 방법 문서화 |
 
-## 3. 콘솔 (apps/console, GitHub Pages) — 담당 S (WEB 이후)
+## 3. 콘솔 (apps/console, GitHub Pages) — 담당 M (서포트 세션 종료로 메인이 수행)
 
 | ID | 상태 | 내용 |
 |---|---|---|
-| CON-001 | ⏳ | 골격: root layout + `ConsoleShell`, 경로 `/schedule` `/dashboard` `/coursemaker` `/tours` `/reviews` `/settings`, `/` → `/schedule`, `/auth/callback`(handoff 교환), 인증 가드(토큰 없으면 `NEXT_PUBLIC_WEB_URL` 로), 헤더에 실제 사용자명·로그아웃 |
-| CON-002 | ⏳ | `src/lib/api.ts` 싱글톤 = `createApiClient({ baseUrl: NEXT_PUBLIC_API_BASE_URL, onUnauthorized })` · 구 `services/apiClient.ts`, 각 `*Api.ts`, axios 제거 |
-| CON-010 | ⏳ | 일정관리 → `api.schedule.*` (id 는 문자열, 색상은 `LabelColor` 키 → tailwind 매핑표), F11·F12 |
-| CON-020 | ⏳ | 대시보드 → `api.dashboard.*`, `dashboard/data/*` 삭제 |
-| CON-030 | ⏳ | 코스메이커 → `api.places.list`(검색·카테고리·정렬 연결), 편집은 로컬 상태 → `api.courses.create/update`, `?courseId=` 편집 모드, `DEFAULT_TIME_SLOTS`/`HOTEL_SLOT_INDEX`/`enumerateDates` 공용 사용, F1~F6 |
-| CON-040 | ⏳ | 투어관리 → `api.tours.*`, 상태·좌석 인라인 PATCH, 필터는 서버 쿼리, F7·F8 |
-| CON-050 | ⏳ | 리뷰관리 → `tours.list`(reviewStats) + `reviews.*`, CSV 가져오기 결과(성공/실패 행) 표시, PDF 는 `window.print()` 전용 스타일 |
-| CON-060 | ⏳ | 설정 → `users.me/updateMe/updateNotifications/changePassword/withdraw`, `billing.summary/payments` |
-| CON-070 | ⏳ | Material Icons 제거 → lucide-react 통일 |
-| CON-080 | ⏳ | basePath(`/totem`) 하위에서 모든 링크·이미지·라우팅 검증 (`next/link`, `next/image` 만 사용) |
+| CON-001 | ✅ | 골격: root layout + `ConsoleShell`, 경로 `/schedule` `/dashboard` `/coursemaker` `/tours` `/reviews` `/settings`, `/` → `/schedule`, `/auth/callback`(handoff 교환), 인증 가드(토큰 없으면 `NEXT_PUBLIC_WEB_URL` 로), 헤더에 실제 사용자명·로그아웃 |
+| CON-002 | ✅ | `src/lib/api.ts` 싱글톤 = `createApiClient({ baseUrl: NEXT_PUBLIC_API_BASE_URL, onUnauthorized })` · 구 `services/apiClient.ts`, 각 `*Api.ts`, axios 제거 |
+| CON-010 | ✅ | 일정관리 → `api.schedule.*` (id 는 문자열, 색상은 `LabelColor` 키 → tailwind 매핑표), F11·F12 |
+| CON-020 | ✅ | 대시보드 → `api.dashboard.*`, `dashboard/data/*` 삭제 |
+| CON-030 | ✅ | 코스메이커 → `api.places.list`(검색·카테고리·정렬 연결), 편집은 로컬 상태 → `api.courses.create/update`, `?courseId=` 편집 모드, `DEFAULT_TIME_SLOTS`/`HOTEL_SLOT_INDEX`/`enumerateDates` 공용 사용, F1~F6 |
+| CON-040 | ✅ | 투어관리 → `api.tours.*`, 상태·좌석 인라인 PATCH, 필터는 서버 쿼리, F7·F8 |
+| CON-050 | ✅ | 리뷰관리 → `tours.list`(reviewStats) + `reviews.*`, CSV 가져오기 결과(성공/실패 행) 표시, PDF 는 `window.print()` 전용 스타일 |
+| CON-060 | ✅ | 설정 → `users.me/updateMe/updateNotifications/changePassword/withdraw`, `billing.summary/payments` |
+| CON-070 | ✅ | Material Icons 제거 → lucide-react 통일 |
+| CON-080 | ✅ | basePath(`/totem`) 하위에서 모든 링크·이미지·라우팅 검증 (`next/link`, `next/image` 만 사용) |
 
 ## 4. 환경변수 · 배포 · 문서 — 담당 M
 
 | ID | 상태 | 내용 |
 |---|---|---|
-| ENV-001 | ⏳ | env 전수 정의 `docs/ENV.md` + 앱별 `.env.example` 3개 (S3, F6) |
-| OPS-001 | ⏳ | CI: PR/`dev` push 에 lint · typecheck · test · build |
-| OPS-002 | ⏳ | 콘솔 배포: `main` push → 정적 export → GitHub Pages (D1 제거) |
-| OPS-003 | ⏳ | 메인 배포: Vercel (Git 연동, Root `apps/web`) |
+| ENV-001 | ✅ | env 전수 정의 `docs/ENV.md` + 앱별 `.env.example` 3개 (S3, F6) |
+| OPS-001 | ✅ | CI: PR/`dev` push 에 lint · typecheck · test · build |
+| OPS-002 | ✅ | 콘솔 배포: `main` push → 정적 export → GitHub Pages (D1 제거) |
+| OPS-003 | 🔄 | 메인 배포: Vercel (Git 연동, Root `apps/web`) |
 | OPS-004 | ⛔ | **API 배포 대상 결정 필요** (Render / Fly.io / Railway / 사내 VM). 결정 전까지 Dockerfile + 헬스체크만 준비 |
-| DOC-001 | ⏳ | README 재작성, `docs/ARCHITECTURE.md`, `docs/API.md`, `docs/DATABASE.md`, `docs/DEPLOY.md` |
-| DOC-002 | ⏳ | 작업 로그 `docs/WORKLOG.md` (지시사항·결정 누적) |
+| DOC-001 | ✅ | README 재작성(구조 포함), `docs/API.md`, `docs/DATABASE.md`, `docs/DEPLOY.md` |
+| DOC-002 | ✅ | 작업 로그 `docs/WORKLOG.md` (지시사항·결정 누적) |
