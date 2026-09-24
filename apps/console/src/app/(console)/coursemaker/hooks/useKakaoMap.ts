@@ -118,5 +118,8 @@ export function useKakaoMap(day: EditorDay | null) {
     [map, clearFocus],
   );
 
-  return { containerRef, ready: !!map, init, focus, clearFocus, setRoutePath };
+  /** 숨겨져 있던 컨테이너(모바일 탭)가 보이게 되면 지도 크기를 다시 잰다 */
+  const relayout = useCallback(() => map?.relayout(), [map]);
+
+  return { containerRef, ready: !!map, init, focus, clearFocus, setRoutePath, relayout };
 }

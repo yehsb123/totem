@@ -195,3 +195,33 @@ test("회원가입 → 콘솔 진입 → 새 조직은 빈 데이터 + 기본 �
   await page.getByRole("button", { name: "결제 정보" }).click();
   await expect(page.getByText("무료 체험")).toBeVisible();
 });
+
+test.describe("모바일 375px", () => {
+  test.use({ viewport: { width: 375, height: 812 }, hasTouch: true });
+
+  test("코스메이커는 탭으로, 끌기 대신 [담기]로 장소를 담고 / 일정 상세는 달력 아래에 보인다", async ({ page }) => {
+    await page.goto(`${WEB}/?login=1&next=%2Fcoursemaker%2F`);
+    await page.getByPlaceholder("이메일을 입력해주세요").fill(DEMO.email);
+    await page.getByPlaceholder("비밀번호를 입력해주세요").fill(DEMO.password);
+    await page.locator('form button[type="submit"]').first().click();
+    await page.waitForURL(/localhost:3200\/coursemaker/);
+
+    // 가로 스크롤 없음
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+
+    await page.getByRole("button", { name: "성산일출봉 일정에 담기" }).click();
+    await expect(page.getByText(/1일차 07:00~08:00에 담았습니다/)).toBeVisible();
+    await page.getByRole("button", { name: "제주신라호텔 일정에 담기" }).click();
+    await expect(page.getByText(/1일차 \(숙소\)에 담았습니다/)).toBeVisible();
+    await page.getByRole("tab", { name: "일정 (2)" }).click();
+    await expect(page.getByText("성산일출봉").last()).toBeVisible();
+    await expect(page.getByRole("button", { name: "동선 계산 (2곳)" })).toBeVisible();
+
+    await page.goto(`${CONSOLE}/schedule/`);
+    await page.getByRole("button", { name: "다음 달" }).click();
+    await page.getByRole("button", { name: /제주 동부 2박 3일/ }).first().click();
+    // 데스크톱 사이드바(숨김)와 모바일 영역에 같은 내용이 있으므로 보이는 쪽만
+    await expect(page.getByText("연결된 투어 보기").filter({ visible: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "새 일정" }).filter({ visible: true })).toBeVisible();
+  });
+});

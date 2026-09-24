@@ -129,7 +129,7 @@ export default function ToursPage() {
           />
         ) : (
           <table className="w-full min-w-[960px] text-sm">
-            <thead className="bg-blue-50 text-slate-700">
+            <thead className="whitespace-nowrap bg-blue-50 text-slate-700">
               <tr>
                 <th className="p-3 text-left">투어명</th>
                 <th className="p-3">타입</th>
@@ -201,8 +201,8 @@ export default function ToursPage() {
         )}
       </div>
 
-      <div className="flex items-center justify-between">
-        <div className="flex gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap gap-2">
           <Link href="/coursemaker/" className={btn.primary}>
             <Plus className="h-4 w-4" /> 새 투어 만들기 (코스메이커)
           </Link>

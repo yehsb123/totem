@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Script from "next/script";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useCallback, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { MAX_COURSE_DAYS, NATIONS, NATION_LABELS, type CoursePlace, type Nation } from "@totem/shared";
@@ -24,6 +24,22 @@ function CourseMaker({ courseId }: { courseId: string | null }) {
   const map = useKakaoMap(c.current);
   const [saving, setSaving] = useState(false);
   const [myCourses, setMyCourses] = useState(false);
+  /** lg 미만(휴대폰·태블릿)에서는 세 칸을 탭으로 하나씩 보여준다 */
+  const [panel, setPanel] = useState<"places" | "map" | "day">("places");
+  const show = (key: typeof panel) => (panel === key ? "flex" : "hidden") + " lg:flex";
+  const { relayout } = map;
+  useEffect(() => {
+    if (panel === "map") requestAnimationFrame(relayout);
+  }, [panel, relayout]);
+
+  const onAdd = useCallback(
+    (p: CoursePlace) => {
+      const r = c.addPlace(p);
+      if ("error" in r) return toast.error(r.error);
+      toast.success(`${c.dayIndex + 1}일차 ${c.timeSlots[r.slotIndex]}에 담았습니다.`);
+    },
+    [c, toast],
+  );
 
   /** 저장 안 한 변경이 있으면 이동 전에 확인 */
   const leave = (href: string) => {
@@ -152,9 +168,26 @@ function CourseMaker({ courseId }: { courseId: string | null }) {
           </div>
         </div>
 
+        <div role="tablist" className="flex border-b border-slate-200 bg-white text-sm lg:hidden">
+          {([
+            ["places", "장소"],
+            ["map", "지도"],
+            ["day", `일정 (${c.placeCount})`],
+          ] as const).map(([key, label]) => (
+            <button
+              key={key}
+              role="tab"
+              aria-selected={panel === key}
+              onClick={() => setPanel(key)}
+              className={`flex-1 py-2.5 font-medium ${panel === key ? "border-b-2 border-blue-600 text-blue-700" : "text-slate-500"}`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
         <div className="flex min-h-0 flex-1">
-          <PlacePanel onPlaceClick={map.focus} />
-          <main className="relative flex-1 border-r border-slate-200 bg-blue-50">
+          <PlacePanel onPlaceClick={(p) => (map.focus(p), setPanel("map"))} onAdd={onAdd} className={show("places")} />
+          <main className={`relative flex-1 border-r border-slate-200 bg-blue-50 ${panel === "map" ? "block" : "hidden"} lg:block`}>
             <div ref={map.containerRef} className="h-full w-full" />
             {!map.ready && (
               <div className="absolute inset-0 flex items-center justify-center p-6 text-center text-sm text-slate-500">
@@ -173,6 +206,7 @@ function CourseMaker({ courseId }: { courseId: string | null }) {
             onMove={onMove}
             onRemove={c.removeSlot}
             onRoute={map.setRoutePath}
+            className={show("day")}
           />
         </div>
       </div>

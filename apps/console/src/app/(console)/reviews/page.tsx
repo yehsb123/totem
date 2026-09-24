@@ -113,7 +113,7 @@ export default function ReviewsPage() {
           <EmptyState text="투어가 없습니다. 투어관리에서 먼저 투어를 등록하세요." />
         ) : (
           <table className="w-full min-w-[720px] text-sm">
-            <thead className="bg-blue-50 text-slate-700">
+            <thead className="whitespace-nowrap bg-blue-50 text-slate-700">
               <tr>
                 <th className="p-3 text-left">투어명</th>
                 <th className="p-3">기간</th>
@@ -176,7 +176,7 @@ export default function ReviewsPage() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[760px] text-sm">
-                <thead className="bg-slate-50 text-slate-700">
+                <thead className="whitespace-nowrap bg-slate-50 text-slate-700">
                   <tr>
                     <th className="p-2">제출일</th>
                     <th className="p-2">작성자</th>

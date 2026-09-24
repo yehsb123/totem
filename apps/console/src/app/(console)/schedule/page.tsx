@@ -38,6 +38,51 @@ export default function SchedulePage() {
     }
   };
 
+  // 선택한 날짜의 일정 / 일정 상세 — 데스크톱은 오른쪽 사이드바, 좁은 화면은 달력 아래에 같은 내용
+  const sidePanel = (
+    <>
+        {detail ? (
+          <EventDetail
+            event={detail}
+            label={detail.labelId ? s.labelById.get(detail.labelId) : undefined}
+            onBack={() => setSelectedEvent(null)}
+            onEdit={() => setEventModal({ initial: detail, preset: null })}
+            onDelete={() => removeEvent(detail)}
+          />
+        ) : (
+          <>
+            <h4 className="mb-3 font-semibold text-slate-800">{selectedDate} 일정</h4>
+            {dayEvents.length === 0 ? (
+              <p className="text-sm text-slate-500">이 날짜에는 일정이 없습니다.</p>
+            ) : (
+              <ul className="space-y-2">
+                {dayEvents.map((e) => {
+                  const l = e.labelId ? s.labelById.get(e.labelId) : undefined;
+                  return (
+                    <li key={e.id}>
+                      <button className="w-full rounded-md border border-slate-200 p-3 text-left hover:bg-slate-50" onClick={() => setSelectedEvent(e)}>
+                        <div className="flex items-center gap-2">
+                          <span className={`h-2.5 w-2.5 rounded-full ${colorOf(l?.color).dot}`} />
+                          <span className="truncate text-sm font-medium">{e.name}</span>
+                        </div>
+                        <p className="mt-1 text-xs text-slate-500">
+                          {e.startDate} ~ {e.endDate}
+                          {e.manager && ` · ${e.manager}`}
+                        </p>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+            <button className={`${btn.secondary} mt-4 w-full`} onClick={() => setEventModal({ initial: null, preset: null })}>
+              <Plus className="h-4 w-4" /> 이 날짜에 일정 추가
+            </button>
+          </>
+        )}
+    </>
+  );
+
   return (
     <div className="flex h-full min-h-[calc(100vh-3.5rem)] flex-col">
       {/* 상단 도구 */}
@@ -72,9 +117,12 @@ export default function SchedulePage() {
             오늘
           </button>
         </div>
-        <div className="relative">
+        <button className={`${btn.primary} md:hidden`} onClick={() => setEventModal({ initial: null, preset: null })}>
+          <Plus className="h-4 w-4" /> 새 일정
+        </button>
+        <div className="relative w-full sm:w-auto">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-          <input className={`${inputBase} w-60 pl-9`} placeholder="일정·담당자·장소 검색" value={s.query} onChange={(e) => s.setQuery(e.target.value)} />
+          <input className={`${inputBase} w-full pl-9 sm:w-60`} placeholder="일정·담당자·장소 검색" value={s.query} onChange={(e) => s.setQuery(e.target.value)} />
         </div>
       </div>
 
@@ -143,49 +191,12 @@ export default function SchedulePage() {
                 }}
               />
             )}
+            <section className="border-t border-slate-200 bg-white p-4 lg:hidden">{sidePanel}</section>
           </main>
 
           {/* 오른쪽: 선택한 날짜 / 일정 상세 */}
           <aside className="hidden w-80 flex-shrink-0 overflow-y-auto border-l border-slate-200 bg-white p-4 lg:block">
-            {detail ? (
-              <EventDetail
-                event={detail}
-                label={detail.labelId ? s.labelById.get(detail.labelId) : undefined}
-                onBack={() => setSelectedEvent(null)}
-                onEdit={() => setEventModal({ initial: detail, preset: null })}
-                onDelete={() => removeEvent(detail)}
-              />
-            ) : (
-              <>
-                <h4 className="mb-3 font-semibold text-slate-800">{selectedDate} 일정</h4>
-                {dayEvents.length === 0 ? (
-                  <p className="text-sm text-slate-500">이 날짜에는 일정이 없습니다.</p>
-                ) : (
-                  <ul className="space-y-2">
-                    {dayEvents.map((e) => {
-                      const l = e.labelId ? s.labelById.get(e.labelId) : undefined;
-                      return (
-                        <li key={e.id}>
-                          <button className="w-full rounded-md border border-slate-200 p-3 text-left hover:bg-slate-50" onClick={() => setSelectedEvent(e)}>
-                            <div className="flex items-center gap-2">
-                              <span className={`h-2.5 w-2.5 rounded-full ${colorOf(l?.color).dot}`} />
-                              <span className="truncate text-sm font-medium">{e.name}</span>
-                            </div>
-                            <p className="mt-1 text-xs text-slate-500">
-                              {e.startDate} ~ {e.endDate}
-                              {e.manager && ` · ${e.manager}`}
-                            </p>
-                          </button>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
-                <button className={`${btn.secondary} mt-4 w-full`} onClick={() => setEventModal({ initial: null, preset: null })}>
-                  <Plus className="h-4 w-4" /> 이 날짜에 일정 추가
-                </button>
-              </>
-            )}
+            {sidePanel}
           </aside>
         </div>
       )}

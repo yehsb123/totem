@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { Plus } from "lucide-react";
 import { useDrag } from "react-dnd";
-import { ApiError, PLACE_CATEGORIES, PLACE_CATEGORY_LABELS, type LocalSearchItem, type Place, type PlaceCategory, type PlaceSort } from "@totem/shared";
+import { ApiError, PLACE_CATEGORIES, PLACE_CATEGORY_LABELS, type CoursePlace, type LocalSearchItem, type Place, type PlaceCategory, type PlaceSort } from "@totem/shared";
 import { inputClass } from "@/components/ui";
 import { api, errorMessage } from "@/lib/api";
 import { DND, snapshot, snapshotFromKakao, type DragPlace } from "../courseModel";
@@ -15,6 +16,26 @@ const SORTS: { value: PlaceSort; label: string }[] = [
 ];
 
 type MapPoint = { title: string; mapX: number; mapY: number };
+
+/** 목록의 "담기" 버튼 → 편집기의 addPlace */
+const AddPlaceContext = createContext<(p: CoursePlace) => void>(() => undefined);
+
+function AddButton({ place }: { place: CoursePlace }) {
+  const add = useContext(AddPlaceContext);
+  return (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation();
+        add(place);
+      }}
+      className="flex h-8 flex-shrink-0 items-center gap-0.5 rounded-md border border-blue-200 px-2 text-xs font-medium text-blue-700 hover:bg-blue-50"
+      aria-label={`${place.title} 일정에 담기`}
+    >
+      <Plus className="h-3.5 w-3.5" /> 담기
+    </button>
+  );
+}
 
 function PlaceItem({ place, onClick }: { place: Place; onClick: (p: MapPoint) => void }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -43,6 +64,7 @@ function PlaceItem({ place, onClick }: { place: Place; onClick: (p: MapPoint) =>
           {place.addr1}
         </div>
       </div>
+      <AddButton place={snapshot(place)} />
     </div>
   );
 }
@@ -118,7 +140,7 @@ function TourPlaceList({ onPlaceClick }: { onPlaceClick: (p: MapPoint) => void }
           </button>
         ))}
       </div>
-      <p className="mb-2 text-xs text-slate-500">{total.toLocaleString()}곳 · 끌어서 오른쪽 일정에 놓으세요</p>
+      <p className="mb-2 text-xs text-slate-500">{total.toLocaleString()}곳 · 끌어 놓거나 [담기]를 누르세요</p>
       <div className="-mr-2 flex-1 space-y-2 overflow-y-auto pr-2">
         {error && <p className="text-sm text-red-600">{error}</p>}
         {!error && !loading && items.length === 0 && <p className="mt-4 text-center text-sm text-slate-500">검색 결과가 없습니다.</p>}
@@ -148,14 +170,17 @@ function KakaoItem({ item, onClick }: { item: LocalSearchItem; onClick: (p: MapP
     <div
       ref={ref}
       onClick={() => onClick(place)}
-      className={`cursor-grab rounded-lg border bg-white p-2.5 shadow-sm ${isDragging ? "border-dashed border-blue-400 opacity-50" : "border-slate-200 hover:border-blue-300"}`}
+      className={`flex cursor-grab items-center gap-2 rounded-lg border bg-white p-2.5 shadow-sm ${isDragging ? "border-dashed border-blue-400 opacity-50" : "border-slate-200 hover:border-blue-300"}`}
     >
-      <div className="truncate text-sm font-semibold text-slate-800">{item.name}</div>
-      <div className="truncate text-xs text-slate-500">
-        <span className="mr-1 rounded bg-slate-100 px-1 text-slate-600">{PLACE_CATEGORY_LABELS[item.category]}</span>
-        {item.roadAddress ?? item.address}
+      <div className="min-w-0 flex-1">
+        <div className="truncate text-sm font-semibold text-slate-800">{item.name}</div>
+        <div className="truncate text-xs text-slate-500">
+          <span className="mr-1 rounded bg-slate-100 px-1 text-slate-600">{PLACE_CATEGORY_LABELS[item.category]}</span>
+          {item.roadAddress ?? item.address}
+        </div>
+        <div className="truncate text-[11px] text-slate-400">{item.categoryName}</div>
       </div>
-      <div className="truncate text-[11px] text-slate-400">{item.categoryName}</div>
+      <AddButton place={place} />
     </div>
   );
 }
@@ -206,7 +231,7 @@ function KakaoSearchList({ onPlaceClick }: { onPlaceClick: (p: MapPoint) => void
           검색
         </button>
       </form>
-      <p className="mb-2 text-xs text-slate-500">카카오 지도 검색 결과 · 끌어서 일정에 놓으세요</p>
+      <p className="mb-2 text-xs text-slate-500">카카오 지도 검색 결과 · 끌어 놓거나 [담기]를 누르세요</p>
       <div className="-mr-2 flex-1 space-y-2 overflow-y-auto pr-2">
         {error && <p className="text-sm text-red-600">{error}</p>}
         {loading && <p className="mt-4 text-center text-sm text-slate-500">검색 중…</p>}
@@ -222,10 +247,11 @@ const TABS = [
   { key: "kakao", label: "카카오 검색" },
 ] as const;
 
-export default function PlacePanel({ onPlaceClick }: { onPlaceClick: (p: MapPoint) => void }) {
+export default function PlacePanel({ onPlaceClick, onAdd, className = "" }: { onPlaceClick: (p: MapPoint) => void; onAdd: (p: CoursePlace) => void; className?: string }) {
   const [tab, setTab] = useState<(typeof TABS)[number]["key"]>("tour");
   return (
-    <aside className="flex w-[290px] flex-shrink-0 flex-col border-r border-slate-200 bg-white p-4">
+    <AddPlaceContext.Provider value={onAdd}>
+    <aside className={`w-full flex-shrink-0 flex-col border-r border-slate-200 bg-white p-4 lg:w-[290px] ${className}`}>
       <div className="mb-3 flex items-center justify-between">
         <h3 className="text-base font-bold text-slate-900">장소 선택</h3>
         <div role="tablist" className="flex rounded-md bg-slate-100 p-0.5 text-xs">
@@ -250,5 +276,6 @@ export default function PlacePanel({ onPlaceClick }: { onPlaceClick: (p: MapPoin
         <KakaoSearchList onPlaceClick={onPlaceClick} />
       </div>
     </aside>
+    </AddPlaceContext.Provider>
   );
 }

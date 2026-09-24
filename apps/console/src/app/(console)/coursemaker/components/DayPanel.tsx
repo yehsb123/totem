@@ -79,7 +79,9 @@ export default function DayPanel({
   onMove,
   onRemove,
   onRoute,
+  className = "",
 }: {
+  className?: string;
   onRoute: (path: [number, number][] | null) => void;
   day: EditorDay | null;
   dayIndex: number;
@@ -92,7 +94,7 @@ export default function DayPanel({
   onRemove: (slotIndex: number) => void;
 }) {
   return (
-    <aside className="flex w-[320px] flex-shrink-0 flex-col bg-white p-4">
+    <aside className={`w-full flex-shrink-0 flex-col bg-white p-4 lg:w-[320px] ${className}`}>
       <div className="mb-3 flex items-center justify-between">
         <h3 className="text-base font-bold text-slate-900">{day ? `${dayIndex + 1}일차 · ${day.date}` : "기간을 선택하세요"}</h3>
         {dayCount > 1 && (

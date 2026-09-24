@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { createCourseRequest, type Course, type CoursePlace, type Nation } from "@totem/shared";
 import { api, errorMessage } from "@/lib/api";
 import { today } from "@/lib/format";
-import { TIME_SLOTS, fromCourse, placementError, resizeDays, toRequestDays, type EditorDay } from "../courseModel";
+import { HOTEL_SLOT_INDEX, TIME_SLOTS, fromCourse, placementError, resizeDays, toRequestDays, type EditorDay } from "../courseModel";
 
 export interface TourOptions {
   enabled: boolean;
@@ -110,6 +110,22 @@ export function useCourseEditor(courseId: string | null) {
     [mutateDay],
   );
 
+  /**
+   * 끌기 없이 담기 — 숙소는 숙소 칸, 그 외는 가장 이른 빈 시간대.
+   * 터치 기기에서는 HTML5 드래그가 동작하지 않아 이 방법으로만 담을 수 있다.
+   */
+  const addPlace = useCallback(
+    (place: CoursePlace): { error: string } | { slotIndex: number } => {
+      const day = days[dayIndex];
+      if (!day) return { error: "먼저 코스 기간을 선택해주세요." };
+      const target = place.category === "hotel" ? (day.slots[HOTEL_SLOT_INDEX] ? -1 : HOTEL_SLOT_INDEX) : day.slots.findIndex((p, i) => i !== HOTEL_SLOT_INDEX && !p);
+      if (target < 0) return { error: place.category === "hotel" ? "이 날 숙소 칸이 이미 차 있습니다." : "이 날 빈 시간대가 없습니다." };
+      const err = dropPlace(target, place);
+      return err ? { error: err } : { slotIndex: target };
+    },
+    [days, dayIndex, dropPlace],
+  );
+
   const removeSlot = useCallback((slotIndex: number) => mutateDay((slots) => ((slots[slotIndex] = null), slots)), [mutateDay]);
 
   const buildRequest = () => ({
@@ -173,6 +189,7 @@ export function useCourseEditor(courseId: string | null) {
     tour,
     setTour,
     dropPlace,
+    addPlace,
     moveSlot,
     removeSlot,
     placeCount,
