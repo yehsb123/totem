@@ -5,7 +5,11 @@ import { env } from "./env";
 export function redirectToLogin() {
   if (typeof window === "undefined") return;
   const back = window.location.pathname + window.location.search;
-  window.location.href = `${env.webUrl}/?login=1&next=${encodeURIComponent(back)}`;
+  // 메인 사이트는 다른 출처라 절대 주소로 이동 (Next 라우터 대상 아님)
+  const url = new URL("/", env.webUrl);
+  url.searchParams.set("login", "1");
+  url.searchParams.set("next", back);
+  window.location.assign(url.href);
 }
 
 export const api = createApiClient({

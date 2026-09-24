@@ -1,7 +1,7 @@
 "use client";
 
 import { Bell, CreditCard, UserCircle } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   PAYMENT_STATUS_LABELS,
   PLAN_TIER_LABELS,
@@ -141,7 +141,8 @@ function PasswordSection() {
       toast.success("비밀번호를 변경했습니다. 다시 로그인해주세요.");
       // 서버가 모든 세션을 폐기했으므로 다시 로그인
       await api.auth.logout();
-      setTimeout(() => (window.location.href = `${env.webUrl}/?login=1`), 1200);
+      // 메인 사이트는 다른 출처(도메인)라 Next 라우터가 아니라 절대 주소로 이동한다
+      setTimeout(() => window.location.assign(new URL("/?login=1", env.webUrl).href), 1200);
     } catch (e) {
       const fe = fieldErrors(e);
       setErrors(Object.keys(fe).length ? fe : { _: errorMessage(e) });
@@ -184,7 +185,7 @@ function WithdrawSection({ hasPassword }: { hasPassword: boolean }) {
     setError(null);
     try {
       await api.users.withdraw({ password: hasPassword ? password : undefined, confirm: confirm as "탈퇴합니다" });
-      window.location.href = env.webUrl;
+      window.location.assign(new URL("/", env.webUrl).href);
     } catch (e) {
       setError(errorMessage(e));
     } finally {
@@ -217,6 +218,41 @@ function WithdrawSection({ hasPassword }: { hasPassword: boolean }) {
   );
 }
 
+/** 알림 설정 한 줄 (모듈 수준 컴포넌트 — 부모 안에서 정의하면 렌더마다 다시 마운트된다) */
+function NotificationRow({
+  k,
+  label,
+  desc,
+  checked,
+  busy,
+  onToggle,
+}: {
+  k: "email" | "push";
+  label: string;
+  desc: string;
+  checked: boolean;
+  busy: boolean;
+  onToggle: (k: "email" | "push") => void;
+}) {
+  return (
+    <div className="flex items-center justify-between border-b border-slate-100 py-4 last:border-0">
+      <div>
+        <div className="font-medium text-slate-800">{label}</div>
+        <div className="text-sm text-slate-500">{desc}</div>
+      </div>
+      <button
+        role="switch"
+        aria-checked={checked}
+        disabled={busy}
+        onClick={() => onToggle(k)}
+        className={`relative h-6 w-11 rounded-full transition-colors ${checked ? "bg-blue-600" : "bg-slate-300"}`}
+      >
+        <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${checked ? "left-[22px]" : "left-0.5"}`} />
+      </button>
+    </div>
+  );
+}
+
 function NotificationsTab() {
   const { user, setUser } = useSession();
   const toast = useToast();
@@ -233,30 +269,13 @@ function NotificationsTab() {
     }
   };
 
-  const Row = ({ k, label, desc }: { k: "email" | "push"; label: string; desc: string }) => (
-    <div className="flex items-center justify-between border-b border-slate-100 py-4 last:border-0">
-      <div>
-        <div className="font-medium text-slate-800">{label}</div>
-        <div className="text-sm text-slate-500">{desc}</div>
-      </div>
-      <button
-        role="switch"
-        aria-checked={user.notifications[k]}
-        disabled={busy === k}
-        onClick={() => toggle(k)}
-        className={`relative h-6 w-11 rounded-full transition-colors ${user.notifications[k] ? "bg-blue-600" : "bg-slate-300"}`}
-      >
-        <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${user.notifications[k] ? "left-[22px]" : "left-0.5"}`} />
-      </button>
-    </div>
-  );
 
   return (
     <div>
       <h2 className="mb-6 text-2xl font-semibold text-slate-800">알림 설정</h2>
       <Section title="알림 수신">
-        <Row k="email" label="이메일 알림" desc="투어 일정 변경·리뷰 등록 소식을 이메일로 받습니다." />
-        <Row k="push" label="푸시 알림" desc="브라우저 알림으로 받습니다." />
+        <NotificationRow k="email" label="이메일 알림" desc="투어 일정 변경·리뷰 등록 소식을 이메일로 받습니다." checked={user.notifications.email} busy={busy === "email"} onToggle={toggle} />
+        <NotificationRow k="push" label="푸시 알림" desc="브라우저 알림으로 받습니다." checked={user.notifications.push} busy={busy === "push"} onToggle={toggle} />
         <p className="mt-2 text-xs text-slate-500">변경 즉시 저장됩니다.</p>
       </Section>
     </div>
@@ -268,19 +287,24 @@ function BillingTab() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
-    setError(null);
-    try {
-      const [s, p] = await Promise.all([api.billing.summary(), api.billing.payments({ limit: 24 })]);
-      setSummary(s);
-      setPayments(p.items);
-    } catch (e) {
-      setError(errorMessage(e));
-    }
-  }, []);
+  const [retry, setRetry] = useState(0);
   useEffect(() => {
-    void load();
-  }, [load]);
+    let cancelled = false;
+    Promise.all([api.billing.summary(), api.billing.payments({ limit: 24 })])
+      .then(([sum, pay]) => {
+        if (cancelled) return;
+        setSummary(sum);
+        setPayments(pay.items);
+      })
+      .catch((e) => !cancelled && setError(errorMessage(e)));
+    return () => {
+      cancelled = true;
+    };
+  }, [retry]);
+  const load = () => {
+    setError(null);
+    setRetry((n) => n + 1);
+  };
 
   if (error) return <ErrorState message={error} onRetry={load} />;
   if (!summary) return <LoadingState />;

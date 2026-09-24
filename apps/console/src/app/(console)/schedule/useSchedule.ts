@@ -19,8 +19,10 @@ export function useSchedule() {
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [labels, setLabels] = useState<ScheduleLabel[]>([]);
   const [events, setEvents] = useState<ScheduleEvent[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // 로딩·오류는 "어느 조회(기간·검색어)에 대한 결과인지" 로 판단한다 — effect 안에서 직접 켜고 끄지 않음
+  const [loadedKey, setLoadedKey] = useState<string | null>(null);
+  const [failure, setFailure] = useState<{ key: string; message: string } | null>(null);
+  const [retry, setRetry] = useState(0);
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQuery(query.trim()), 250);
@@ -36,21 +38,26 @@ export function useSchedule() {
     setEvents(await api.schedule.events({ ...range, q: debouncedQuery || undefined }));
   }, [range, debouncedQuery]);
 
-  const reload = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      await Promise.all([loadLabels(), loadEvents()]);
-    } catch (e) {
-      setError(errorMessage(e));
-    } finally {
-      setLoading(false);
-    }
-  }, [loadLabels, loadEvents]);
-
+  const queryKey = `${range.from}|${range.to}|${debouncedQuery}|${retry}`;
   useEffect(() => {
-    void reload();
-  }, [reload]);
+    let cancelled = false;
+    Promise.all([api.schedule.labels(), api.schedule.events({ ...range, q: debouncedQuery || undefined })])
+      .then(([l, e]) => {
+        if (cancelled) return;
+        setLabels(l);
+        setEvents(e);
+        setLoadedKey(queryKey);
+      })
+      .catch((e) => !cancelled && setFailure({ key: queryKey, message: errorMessage(e) }));
+    return () => {
+      cancelled = true;
+    };
+  }, [queryKey, range, debouncedQuery]);
+
+  const error = failure?.key === queryKey ? failure.message : null;
+  const loading = loadedKey !== queryKey && !error;
+  /** 오류 화면의 [다시 시도] — 이벤트 핸들러에서 조회 키를 바꿔 다시 불러온다 */
+  const reload = useCallback(() => setRetry((n) => n + 1), []);
 
   const labelById = useMemo(() => new Map(labels.map((l) => [l.id, l])), [labels]);
 

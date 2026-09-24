@@ -1,7 +1,7 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { DashboardOverview, MonthlyTourismStats } from "@totem/shared";
 import { EmptyState, ErrorState, LoadingState, inputBase } from "@/components/ui";
 import { api, errorMessage } from "@/lib/api";
@@ -19,37 +19,48 @@ export default function DashboardPage() {
   const [tab, setTab] = useState(menuItems[0].label);
   const [stats, setStats] = useState<MonthlyTourismStats[] | null>(null);
   const [month, setMonth] = useState<string>("");
-  const [overview, setOverview] = useState<DashboardOverview | null>(null);
+  // 종합 카드는 "어느 달의 것인지" 와 함께 둔다 — 달을 바꾸면 비우지 않아도 이전 달 카드가 보이지 않는다
+  const [overview, setOverview] = useState<{ month: string; data: DashboardOverview } | null>(null);
   const [error, setError] = useState<string | null>(null);
-
-  const loadStats = useCallback(async () => {
-    setError(null);
-    try {
-      const all = await api.dashboard.stats();
-      setStats(all);
-      // 기본값: 데이터가 있는 가장 최근 달 (구 버전은 2025-06 고정)
-      setMonth((m) => m || all.at(-1)?.month || "");
-    } catch (e) {
-      setError(errorMessage(e));
-    }
-  }, []);
+  const [retry, setRetry] = useState(0);
 
   useEffect(() => {
-    void loadStats();
-  }, [loadStats]);
+    let cancelled = false;
+    api.dashboard
+      .stats()
+      .then((all) => {
+        if (cancelled) return;
+        setStats(all);
+        // 기본값: 데이터가 있는 가장 최근 달 (구 버전은 2025-06 고정)
+        setMonth((m) => m || all.at(-1)?.month || "");
+      })
+      .catch((e) => !cancelled && setError(errorMessage(e)));
+    return () => {
+      cancelled = true;
+    };
+  }, [retry]);
 
   useEffect(() => {
     if (!month) return;
-    setOverview(null);
+    let cancelled = false;
     api.dashboard
       .overview({ month })
-      .then(setOverview)
-      .catch((e) => setError(errorMessage(e)));
+      .then((data) => !cancelled && setOverview({ month, data }))
+      .catch((e) => !cancelled && setError(errorMessage(e)));
+    return () => {
+      cancelled = true;
+    };
   }, [month]);
+
+  const currentOverview = overview?.month === month ? overview.data : null;
+  const retryLoad = () => {
+    setError(null);
+    setRetry((n) => n + 1);
+  };
 
   const data = useMemo(() => (stats ? buildDashboardData(stats) : null), [stats]);
 
-  if (error) return <ErrorState message={error} onRetry={loadStats} />;
+  if (error) return <ErrorState message={error} onRetry={retryLoad} />;
   if (!data) return <LoadingState />;
   if (data.months.length === 0) return <EmptyState text="관광 통계 데이터가 없습니다. API 서버에서 npm run seed 를 실행해주세요." />;
 
@@ -72,7 +83,7 @@ export default function DashboardPage() {
       case "국가별 관광 방문객 수":
         return <CountryTourismRatio selectedMonth={month} />;
       default:
-        return overview ? <ComprehensiveDashboard summaryMetrics={overview} selectedMonth={month} /> : <LoadingState />;
+        return currentOverview ? <ComprehensiveDashboard summaryMetrics={currentOverview} selectedMonth={month} /> : <LoadingState />;
     }
   };
 

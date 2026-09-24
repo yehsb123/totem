@@ -53,6 +53,9 @@ export function dayRoutePoints(day: EditorDay): { x: number; y: number; name: st
   return [...stops, ...(hotel ? [hotel] : [])].map((p) => ({ x: p.mapX, y: p.mapY, name: p.title }));
 }
 
+/** 동선 계산 결과가 어느 방문 목록 기준인지 식별 — 목록이 바뀌면 결과는 자동으로 무효 */
+export const routeSignature = (points: { x: number; y: number }[]) => points.map((p) => `${p.x},${p.y}`).join("|");
+
 const emptySlots = (n: number) => Array<CoursePlace | null>(n).fill(null);
 
 /** 기간이 바뀌면 날짜별로 기존 편집 내용을 보존하며 일차 배열을 다시 만든다 */

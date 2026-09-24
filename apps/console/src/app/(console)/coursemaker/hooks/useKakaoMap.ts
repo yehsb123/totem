@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { HOTEL_SLOT_INDEX, type EditorDay } from "../courseModel";
+import { HOTEL_SLOT_INDEX, dayRoutePoints, routeSignature, type EditorDay } from "../courseModel";
 
 /* eslint-disable @typescript-eslint/no-explicit-any -- Kakao 지도 SDK 는 타입 정의를 제공하지 않는다 */
 declare global {
@@ -35,7 +35,9 @@ export function useKakaoMap(day: EditorDay | null) {
   const polyline = useRef<any>(null);
   const focusMarker = useRef<{ marker: any; info: any } | null>(null);
   const routeLine = useRef<any>(null);
-  const [routePath, setRoutePath] = useState<[number, number][] | null>(null);
+  const [route, setRoutePath] = useState<{ signature: string; path: [number, number][] } | null>(null);
+  // 일정이 바뀌어 계산 당시와 방문 목록이 다르면 도로 경로를 그리지 않는다 (지우는 effect 불필요)
+  const routePath = route && day && route.signature === routeSignature(dayRoutePoints(day)) ? route.path : null;
 
   const init = useCallback(() => {
     const kakao = window.kakao;
