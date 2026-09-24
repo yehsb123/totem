@@ -32,3 +32,6 @@ Thumbs.db
 /FE/
 /totemFE/
 /totemBE/
+
+# Claude Code 작업 워크트리 (로컬 전용)
+/.claude/worktrees/
