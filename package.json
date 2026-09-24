@@ -10,6 +10,7 @@
     "packages/*"
   ],
   "scripts": {
+    "dev": "concurrently -k -n api,web,console -c blue,green,magenta \"npm run dev -w @totem/api\" \"npm run dev -w @totem/web\" \"npm run dev -w @totem/console\"",
     "dev:api": "npm run dev -w @totem/api",
     "dev:web": "npm run dev -w @totem/web",
     "dev:console": "npm run dev -w @totem/console",
@@ -18,5 +19,8 @@
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "seed": "npm run seed -w @totem/api"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.4"
   }
 }
