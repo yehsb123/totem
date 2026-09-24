@@ -19,21 +19,21 @@
 
 | ID | 상태 | 내용 |
 |---|---|---|
-| API-010 | ⏳ | 서버 골격: env 검증(zod, 운영에서 누락 시 기동 거부), pino 로거, 응답 봉투 `{data,meta}`/`{error}`, 검증 미들웨어, CORS 다중 origin, rate limit, 404/에러 핸들러 |
-| API-011 | ⏳ | DB 연결: 실패 시 기동 중단, `MONGO_URI` 없으면 개발용 인메모리 Mongo 자동 기동 + 시드 |
-| API-020 | ⏳ | Mongoose 모델 13종 + 인덱스 (`docs/DATABASE.md`) |
-| API-030 | ⏳ | 인증: signup · email-check · login · refresh(회전) · logout(세션 폐기) · handoff(web→console) · find-email · kakao |
-| API-031 | ⏳ | 사용자: `/users/me` 조회·수정, 알림설정, 비밀번호 변경, 탈퇴(soft delete) |
-| API-032 | ⏳ | 결제정보: 구독 요약, 결제 내역 |
-| API-040 | ⏳ | 장소: 목록(검색·카테고리·정렬)·상세·TourAPI 동기화(관리자) |
-| API-041 | ⏳ | 지도 프록시: 카카오 로컬 검색, 카카오모빌리티 길찾기 (키는 서버에만) |
-| API-050 | ⏳ | 코스: CRUD, 코스 규칙 검증, 저장 시 투어 동시 생성 옵션 |
-| API-051 | ⏳ | 투어: CRUD, 타입 목록, 목록에 리뷰 통계 포함 |
-| API-052 | ⏳ | 리뷰: 투어별 목록·등록·삭제, CSV URL 가져오기(허용 호스트 제한) |
-| API-060 | ⏳ | 일정: 라벨 CRUD(사용 중 삭제 409 / 재지정), 일정 CRUD(기간·검색) |
-| API-070 | ⏳ | 대시보드: 월 목록·종합 카드·월별 통계 (기존 FE 정적 데이터를 DB 시드로 이관) |
-| API-080 | ⏳ | 시드: 데모 조직·계정·라벨·장소·코스·투어·리뷰·결제·통계 |
-| API-090 | ⏳ | 테스트: vitest + supertest + 인메모리 Mongo (인증·권한·조직 격리·코스 규칙) |
+| API-010 | ✅ | 서버 골격: env 검증(zod, 운영에서 누락 시 기동 거부), pino 로거, 응답 봉투 `{data,meta}`/`{error}`, 검증 미들웨어, CORS 다중 origin, rate limit, 404/에러 핸들러 |
+| API-011 | ✅ | DB 연결: 실패 시 기동 중단, `MONGO_URI` 없으면 개발용 인메모리 Mongo 자동 기동 + 시드 |
+| API-020 | ✅ | Mongoose 모델 13종 + 인덱스 (`docs/DATABASE.md`) |
+| API-030 | ✅ | 인증: signup · email-check · login · refresh(회전) · logout(세션 폐기) · handoff(web→console) · find-email · kakao |
+| API-031 | ✅ | 사용자: `/users/me` 조회·수정, 알림설정, 비밀번호 변경, 탈퇴(soft delete) |
+| API-032 | ✅ | 결제정보: 구독 요약, 결제 내역 |
+| API-040 | ✅ | 장소: 목록(검색·카테고리·정렬)·상세·TourAPI 동기화(관리자) |
+| API-041 | ✅ | 지도 프록시: 카카오 로컬 검색, 카카오모빌리티 길찾기 (키는 서버에만) |
+| API-050 | ✅ | 코스: CRUD, 코스 규칙 검증, 저장 시 투어 동시 생성 옵션 |
+| API-051 | ✅ | 투어: CRUD, 타입 목록, 목록에 리뷰 통계 포함 |
+| API-052 | ✅ | 리뷰: 투어별 목록·등록·삭제, CSV URL 가져오기(허용 호스트 제한) |
+| API-060 | ✅ | 일정: 라벨 CRUD(사용 중 삭제 409 / 재지정), 일정 CRUD(기간·검색) |
+| API-070 | ✅ | 대시보드: 월 목록·종합 카드·월별 통계 (기존 FE 정적 데이터를 DB 시드로 이관) |
+| API-080 | ✅ | 시드: 데모 조직·계정·라벨·장소·코스·투어·리뷰·결제·통계 |
+| API-090 | ✅ | 테스트: vitest + supertest + 인메모리 Mongo (인증·권한·조직 격리·코스 규칙) |
 
 ## 2. 메인 사이트 (apps/web, Vercel) — 담당 S
 
