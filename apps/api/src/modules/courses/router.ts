@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { Types } from "mongoose";
 import { HOTEL_SLOT_INDEX, ROUTES, courseListQuery, createCourseRequest, updateCourseRequest, type CourseDay } from "@totem/shared";
-import { escapeRegex, noContent, notFound, ok, okPaged, parse } from "../../lib/http";
+import { conflict, escapeRegex, noContent, notFound, ok, okPaged, parse } from "../../lib/http";
 import { Course, Place, ScheduleEvent, ScheduleLabel, Tour } from "../../db/models";
 import { toCourse, toCourseSummary, toTour } from "../../db/serialize";
 import { authOf, objectIdParam, requireAuth } from "../../middlewares/auth";
@@ -36,7 +36,12 @@ coursesRouter.get(ROUTES.courses.list, async (req, res) => {
     Course.find(filter).sort({ createdAt: -1 }).skip((q.page - 1) * q.limit).limit(q.limit).lean(),
     Course.countDocuments(filter),
   ]);
-  okPaged(res, items.map(toCourseSummary), { page: q.page, limit: q.limit, total });
+  const counts = await Tour.aggregate<{ _id: Types.ObjectId; n: number }>([
+    { $match: { organizationId: filter.organizationId, courseId: { $in: items.map((c) => c._id) }, ...alive } },
+    { $group: { _id: "$courseId", n: { $sum: 1 } } },
+  ]);
+  const byId = new Map(counts.map((c) => [String(c._id), c.n]));
+  okPaged(res, items.map((c) => toCourseSummary(c, byId.get(String(c._id)) ?? 0)), { page: q.page, limit: q.limit, total });
 });
 
 coursesRouter.get(ROUTES.courses.detail(":id"), async (req, res) => {
@@ -105,12 +110,16 @@ coursesRouter.put(ROUTES.courses.detail(":id"), async (req, res) => {
   ok(res, toCourse(course, tours.map((t) => t._id)));
 });
 
-/** 삭제 표시만 한다 — 이 코스로 만든 투어·리뷰 기록은 그대로 남는다 */
+/**
+ * 삭제 표시(soft delete). 이 코스로 만든 투어가 남아 있으면 409 —
+ * 투어의 코스·일정표 링크가 깨지지 않도록 투어를 먼저 정리하게 한다 (라벨 삭제와 같은 규칙).
+ */
 coursesRouter.delete(ROUTES.courses.detail(":id"), async (req, res) => {
-  const r = await Course.updateOne(
-    { _id: objectIdParam(req.params.id, "코스"), organizationId: authOf(req).organizationId, ...alive },
-    { $set: { deletedAt: new Date() } },
-  );
-  if (r.matchedCount === 0) throw notFound("코스");
+  const { organizationId } = authOf(req);
+  const id = objectIdParam(req.params.id, "코스");
+  if (!(await Course.exists({ _id: id, organizationId, ...alive }))) throw notFound("코스");
+  const tourCount = await Tour.countDocuments({ organizationId, courseId: id, ...alive });
+  if (tourCount > 0) throw conflict(`이 코스로 만든 투어가 ${tourCount}건 있습니다. 투어관리에서 투어를 먼저 삭제해주세요.`, { tourCount });
+  await Course.updateOne({ _id: id, organizationId }, { $set: { deletedAt: new Date() } });
   noContent(res);
 });

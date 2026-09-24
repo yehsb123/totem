@@ -173,6 +173,8 @@ export type CourseSummary = Pick<
   "id" | "title" | "startDate" | "endDate" | "pickupLocation" | "createdAt" | "updatedAt"
 > & {
   placeCount: number;
+  /** 이 코스로 만든 (삭제되지 않은) 투어 수 — 0 이어야 코스를 삭제할 수 있다 */
+  tourCount: number;
 };
 
 export const courseListQuery = paginationQuery.extend({

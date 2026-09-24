@@ -122,13 +122,14 @@ export const toCourse = (c: any, tourIds: Id[] = []): Course => ({
   tourIds: tourIds.map(id),
 });
 
-export const toCourseSummary = (c: any): CourseSummary => ({
+export const toCourseSummary = (c: any, tourCount = 0): CourseSummary => ({
   ...base(c),
   title: c.title,
   startDate: c.startDate,
   endDate: c.endDate,
   pickupLocation: c.pickupLocation ?? "",
   placeCount: (c.days ?? []).reduce((n: number, d: any) => n + (d.slots?.length ?? 0), 0),
+  tourCount,
 });
 
 export const toTour = (t: any): TourDto => {

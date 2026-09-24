@@ -78,6 +78,23 @@ describe("코스메이커 규칙", () => {
   });
 });
 
+describe("코스 삭제", () => {
+  it("연결된 투어가 있으면 409, 투어를 지우면 삭제되고 목록·상세에서 사라진다", async () => {
+    const api = authed((await signup()).token);
+    const { spot } = await pickPlaces(api);
+    const r = await api.post("/courses", course([{ dayNumber: 1, date: "2026-10-01", slots: [{ slotIndex: 2, place: spot }] }], { endDate: "2026-10-01", tour: { capacity: 5 } }));
+    const courseId = r.body.data.course.id;
+    expect((await api.get("/courses")).body.data[0]).toMatchObject({ id: courseId, tourCount: 1, placeCount: 1 });
+    const del1 = await api.delete(`/courses/${courseId}`);
+    expect(del1.status).toBe(409);
+    expect(del1.body.error.details.tourCount).toBe(1);
+    await api.delete(`/tours/${r.body.data.tour.id}`);
+    expect((await api.delete(`/courses/${courseId}`)).status).toBe(204);
+    expect((await api.get(`/courses/${courseId}`)).status).toBe(404);
+    expect((await api.get("/courses")).body.data).toHaveLength(0);
+  });
+});
+
 describe("조직 격리", () => {
   it("다른 조직의 투어는 보이지도, 수정되지도 않는다", async () => {
     const a = authed((await signup()).token);

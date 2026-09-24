@@ -72,8 +72,8 @@
 | POST | `/places/sync` | (owner·admin) TourAPI 에서 지역 전체 동기화 |
 | GET | `/maps/local-search?query&x&y` | 카카오 키워드 검색 프록시 |
 | POST | `/maps/directions` | 카카오모빌리티 경유지 길찾기 프록시 |
-| GET·POST | `/courses` | 목록 / "코스 생성 완료" (`tour` 옵션 시 **투어 + 일정관리 일정("투어" 라벨)** 동시 생성) |
-| GET·PUT·DELETE | `/courses/:id` | `?courseId=` 편집 모드 / 전체 교체 저장 / 삭제 표시 |
+| GET·POST | `/courses` | 목록(`placeCount`·`tourCount` 포함, "내 코스") / "코스 생성 완료" (`tour` 옵션 시 **투어 + 일정관리 일정("투어" 라벨)** 동시 생성) |
+| GET·PUT·DELETE | `/courses/:id` | `?courseId=` 편집 모드 / 전체 교체 저장 / 삭제 표시 (연결 투어가 있으면 409 `details.tourCount`) |
 
 코스 규칙 (서버·화면 공통, `validateCourseRules`): 시작 ≤ 종료(최대 31일) · 기간의 모든 날짜가 1일차부터 순서대로 · 시간대 칸 범위·중복 금지 · 숙소는 0번 칸에만, 0번 칸엔 숙소만 · 장소 1개 이상
 

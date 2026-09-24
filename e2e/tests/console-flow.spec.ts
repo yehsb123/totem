@@ -70,14 +70,20 @@ test.describe.serial("메인 → 콘솔 전체 흐름", () => {
     await page.getByRole("link", { name: "코스메이커" }).click();
     await page.getByPlaceholder("예: 제주 동부 2박 3일").fill("E2E 코스");
 
-    await page.getByRole("button", { name: "숙소", exact: true }).click();
+    // 카테고리를 누르면 목록을 다시 받는다 — 응답 전에 끌면 끌던 항목이 교체돼 드롭이 사라진다
+    const pickCategory = async (name: string, category: string) => {
+      const loaded = page.waitForResponse((r) => r.url().includes("/api/v1/places") && r.url().includes(`category=${category}`));
+      await page.getByRole("button", { name, exact: true }).click();
+      await loaded;
+    };
+    await pickCategory("숙소", "hotel");
     const hotel = page.getByText("제주신라호텔").first();
     await expect(hotel).toBeVisible();
     await hotel.dragTo(page.getByText("장소를 끌어다 놓으세요").first());
     await expect(page.getByText("숙소는 맨 위 숙소 칸에만 넣을 수 있습니다.")).toBeVisible();
     await hotel.dragTo(page.getByText("숙소를 끌어다 놓으세요"));
 
-    await page.getByRole("button", { name: "관광지", exact: true }).click();
+    await pickCategory("관광지", "attraction");
     const spot = page.getByText("성산일출봉").first();
     await expect(spot).toBeVisible();
     await spot.dragTo(page.getByText("장소를 끌어다 놓으세요").first());
@@ -89,6 +95,20 @@ test.describe.serial("메인 → 콘솔 전체 흐름", () => {
 
     await page.getByRole("link", { name: "일정관리" }).click();
     await expect(page.getByText("E2E 코스").first()).toBeVisible();
+  });
+
+  test("코스메이커 내 코스: 불러오기·새 코스, 투어가 연결된 코스는 삭제 불가", async () => {
+    await page.goto(`${CONSOLE}/coursemaker/`);
+    await page.getByRole("button", { name: "내 코스" }).click();
+    const row = page.getByRole("dialog").locator("li", { hasText: "제주 동부 2박 3일" });
+    await expect(row.getByText("투어 1건 연결")).toBeVisible();
+    await expect(row.getByRole("button", { name: "코스 삭제" })).toBeDisabled();
+    await row.getByRole("button", { name: "불러오기" }).click();
+    await expect(page.getByPlaceholder("예: 제주 동부 2박 3일")).toHaveValue("제주 동부 2박 3일");
+    await expect(page.getByText("우진해장국").first()).toBeVisible();
+    await page.getByRole("button", { name: "새 코스" }).click();
+    await expect(page.getByPlaceholder("예: 제주 동부 2박 3일")).toHaveValue("");
+    await expect(page.getByRole("button", { name: "코스 생성 완료" })).toBeVisible();
   });
 
   test("일정표: 코스 일정표가 일차·시간대·장소로 나온다", async () => {

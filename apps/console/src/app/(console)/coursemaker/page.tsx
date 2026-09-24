@@ -12,17 +12,24 @@ import { errorMessage } from "@/lib/api";
 import { addDays } from "@/lib/format";
 import { env } from "@/lib/env";
 import DayPanel from "./components/DayPanel";
+import MyCoursesModal from "./components/MyCoursesModal";
 import PlacePanel from "./components/PlacePanel";
 import { useCourseEditor } from "./hooks/useCourseEditor";
 import { useKakaoMap } from "./hooks/useKakaoMap";
 
-function CourseMaker() {
-  const courseId = useSearchParams().get("courseId");
+function CourseMaker({ courseId }: { courseId: string | null }) {
   const router = useRouter();
   const toast = useToast();
   const c = useCourseEditor(courseId);
   const map = useKakaoMap(c.current);
   const [saving, setSaving] = useState(false);
+  const [myCourses, setMyCourses] = useState(false);
+
+  /** 저장 안 한 변경이 있으면 이동 전에 확인 */
+  const leave = (href: string) => {
+    if (c.dirty && !window.confirm("저장하지 않은 변경사항이 있습니다. 이동할까요?")) return;
+    router.push(href);
+  };
   const backend = useRef(HTML5Backend);
 
   const notify = useCallback((err: string | null) => err && toast.error(err), [toast]);
@@ -123,6 +130,14 @@ function CourseMaker() {
             </div>
           )}
           <div className="ml-auto flex items-center gap-2">
+            <button className={btn.ghost} onClick={() => setMyCourses(true)}>
+              내 코스
+            </button>
+            {c.isEdit && (
+              <button className={btn.ghost} onClick={() => leave("/coursemaker/")}>
+                새 코스
+              </button>
+            )}
             <span className="text-xs text-slate-500">
               {c.days.length}일 · 장소 {c.placeCount}곳{c.dirty && " · 저장 안 됨"}
             </span>
@@ -160,14 +175,29 @@ function CourseMaker() {
           />
         </div>
       </div>
+      <MyCoursesModal
+        open={myCourses}
+        currentId={c.loaded?.id ?? null}
+        onClose={() => setMyCourses(false)}
+        onOpen={(id) => {
+          setMyCourses(false);
+          leave(`/coursemaker/?courseId=${id}`);
+        }}
+      />
     </DndProvider>
   );
+}
+
+/** ?courseId 가 바뀌면(내 코스 불러오기·새 코스) key 로 다시 마운트해 이전 편집 상태가 섞이지 않게 한다 */
+function CourseMakerRoute() {
+  const courseId = useSearchParams().get("courseId");
+  return <CourseMaker key={courseId ?? "new"} courseId={courseId} />;
 }
 
 export default function CourseMakerPage() {
   return (
     <Suspense fallback={<LoadingState />}>
-      <CourseMaker />
+      <CourseMakerRoute />
     </Suspense>
   );
 }
