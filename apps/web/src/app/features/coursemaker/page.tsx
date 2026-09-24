@@ -1,61 +1,34 @@
-"use client";
+import type { Metadata } from "next";
+import { FeatureCards, FeatureHero, Screenshot } from "@/components/features/FeatureBlocks";
 
-import Image from "next/image";
+export const metadata: Metadata = {
+  title: "코스메이커",
+  description: "관광지를 골라 날짜·시간대별로 배치해 여행사만의 시그니처 투어 코스를 쉽고 빠르게 완성하세요.",
+  alternates: { canonical: "/features/coursemaker" },
+};
 
-export default function CourseMakerIntroducePage() {
+export default function CourseMakerFeaturePage() {
   return (
-    <div
-      style={{
-        backgroundColor: "#5985e1",
-        color: "#fff",
-        minHeight: "100vh",
-        paddingTop: "5.208vw",
-        textAlign: "center",
-        paddingBottom: "4.167vw",
-      }}
-    >
-      <h1
-        style={{
-          fontSize: "clamp(24px, 2.5vw, 48px)",
-          fontWeight: "bold",
-          marginBottom: "0.833vw",
-        }}
-      >
-        코스메이커로
-        <br />
-        여행사만의 투어를 완성해보세요
-      </h1>
-      <p
-        style={{
-          fontSize: "clamp(14px, 1.042vw, 20px)",
-          marginBottom: "2.083vw",
-        }}
-      >
-        여행사만의 시그니처 코스를 쉽고 빠르게 완성하세요.
-      </p>
-
-      <div
-        style={{
-          maxWidth: "min(56.25vw, 1080px)",
-          margin: "0 auto",
-          backgroundColor: "white",
-          borderRadius: "0.625vw",
-          overflow: "hidden",
-          boxShadow: "0 0.208vw 1.042vw rgba(0,0,0,0.1)",
-        }}
-      >
-        <Image
-          src="/example_coursemaker.png"
-          alt="코스메이커 예시"
-          width={1080}
-          height={620}
-          style={{
-            maxWidth: "100%",
-            height: "auto",
-            display: "block",
-          }}
-        />
-      </div>
-    </div>
+    <>
+      <FeatureHero
+        title={
+          <>
+            코스메이커로
+            <br />
+            여행사만의 투어를 완성해보세요
+          </>
+        }
+        description="여행사만의 시그니처 코스를 쉽고 빠르게 완성하세요."
+      />
+      {/* 이미지 미수령: example_coursemaker.png */}
+      <Screenshot alt="코스메이커 예시 화면" placeholder="example_coursemaker.png" />
+      <FeatureCards
+        items={[
+          { title: "관광지 추천", body: "관광공사 데이터 기반으로 지역·분류별 관광지를 골라 담을 수 있습니다." },
+          { title: "지도에서 동선 확인", body: "선택한 장소를 지도에 표시해 이동 동선을 한눈에 검토합니다." },
+          { title: "투어로 바로 등록", body: "완성한 코스는 투어·일정으로 이어져 운영까지 한 번에 연결됩니다." },
+        ]}
+      />
+    </>
   );
 }
