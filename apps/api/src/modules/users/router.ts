@@ -78,7 +78,7 @@ usersRouter.delete(ROUTES.users.me, async (req, res) => {
 
   if (role === "owner") {
     const others = await User.countDocuments({ organizationId, _id: { $ne: userId }, status: "active" });
-    if (others > 0) throw conflict("조직에 다른 멤버가 있어 탈퇴할 수 없습니다. 소유자를 먼저 변경해주세요.");
+    if (others > 0) throw conflict("조직에 다른 멤버가 있어 탈퇴할 수 없습니다. 설정 > 멤버 관리에서 소유권을 다른 멤버에게 이전한 뒤 탈퇴해주세요.");
     await Organization.updateOne({ _id: organizationId }, { $set: { deletedAt: new Date() } });
   }
 

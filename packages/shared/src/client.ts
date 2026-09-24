@@ -20,6 +20,16 @@ import type {
 } from "./users";
 import type { BillingSummary, Payment } from "./billing";
 import type {
+  AcceptInvitationRequest,
+  CreateInvitationRequest,
+  CreatedInvitation,
+  Invitation,
+  InvitationPreview,
+  Member,
+  TransferOwnershipRequest,
+  UpdateMemberRequest,
+} from "./members";
+import type {
   DirectionsRequest,
   DirectionsResult,
   LocalSearchItem,
@@ -249,6 +259,24 @@ export function createApiClient(options: ApiClientOptions) {
         if (t) await send<void>("POST", ROUTES.auth.logout, { refreshToken: t.refreshToken }, false).catch(() => undefined);
       },
       findEmail: (body: FindEmailRequest) => send<FindEmailResponse>("POST", ROUTES.auth.findEmail, body, false),
+      /** 초대 링크 확인 (로그인 불필요) */
+      previewInvitation: (token: string) => get<InvitationPreview>(ROUTES.auth.invitation(encodeURIComponent(token)), undefined, false),
+      /** 초대 수락 → 그 조직 계정으로 로그인 */
+      acceptInvitation: async (body: AcceptInvitationRequest) => {
+        const s = await send<AuthSession>("POST", ROUTES.auth.acceptInvitation, body, false);
+        saveSession(s);
+        return s;
+      },
+    },
+
+    org: {
+      members: () => get<Member[]>(ROUTES.org.members),
+      updateMember: (id: string, body: UpdateMemberRequest) => send<Member>("PATCH", ROUTES.org.member(id), body),
+      removeMember: (id: string) => send<void>("DELETE", ROUTES.org.member(id)),
+      transferOwnership: (body: TransferOwnershipRequest) => send<Member[]>("POST", ROUTES.org.transferOwnership, body),
+      invitations: () => get<Invitation[]>(ROUTES.org.invitations),
+      invite: (body: CreateInvitationRequest) => send<CreatedInvitation>("POST", ROUTES.org.invitations, body),
+      revokeInvitation: (id: string) => send<void>("DELETE", ROUTES.org.invitation(id)),
     },
 
     users: {

@@ -17,6 +17,16 @@ export const ROUTES = {
     handoff: "/auth/handoff",
     handoffExchange: "/auth/handoff/exchange",
     findEmail: "/auth/find-email",
+    invitation: (token: string) => `/auth/invitations/${token}`,
+    acceptInvitation: "/auth/invitations/accept",
+  },
+
+  org: {
+    members: "/org/members",
+    member: (id: string) => `/org/members/${id}`,
+    transferOwnership: "/org/transfer-ownership",
+    invitations: "/org/invitations",
+    invitation: (id: string) => `/org/invitations/${id}`,
   },
 
   users: {

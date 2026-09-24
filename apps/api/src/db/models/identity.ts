@@ -90,3 +90,25 @@ const authHandoffSchema = new Schema(
 );
 authHandoffSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 export const AuthHandoff = model("AuthHandoff", authHandoffSchema, "auth_handoffs");
+
+/**
+ * 조직 초대 — 링크(토큰)로 수락. 원문 토큰은 만들 때 한 번만 응답하고 DB 에는 해시만 둔다.
+ * 수락·취소·만료된 초대도 이력으로 남긴다 (TTL 삭제 안 함, 상태는 필드로 계산).
+ */
+const invitationSchema = new Schema(
+  {
+    organizationId: { type: Schema.Types.ObjectId, ref: "Organization", required: true },
+    email: { type: String, required: true, lowercase: true, trim: true },
+    role: { type: String, enum: ["admin", "member"], required: true },
+    tokenHash: { type: String, required: true, unique: true },
+    invitedBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    expiresAt: { type: Date, required: true },
+    acceptedAt: { type: Date, default: null },
+    acceptedUserId: { type: Schema.Types.ObjectId, ref: "User", default: null },
+    revokedAt: { type: Date, default: null },
+  },
+  { timestamps: true },
+);
+invitationSchema.index({ organizationId: 1, email: 1, createdAt: -1 });
+export const Invitation = model("Invitation", invitationSchema, "invitations");
+export type InvitationDoc = InferSchemaType<typeof invitationSchema> & { _id: Types.ObjectId; createdAt: Date; updatedAt: Date };

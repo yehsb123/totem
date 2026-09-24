@@ -3,6 +3,7 @@ export * from "./enums";
 export * from "./routes";
 export * from "./auth";
 export * from "./users";
+export * from "./members";
 export * from "./billing";
 export * from "./places";
 export * from "./courses";

@@ -18,6 +18,7 @@ import { placesRouter } from "./modules/places/router";
 import { reviewsRouter } from "./modules/reviews/router";
 import { scheduleRouter } from "./modules/schedule/router";
 import { toursRouter } from "./modules/tours/router";
+import { orgRouter } from "./modules/org/router";
 import { usersRouter } from "./modules/users/router";
 
 const REQUEST_ID_RE = /^[A-Za-z0-9._-]{8,64}$/;
@@ -90,6 +91,7 @@ export function createApp() {
   });
   api.use(authRouter);
   api.use(usersRouter);
+  api.use(orgRouter);
   api.use(billingRouter);
   api.use(placesRouter);
   api.use(mapsRouter);

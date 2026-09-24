@@ -18,6 +18,7 @@
 | `users` | 로그인·회원가입·설정 > 계정/알림 | 계정 |
 | `sessions` | (로그인 유지) | refresh token 세션, 만료 시 TTL 자동 삭제 |
 | `auth_handoffs` | 메인 → 콘솔 이동 | 1회용 로그인 인계 코드, 60초 TTL |
+| `invitations` | 설정 > 멤버 관리, 메인 /invite | 조직 초대 링크(토큰 해시), 7일 만료, 이력 보존 |
 | `subscriptions` | 설정 > 결제 정보 상단 | 조직당 1건 |
 | `payments` | 설정 > 결제 내역 | |
 | `places` | 코스메이커 좌측 목록·지도 | TourAPI 동기화 캐시 (공용) |
@@ -66,6 +67,13 @@
 
 ### auth_handoffs
 codeHash(unique) · userId · expiresAt(**TTL**) · usedAt — 조건부 업데이트로 1회만 사용
+
+### invitations
+organizationId · email(소문자) · role(`admin`·`member`) · tokenHash(unique, 원문은 생성 응답에만) · invitedBy · expiresAt(7일) · acceptedAt · acceptedUserId · revokedAt
+- 상태는 필드로 계산: accepted > revoked > expired > pending. 이력 보존을 위해 TTL 삭제하지 않음
+- 같은 이메일 재초대 시 이전 대기 초대는 취소(재발급). 수락은 조건부 업데이트로 1회만
+- 권한: 초대·취소 = 관리자 이상(관리자 초대는 소유자만) · 역할 변경·소유권 이전 = 소유자 · 제외 = 관리자 이상(관리자 제외는 소유자만)
+- 멤버 제외 = 탈퇴와 같은 개인정보 삭제 + 세션 폐기 → 이메일이 비워져 재초대 가능
 
 ### subscriptions / payments
 - subscriptions: organizationId(**unique**) · plan(`trial`·`basic`·`pro`) · status(`trialing`·`active`·`past_due`·`canceled`) · currentPeriodEnd(=다음 결제일) · paymentMethod{brand,last4} (카드번호·빌링키 저장 안 함)

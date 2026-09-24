@@ -108,6 +108,8 @@ describe("인증 적용 범위 (경로가 바뀌어도 보호가 빠지지 않�
     "/auth/logout",
     "/auth/handoff/exchange",
     "/auth/find-email",
+    "/auth/invitations/:p",
+    "/auth/invitations/accept",
   ]);
 
   it("공개 목록 밖의 모든 계약 경로는 토큰 없이 401", async () => {
@@ -131,7 +133,8 @@ describe("인증 적용 범위 (경로가 바뀌어도 보호가 빠지지 않�
     const { API_PREFIX } = await import("@totem/shared");
     const request = (await import("supertest")).default;
     for (const p of PUBLIC) {
-      const r = p === "/health" ? await request(app).get(API_PREFIX + p) : await request(app).post(API_PREFIX + p).send({});
+      const path = API_PREFIX + p.replace(":p", "not-a-real-token-000000");
+      const r = p === "/health" || p === "/auth/invitations/:p" ? await request(app).get(path) : await request(app).post(path).send({});
       expect([p, r.status === 401 && p !== "/auth/refresh" && p !== "/auth/handoff/exchange"]).toEqual([p, false]);
     }
   });
