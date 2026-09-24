@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Script from "next/script";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { MAX_COURSE_DAYS, NATIONS, NATION_LABELS, type CoursePlace, type Nation } from "@totem/shared";
@@ -21,13 +21,13 @@ function CourseMaker({ courseId }: { courseId: string | null }) {
   const router = useRouter();
   const toast = useToast();
   const c = useCourseEditor(courseId);
-  const map = useKakaoMap(c.current);
+  // 훅 결과에 ref 가 들어 있어, 객체째로 렌더 중에 읽지 않도록 필요한 것만 꺼낸다
+  const { containerRef, ready: mapReady, init: initMap, focus: focusPlace, clearFocus, setRoutePath, relayout } = useKakaoMap(c.current);
   const [saving, setSaving] = useState(false);
   const [myCourses, setMyCourses] = useState(false);
   /** lg 미만(휴대폰·태블릿)에서는 세 칸을 탭으로 하나씩 보여준다 */
   const [panel, setPanel] = useState<"places" | "map" | "day">("places");
   const show = (key: typeof panel) => (panel === key ? "flex" : "hidden") + " lg:flex";
-  const { relayout } = map;
   useEffect(() => {
     if (panel === "map") requestAnimationFrame(relayout);
   }, [panel, relayout]);
@@ -46,13 +46,12 @@ function CourseMaker({ courseId }: { courseId: string | null }) {
     if (c.dirty && !window.confirm("저장하지 않은 변경사항이 있습니다. 이동할까요?")) return;
     router.push(href);
   };
-  const backend = useRef(HTML5Backend);
 
   const notify = useCallback((err: string | null) => err && toast.error(err), [toast]);
   const onDropPlace = useCallback((i: number, p: CoursePlace) => {
     notify(c.dropPlace(i, p));
-    map.clearFocus();
-  }, [c, map, notify]);
+    clearFocus();
+  }, [c, clearFocus, notify]);
   const onMove = useCallback((from: number, to: number) => notify(c.moveSlot(from, to)), [c, notify]);
 
   const save = async () => {
@@ -75,12 +74,12 @@ function CourseMaker({ courseId }: { courseId: string | null }) {
   if (c.loadError) return <ErrorState message={c.loadError} />;
 
   return (
-    <DndProvider backend={backend.current}>
+    <DndProvider backend={HTML5Backend}>
       {env.kakaoMapAppKey && (
         <Script
           src={`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${env.kakaoMapAppKey}&autoload=false`}
           strategy="afterInteractive"
-          onReady={map.init}
+          onReady={initMap}
           onError={() => toast.error("카카오 지도를 불러오지 못했습니다. 앱 키와 등록 도메인을 확인해주세요.")}
         />
       )}
@@ -186,10 +185,10 @@ function CourseMaker({ courseId }: { courseId: string | null }) {
           ))}
         </div>
         <div className="flex min-h-0 flex-1">
-          <PlacePanel onPlaceClick={(p) => (map.focus(p), setPanel("map"))} onAdd={onAdd} className={show("places")} />
+          <PlacePanel onPlaceClick={(p) => (focusPlace(p), setPanel("map"))} onAdd={onAdd} className={show("places")} />
           <main className={`relative flex-1 border-r border-slate-200 bg-blue-50 ${panel === "map" ? "block" : "hidden"} lg:block`}>
-            <div ref={map.containerRef} className="h-full w-full" />
-            {!map.ready && (
+            <div ref={containerRef} className="h-full w-full" />
+            {!mapReady && (
               <div className="absolute inset-0 flex items-center justify-center p-6 text-center text-sm text-slate-500">
                 {env.kakaoMapAppKey ? "지도 불러오는 중…" : "지도 키(NEXT_PUBLIC_KAKAO_MAP_APP_KEY)가 설정되지 않아 지도를 표시하지 않습니다. 코스 편집은 그대로 가능합니다."}
               </div>
@@ -205,7 +204,7 @@ function CourseMaker({ courseId }: { courseId: string | null }) {
             onDropPlace={onDropPlace}
             onMove={onMove}
             onRemove={c.removeSlot}
-            onRoute={map.setRoutePath}
+            onRoute={setRoutePath}
             className={show("day")}
           />
         </div>

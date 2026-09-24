@@ -15,18 +15,15 @@ const safeNext = (v: string | null) => (v && v.startsWith("/") && !v.startsWith(
 function Callback() {
   const params = useSearchParams();
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
+  const [exchangeError, setError] = useState<string | null>(null);
   const started = useRef(false);
+  const code = params.get("code");
+  const error = code ? exchangeError : "로그인 정보가 없습니다.";
 
   useEffect(() => {
     // StrictMode 에서 effect 가 두 번 돌아도 1회용 코드를 한 번만 쓴다
-    if (started.current) return;
+    if (started.current || !code) return;
     started.current = true;
-    const code = params.get("code");
-    if (!code) {
-      setError("로그인 정보가 없습니다.");
-      return;
-    }
     const next = safeNext(params.get("next"));
     api.auth
       .exchangeHandoff(code)
@@ -35,7 +32,7 @@ function Callback() {
         router.replace(withoutBase);
       })
       .catch((e) => setError(errorMessage(e)));
-  }, [params, router]);
+  }, [code, params, router]);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-3 text-sm text-slate-600">

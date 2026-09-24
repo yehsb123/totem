@@ -1,7 +1,6 @@
 "use client";
 
 import { X } from "lucide-react";
-import { useRef } from "react";
 import { useDrag, useDrop } from "react-dnd";
 import { PLACE_CATEGORY_LABELS, type CoursePlace } from "@totem/shared";
 import { DND, HOTEL_SLOT_INDEX, type DragPlace, type DragSlot, type EditorDay } from "../courseModel";
@@ -22,7 +21,6 @@ function Slot({
   onMove: (from: number, to: number) => void;
   onRemove: (slotIndex: number) => void;
 }) {
-  const ref = useRef<HTMLDivElement>(null);
   // 놓았을 때 한 번만 반영 (구 코드는 hover 마다 자리를 바꿔 끌기 도중 순서가 뒤섞였다)
   const [{ isOver, canDrop }, drop] = useDrop<DragPlace | DragSlot, unknown, { isOver: boolean; canDrop: boolean }>(
     () => ({
@@ -36,14 +34,16 @@ function Slot({
     () => ({ type: DND.SLOT, item: { kind: DND.SLOT, fromIndex: index }, canDrag: !!place, collect: (m) => ({ isDragging: m.isDragging() }) }),
     [index, place],
   );
-  drag(drop(ref));
   const isHotelSlot = index === HOTEL_SLOT_INDEX;
 
   return (
     <div>
       <div className="mb-1 text-xs font-medium text-slate-500">{label}</div>
       <div
-        ref={ref}
+        // react-dnd 커넥터는 렌더 중에 ref 로 부르지 않고 콜백 ref 로 연결한다
+        ref={(node) => {
+          drag(drop(node));
+        }}
         className={`flex min-h-[56px] items-center rounded-lg border-2 px-3 py-2 transition-colors ${
           place ? "cursor-move border-solid border-slate-200 bg-white" : "border-dashed border-slate-300 bg-slate-50"
         } ${isOver && canDrop ? "border-blue-400 bg-blue-50" : ""} ${isDragging ? "opacity-40" : ""}`}
@@ -82,7 +82,7 @@ export default function DayPanel({
   className = "",
 }: {
   className?: string;
-  onRoute: (path: [number, number][] | null) => void;
+  onRoute: (route: { signature: string; path: [number, number][] }) => void;
   day: EditorDay | null;
   dayIndex: number;
   dayCount: number;

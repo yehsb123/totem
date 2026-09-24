@@ -243,7 +243,12 @@ export default function ToursPage() {
 /** 포커스를 잃거나 Enter 를 누를 때만 저장 (타이핑마다 요청하지 않음) */
 function SeatInput({ value, max, onCommit, label }: { value: number; max?: number; onCommit: (v: number) => Promise<boolean>; label: string }) {
   const [v, setV] = useState(String(value));
-  useEffect(() => setV(String(value)), [value]);
+  // 서버 값이 바뀌면(저장·다른 필터) 입력칸도 맞춘다 — effect 대신 렌더 중 이전 값 비교
+  const [prev, setPrev] = useState(value);
+  if (value !== prev) {
+    setPrev(value);
+    setV(String(value));
+  }
   const commit = async () => {
     const n = Math.max(0, Math.floor(Number(v)));
     if (!Number.isFinite(n) || n === value) return setV(String(value));

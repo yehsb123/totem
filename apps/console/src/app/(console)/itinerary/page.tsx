@@ -21,13 +21,11 @@ function Itinerary() {
   const { user } = useSession();
   const [course, setCourse] = useState<Course | null>(null);
   const [tour, setTour] = useState<Tour | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [fetchError, setError] = useState<string | null>(null);
+  const error = courseId ? fetchError : "코스가 지정되지 않았습니다.";
 
   useEffect(() => {
-    if (!courseId) {
-      setError("코스가 지정되지 않았습니다.");
-      return;
-    }
+    if (!courseId) return;
     api.courses
       .get(courseId)
       .then(async (c) => {

@@ -35,7 +35,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     await api.auth.logout();
-    window.location.href = env.webUrl;
+    window.location.assign(new URL("/", env.webUrl).href);
   }, []);
 
   if (error) {

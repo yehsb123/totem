@@ -9,6 +9,117 @@ import {
 } from "recharts";
 import { useDashboardData } from "../DashboardData";
 
+interface TreemapPayloadItem {
+  payload: { name: string; value: number };
+}
+
+// 차트 조각 렌더러 — 컴포넌트 안에서 정의하면 렌더마다 새 타입이 되어 recharts 가 매번 다시 마운트한다
+const pickTreemapLabelProps = (
+  props: unknown
+): {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  name: string;
+  value: number;
+  color: string;
+} => {
+  const obj = (props as Record<string, unknown>) || {};
+  const x = Number(obj.x ?? 0);
+  const y = Number(obj.y ?? 0);
+  const width = Number(obj.width ?? 0);
+  const height = Number(obj.height ?? 0);
+  const name = String(obj.name ?? "");
+  const value = Number(obj.value ?? 0);
+  const color = String(
+    (obj as Record<string, unknown>).fill ??
+      (obj as Record<string, unknown>).color ??
+      "#A9A9A9"
+  );
+  return { x, y, width, height, name, value, color };
+};
+
+const TreemapCustomLabel = (props: {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  name: string;
+  value: number;
+  color: string;
+}) => {
+  const { x, y, width, height, name, value, color } = props;
+  if (width < 60 || height < 35) return null;
+  const textX = x + width / 2;
+  const textY = y + height / 2;
+
+  return (
+    <g>
+      <rect
+        x={x}
+        y={y}
+        width={width}
+        height={height}
+        style={{
+          fill: color,
+          stroke: "#fff",
+          strokeWidth: 1,
+          opacity: 0.9,
+        }}
+      />
+      <text
+        x={textX}
+        y={textY - 8}
+        textAnchor="middle"
+        dominantBaseline="middle"
+        fontSize={14}
+        fontWeight="1"
+        fill="#fff"
+        style={{ pointerEvents: "none" }}
+      >
+        {name}
+      </text>
+      <text
+        x={textX}
+        y={textY + 12}
+        textAnchor="middle"
+        dominantBaseline="middle"
+        fontSize={12}
+        fill="#fff"
+        style={{ pointerEvents: "none" }}
+      >
+        {value ? `${(value / 1000).toFixed(1)}k` : "0k"}
+      </text>
+    </g>
+  );
+};
+
+const CustomTreemapTooltip = ({
+  active,
+  payload,
+  totalVisitors,
+}: {
+  active?: boolean;
+  payload?: TreemapPayloadItem[];
+  totalVisitors: number;
+}) => {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    return (
+      <div className="bg-white p-2 border border-gray-300 rounded shadow-md text-sm">
+        <p className="font-bold">{data.name}</p>
+        <p>{`방문객 수: ${Math.round(data.value).toLocaleString()}명`}</p>
+        <p>{`비율: ${((data.value / (totalVisitors || 1)) * 100).toFixed(
+          1
+        )}%`}</p>
+      </div>
+    );
+  }
+  return null;
+};
+
+
 const CountryTourismRatio = ({ selectedMonth }: { selectedMonth: string }) => {
   const { monthlyInternationalVisitors } = useDashboardData();
   const selectedData = useMemo(
@@ -75,110 +186,7 @@ const CountryTourismRatio = ({ selectedMonth }: { selectedMonth: string }) => {
 
   const { chartData, tableData } = aggregatedData;
 
-  interface TreemapPayloadItem {
-    payload: { name: string; value: number };
-  }
-  const pickTreemapLabelProps = (
-    props: unknown
-  ): {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-    name: string;
-    value: number;
-    color: string;
-  } => {
-    const obj = (props as Record<string, unknown>) || {};
-    const x = Number(obj.x ?? 0);
-    const y = Number(obj.y ?? 0);
-    const width = Number(obj.width ?? 0);
-    const height = Number(obj.height ?? 0);
-    const name = String(obj.name ?? "");
-    const value = Number(obj.value ?? 0);
-    const color = String(
-      (obj as Record<string, unknown>).fill ??
-        (obj as Record<string, unknown>).color ??
-        "#A9A9A9"
-    );
-    return { x, y, width, height, name, value, color };
-  };
-  const CustomTreemapTooltip = ({
-    active,
-    payload,
-  }: {
-    active?: boolean;
-    payload?: TreemapPayloadItem[];
-  }) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      return (
-        <div className="bg-white p-2 border border-gray-300 rounded shadow-md text-sm">
-          <p className="font-bold">{data.name}</p>
-          <p>{`방문객 수: ${Math.round(data.value).toLocaleString()}명`}</p>
-          <p>{`비율: ${((data.value / (totalVisitors || 1)) * 100).toFixed(
-            1
-          )}%`}</p>
-        </div>
-      );
-    }
-    return null;
-  };
 
-  const TreemapCustomLabel = (props: {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-    name: string;
-    value: number;
-    color: string;
-  }) => {
-    const { x, y, width, height, name, value, color } = props;
-    if (width < 60 || height < 35) return null;
-    const textX = x + width / 2;
-    const textY = y + height / 2;
-
-    return (
-      <g>
-        <rect
-          x={x}
-          y={y}
-          width={width}
-          height={height}
-          style={{
-            fill: color,
-            stroke: "#fff",
-            strokeWidth: 1,
-            opacity: 0.9,
-          }}
-        />
-        <text
-          x={textX}
-          y={textY - 8}
-          textAnchor="middle"
-          dominantBaseline="middle"
-          fontSize={14}
-          fontWeight="1"
-          fill="#fff"
-          style={{ pointerEvents: "none" }}
-        >
-          {name}
-        </text>
-        <text
-          x={textX}
-          y={textY + 12}
-          textAnchor="middle"
-          dominantBaseline="middle"
-          fontSize={12}
-          fill="#fff"
-          style={{ pointerEvents: "none" }}
-        >
-          {value ? `${(value / 1000).toFixed(1)}k` : "0k"}
-        </text>
-      </g>
-    );
-  };
 
   return (
     <div className="p-4">
@@ -206,7 +214,7 @@ const CountryTourismRatio = ({ selectedMonth }: { selectedMonth: string }) => {
                 {chartData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
-                <Tooltip content={<CustomTreemapTooltip />} />
+                <Tooltip content={<CustomTreemapTooltip totalVisitors={totalVisitors} />} />
               </Treemap>
             </ResponsiveContainer>
           ) : (

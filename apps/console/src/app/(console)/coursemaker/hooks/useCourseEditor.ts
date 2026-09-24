@@ -36,7 +36,6 @@ export function useCourseEditor(courseId: string | null) {
 
   useEffect(() => {
     if (!courseId) return;
-    setLoading(true);
     api.courses
       .get(courseId)
       .then((c) => {

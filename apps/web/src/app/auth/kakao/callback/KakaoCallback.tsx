@@ -19,26 +19,21 @@ export default function KakaoCallback() {
   const retryHref = next ? `/?login=1&next=${encodeURIComponent(next)}` : "/?login=1";
   const started = useRef(false);
 
+  const kakaoError = params.get("error");
+  const code = params.get("code");
+  // URL 만 보고 바로 알 수 있는 실패 — 렌더 중에 계산한다 (effect 안에서 setState 하지 않음)
+  const immediateError = kakaoError
+    ? kakaoError === "access_denied"
+      ? "카카오 로그인이 취소되었습니다."
+      : params.get("error_description") || "카카오 로그인에 실패했습니다."
+    : !code
+      ? "카카오 인가 코드가 없습니다. 처음부터 다시 시도해주세요."
+      : null;
+
   useEffect(() => {
     // React StrictMode 의 이중 실행으로 인가 코드를 두 번 쓰지 않도록 막는다 (인가 코드는 1회용)
-    if (started.current) return;
+    if (started.current || immediateError || !code) return;
     started.current = true;
-
-    const kakaoError = params.get("error");
-    const code = params.get("code");
-
-    if (kakaoError) {
-      setError(
-        kakaoError === "access_denied"
-          ? "카카오 로그인이 취소되었습니다."
-          : params.get("error_description") || "카카오 로그인에 실패했습니다.",
-      );
-      return;
-    }
-    if (!code) {
-      setError("카카오 인가 코드가 없습니다. 처음부터 다시 시도해주세요.");
-      return;
-    }
 
     (async () => {
       try {
@@ -48,14 +43,15 @@ export default function KakaoCallback() {
         setError(errorMessage(e, "카카오 로그인 중 오류가 발생했습니다."));
       }
     })();
-  }, [params, next]);
+  }, [code, immediateError, next]);
 
-  if (error) {
+  const shownError = immediateError ?? error;
+  if (shownError) {
     return (
       <div className="text-center">
         <h1 className="text-xl font-bold text-slate-900">로그인하지 못했습니다</h1>
         <p role="alert" className="mt-3 text-sm text-red-600">
-          {error}
+          {shownError}
         </p>
         <Link
           href={retryHref}

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import { useDrag } from "react-dnd";
 import { ApiError, PLACE_CATEGORIES, PLACE_CATEGORY_LABELS, type CoursePlace, type LocalSearchItem, type Place, type PlaceCategory, type PlaceSort } from "@totem/shared";
@@ -38,16 +38,16 @@ function AddButton({ place }: { place: CoursePlace }) {
 }
 
 function PlaceItem({ place, onClick }: { place: Place; onClick: (p: MapPoint) => void }) {
-  const ref = useRef<HTMLDivElement>(null);
   const [{ isDragging }, drag] = useDrag<DragPlace, unknown, { isDragging: boolean }>(
     () => ({ type: DND.PLACE, item: { kind: DND.PLACE, place: snapshot(place) }, collect: (m) => ({ isDragging: m.isDragging() }) }),
     [place],
   );
-  drag(ref);
   const img = place.thumbnailUrl ?? place.imageUrl;
   return (
     <div
-      ref={ref}
+      ref={(node) => {
+        drag(node);
+      }}
       onClick={() => onClick(place)}
       className={`flex cursor-grab items-center gap-3 rounded-lg border bg-white p-2.5 shadow-sm transition-opacity ${isDragging ? "border-dashed border-blue-400 opacity-50" : "border-slate-200 hover:border-blue-300"}`}
     >
@@ -159,16 +159,16 @@ function TourPlaceList({ onPlaceClick }: { onPlaceClick: (p: MapPoint) => void }
 }
 
 function KakaoItem({ item, onClick }: { item: LocalSearchItem; onClick: (p: MapPoint) => void }) {
-  const ref = useRef<HTMLDivElement>(null);
   const place = snapshotFromKakao(item);
   const [{ isDragging }, drag] = useDrag<DragPlace, unknown, { isDragging: boolean }>(
     () => ({ type: DND.PLACE, item: { kind: DND.PLACE, place: snapshotFromKakao(item) }, collect: (m) => ({ isDragging: m.isDragging() }) }),
     [item],
   );
-  drag(ref);
   return (
     <div
-      ref={ref}
+      ref={(node) => {
+        drag(node);
+      }}
       onClick={() => onClick(place)}
       className={`flex cursor-grab items-center gap-2 rounded-lg border bg-white p-2.5 shadow-sm ${isDragging ? "border-dashed border-blue-400 opacity-50" : "border-slate-200 hover:border-blue-300"}`}
     >

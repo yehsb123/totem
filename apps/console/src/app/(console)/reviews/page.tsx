@@ -245,19 +245,17 @@ export default function ReviewsPage() {
   );
 }
 
-function CsvImportModal({ tour, onClose, onImported }: { tour: Tour | null; onClose: () => void; onImported: (t: Tour) => Promise<void> }) {
+/** 투어가 바뀔 때마다 key 로 새로 마운트 — 입력·결과가 이전 투어 것으로 남지 않는다 */
+function CsvImportModal(props: { tour: Tour | null; onClose: () => void; onImported: (t: Tour) => Promise<void> }) {
+  return props.tour ? <CsvImportForm key={props.tour.id} {...props} tour={props.tour} /> : null;
+}
+
+function CsvImportForm({ tour, onClose, onImported }: { tour: Tour; onClose: () => void; onImported: (t: Tour) => Promise<void> }) {
   const [url, setUrl] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<ImportReviewsResult | null>(null);
 
-  useEffect(() => {
-    setUrl("");
-    setError(null);
-    setResult(null);
-  }, [tour]);
-
-  if (!tour) return null;
   const submit = async () => {
     setBusy(true);
     setError(null);
@@ -327,21 +325,18 @@ const RATING_FIELDS = [
   ["guideRating", "가이드"],
 ] as const;
 
-function AddReviewModal({ tour, onClose, onSaved }: { tour: Tour | null; onClose: () => void; onSaved: (t: Tour) => Promise<void> }) {
-  const [ratings, setRatings] = useState<Record<string, string>>({});
+/** 투어가 바뀔 때마다 key 로 새로 마운트 — 입력·결과가 이전 투어 것으로 남지 않는다 */
+function AddReviewModal(props: { tour: Tour | null; onClose: () => void; onSaved: (t: Tour) => Promise<void> }) {
+  return props.tour ? <AddReviewForm key={props.tour.id} {...props} tour={props.tour} /> : null;
+}
+
+function AddReviewForm({ tour, onClose, onSaved }: { tour: Tour; onClose: () => void; onSaved: (t: Tour) => Promise<void> }) {
+  const [ratings, setRatings] = useState<Record<string, string>>({ totalRating: "5" });
   const [comment, setComment] = useState("");
   const [reviewerName, setReviewerName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => {
-    setRatings({ totalRating: "5" });
-    setComment("");
-    setReviewerName("");
-    setError(null);
-  }, [tour]);
-
-  if (!tour) return null;
   const num = (v?: string) => (v ? Number(v) : null);
   const submit = async () => {
     const parsed = createReviewRequest.safeParse({

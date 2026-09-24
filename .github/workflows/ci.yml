@@ -28,6 +28,9 @@ jobs:
       - name: 타입 검사 (shared · api · web · console)
         run: npm run typecheck
 
+      - name: Lint (web · console, 경고 0)
+        run: npm run lint
+
       - name: API 테스트 (인메모리 MongoDB)
         run: npm run test -w @totem/api
 
