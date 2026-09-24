@@ -1,8 +1,8 @@
 "use client";
 
 import { FileDown, Plus, Search, Star, Trash2, Upload } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { createReviewRequest, type ImportReviewsResult, type Review, type Tour } from "@totem/shared";
+import { useCallback, useEffect, useState } from "react";
+import { createReviewRequest, type ImportReviewsResult, type PageMeta, type Review, type ReviewSummary, type Tour } from "@totem/shared";
 import { EmptyState, ErrorState, Field, LoadingState, Modal, btn, inputClass, useToast } from "@/components/ui";
 import { api, errorMessage } from "@/lib/api";
 
@@ -18,15 +18,47 @@ function Stars({ value }: { value: number | null }) {
 }
 
 const score = (v: number | null) => (v === null ? "-" : v);
+const TOUR_PAGE = 20;
+const REVIEW_PAGE = 50;
+
+/** 목록 아래 페이지 이동 — 전체 건수를 함께 보여줘 "잘려서 안 보이는" 일이 없게 한다 */
+function Pager({ meta, onPage, unit }: { meta: PageMeta | null; onPage: (p: number) => void; unit: string }) {
+  if (!meta || meta.total === 0) return null;
+  return (
+    <div className="no-print flex items-center justify-end gap-2 px-3 py-2 text-sm text-slate-600">
+      <span className="mr-auto text-xs text-slate-500">
+        전체 {meta.total.toLocaleString("ko-KR")}{unit}
+      </span>
+      {meta.totalPages > 1 && (
+        <>
+          <button className={btn.secondary} disabled={meta.page <= 1} onClick={() => onPage(meta.page - 1)}>
+            이전
+          </button>
+          <span>
+            {meta.page} / {meta.totalPages}
+          </span>
+          <button className={btn.secondary} disabled={meta.page >= meta.totalPages} onClick={() => onPage(meta.page + 1)}>
+            다음
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
 
 export default function ReviewsPage() {
   const toast = useToast();
   const [q, setQ] = useState("");
   const [tours, setTours] = useState<Tour[]>([]);
+  const [tourPage, setTourPage] = useState(1);
+  const [tourMeta, setTourMeta] = useState<PageMeta | null>(null);
   const [loadingTours, setLoadingTours] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<Tour | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviewMeta, setReviewMeta] = useState<PageMeta | null>(null);
+  // 평균은 불러온 페이지가 아니라 서버가 전체 리뷰로 계산한 값 (구 버전은 첫 200건만으로 계산했다)
+  const [summary, setSummary] = useState<ReviewSummary | null>(null);
   const [loadingReviews, setLoadingReviews] = useState(false);
   const [csvFor, setCsvFor] = useState<Tour | null>(null);
   const [addFor, setAddFor] = useState<Tour | null>(null);
@@ -35,13 +67,15 @@ export default function ReviewsPage() {
     setLoadingTours(true);
     setError(null);
     try {
-      setTours((await api.tours.list({ q: q.trim() || undefined, limit: 100 })).items);
+      const r = await api.tours.list({ q: q.trim() || undefined, page: tourPage, limit: TOUR_PAGE });
+      setTours(r.items);
+      setTourMeta(r.meta);
     } catch (e) {
       setError(errorMessage(e));
     } finally {
       setLoadingTours(false);
     }
-  }, [q]);
+  }, [q, tourPage]);
 
   useEffect(() => {
     const t = setTimeout(loadTours, 200);
@@ -49,14 +83,19 @@ export default function ReviewsPage() {
   }, [loadTours]);
 
   const openTour = useCallback(
-    async (tour: Tour) => {
+    async (tour: Tour, page = 1) => {
       setSelected(tour);
       setLoadingReviews(true);
       try {
-        setReviews((await api.reviews.listByTour(tour.id, { limit: 200 })).items);
+        const [list, sum] = await Promise.all([api.reviews.listByTour(tour.id, { page, limit: REVIEW_PAGE }), api.reviews.summary(tour.id)]);
+        setReviews(list.items);
+        setReviewMeta(list.meta);
+        setSummary(sum);
       } catch (e) {
         toast.error(errorMessage(e));
         setReviews([]);
+        setReviewMeta(null);
+        setSummary(null);
       } finally {
         setLoadingReviews(false);
       }
@@ -82,26 +121,13 @@ export default function ReviewsPage() {
     }
   };
 
-  const averages = useMemo(() => {
-    const avg = (pick: (r: Review) => number | null) => {
-      const vals = reviews.map(pick).filter((v): v is number => v !== null);
-      return vals.length ? Math.round((vals.reduce((a, b) => a + b, 0) / vals.length) * 10) / 10 : null;
-    };
-    return {
-      total: avg((r) => r.totalRating),
-      restaurant: avg((r) => r.restaurantRating),
-      accommodation: avg((r) => r.accommodationRating),
-      attraction: avg((r) => r.attractionRating),
-      guide: avg((r) => r.guideRating),
-    };
-  }, [reviews]);
 
   return (
     <div className="space-y-4 p-4">
       <div className="no-print flex flex-wrap items-center gap-3 rounded-lg bg-white p-4 shadow-sm">
         <div className="relative w-72">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-          <input className={`${inputClass} pl-9`} placeholder="투어 이름 검색" value={q} onChange={(e) => setQ(e.target.value)} />
+          <input className={`${inputClass} pl-9`} placeholder="투어 이름 검색" value={q} onChange={(e) => (setQ(e.target.value), setTourPage(1))} />
         </div>
         {loadingTours && <span className="text-sm text-slate-500">불러오는 중…</span>}
       </div>
@@ -153,6 +179,7 @@ export default function ReviewsPage() {
           </table>
         )}
       </div>
+      <Pager meta={tourMeta} onPage={setTourPage} unit="개 투어" />
 
       <section className="rounded-lg bg-white p-4 shadow-sm">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
@@ -211,17 +238,18 @@ export default function ReviewsPage() {
                   ))}
                   <tr className="border-t-2 border-slate-200 bg-slate-50 text-center font-semibold">
                     <td className="p-2" colSpan={2}>
-                      평균 ({reviews.length}건)
+                      전체 평균 ({(summary?.count ?? 0).toLocaleString("ko-KR")}건)
                     </td>
-                    <td className="p-2">{score(averages.total)}</td>
-                    <td className="p-2">{score(averages.restaurant)}</td>
-                    <td className="p-2">{score(averages.accommodation)}</td>
-                    <td className="p-2">{score(averages.attraction)}</td>
-                    <td className="p-2">{score(averages.guide)}</td>
+                    <td className="p-2">{score(summary?.total ?? null)}</td>
+                    <td className="p-2">{score(summary?.restaurant ?? null)}</td>
+                    <td className="p-2">{score(summary?.accommodation ?? null)}</td>
+                    <td className="p-2">{score(summary?.attraction ?? null)}</td>
+                    <td className="p-2">{score(summary?.guide ?? null)}</td>
                     <td colSpan={2} />
                   </tr>
                 </tbody>
               </table>
+              <Pager meta={reviewMeta} onPage={(pg) => selected && openTour(selected, pg)} unit="건" />
             </div>
           ))}
       </section>

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import type { Types } from "mongoose";
-import { ROUTES, createReviewRequest, importReviewsRequest, reviewListQuery } from "@totem/shared";
+import { ROUTES, createReviewRequest, importReviewsRequest, reviewListQuery, type ReviewSummary } from "@totem/shared";
 import { sha256 } from "../../lib/crypto";
 import { noContent, notFound, ok, okPaged, parse } from "../../lib/http";
 import { Review, ReviewImport, Tour } from "../../db/models";
@@ -31,6 +31,36 @@ reviewsRouter.get(ROUTES.tours.reviews(":tourId"), async (req, res) => {
     Review.countDocuments(filter),
   ]);
   okPaged(res, items.map(toReview), { page: q.page, limit: q.limit, total });
+});
+
+/** 전체 리뷰 기준 항목별 평균 (소수 1자리, 값이 하나도 없으면 null) */
+reviewsRouter.get(ROUTES.tours.reviewSummary(":tourId"), async (req, res) => {
+  const { organizationId } = authOf(req);
+  const tourId = await findTour(organizationId, req.params.tourId);
+  const [row] = await Review.aggregate<Record<string, number | null>>([
+    { $match: { organizationId, tourId } },
+    {
+      $group: {
+        _id: null,
+        count: { $sum: 1 },
+        total: { $avg: "$totalRating" },
+        restaurant: { $avg: "$restaurantRating" },
+        accommodation: { $avg: "$accommodationRating" },
+        attraction: { $avg: "$attractionRating" },
+        guide: { $avg: "$guideRating" },
+      },
+    },
+  ]);
+  const r1 = (v: number | null | undefined) => (v === null || v === undefined ? null : Math.round(v * 10) / 10);
+  const summary: ReviewSummary = {
+    count: row?.count ?? 0,
+    total: r1(row?.total),
+    restaurant: r1(row?.restaurant),
+    accommodation: r1(row?.accommodation),
+    attraction: r1(row?.attraction),
+    guide: r1(row?.guide),
+  };
+  ok(res, summary);
 });
 
 reviewsRouter.post(ROUTES.tours.reviews(":tourId"), async (req, res) => {

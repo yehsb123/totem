@@ -8,6 +8,8 @@ import { api, errorMessage, fieldErrors } from "@/lib/api";
 
 type Item = { time: string; place: string };
 
+const TOUR_PICK_LIMIT = 100;
+
 /** 일정 추가·수정 공용 폼. 색상은 라벨에서 온다 (구 코드는 일정마다 색을 골랐지만 저장되지 않았다) */
 /** 닫혀 있을 땐 폼을 아예 마운트하지 않는다 — 열 때마다 새로 마운트돼 초기값이 useState 초기화로 들어간다 (effect 로 되돌리지 않음) */
 export default function EventFormModal(props: Parameters<typeof EventForm>[0] & { open: boolean }) {
@@ -40,16 +42,36 @@ function EventForm({
     initial?.items ?? (presetLabel?.defaultPlace ? [{ time: "09:00", place: presetLabel.defaultPlace }] : []),
   );
   const [tours, setTours] = useState<Tour[]>([]);
+  const [tourTotal, setTourTotal] = useState(0);
+  const [tourQuery, setTourQuery] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
 
-  // 연결할 투어 선택지 — 비동기 응답에서만 setState
+  // 연결할 투어 선택지 (최근 순 최대 100개 + 검색) — 비동기 응답에서만 setState.
+  // 이미 연결된 투어가 목록 밖이면 따로 받아 넣는다 (없으면 선택칸이 "연결 안 함" 으로 잘못 보인다)
+  const linkedTourId = initial?.tourId ?? null;
   useEffect(() => {
-    api.tours
-      .list({ limit: 100 })
-      .then((r) => setTours(r.items))
-      .catch(() => setTours([]));
-  }, []);
+    let cancelled = false;
+    const t = setTimeout(async () => {
+      try {
+        const r = await api.tours.list({ q: tourQuery.trim() || undefined, limit: TOUR_PICK_LIMIT });
+        let items = r.items;
+        if (linkedTourId && !items.some((x) => x.id === linkedTourId)) {
+          const linked = await api.tours.get(linkedTourId).catch(() => null);
+          if (linked) items = [linked, ...items];
+        }
+        if (cancelled) return;
+        setTours(items);
+        setTourTotal(r.meta.total);
+      } catch {
+        if (!cancelled) setTours([]);
+      }
+    }, 250);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [tourQuery, linkedTourId]);
 
   const submit = async () => {
     const body = { name, startDate, endDate, labelId: labelId || null, tourId: tourId || null, manager, note, items: items.filter((i) => i.place.trim()) };
@@ -116,7 +138,13 @@ function EventForm({
             <input className={inputClass} value={manager} onChange={(e) => setManager(e.target.value)} />
           </Field>
         </div>
-        <Field label="연결할 투어" hint="투어관리의 투어와 연결하면 함께 추적할 수 있습니다.">
+        <Field
+          label="연결할 투어"
+          hint={tourTotal > TOUR_PICK_LIMIT ? `최근 ${TOUR_PICK_LIMIT}개만 보입니다 (전체 ${tourTotal.toLocaleString("ko-KR")}개) — 투어명으로 검색하세요.` : "투어관리의 투어와 연결하면 함께 추적할 수 있습니다."}
+        >
+          {(tourTotal > TOUR_PICK_LIMIT || tourQuery) && (
+            <input className={`${inputClass} mb-2`} placeholder="투어명 검색" value={tourQuery} onChange={(e) => setTourQuery(e.target.value)} />
+          )}
           <select className={inputClass} value={tourId} onChange={(e) => setTourId(e.target.value)}>
             <option value="">연결 안 함</option>
             {tours.map((t) => (

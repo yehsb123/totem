@@ -218,3 +218,19 @@ describe("관광정보 동기화 (공용 데이터 보호)", () => {
     expect(again.body.error.details.nextAvailableAt).toBe(st.nextAvailableAt);
   });
 });
+
+describe("리뷰 평균은 전체 기준", () => {
+  it("페이지로 나눠 받아도 요약은 전체 리뷰로 계산되고, 값이 없는 항목은 null (MongoDB $avg 는 null 을 건너뜀)", async () => {
+    const api = authed((await signup()).token);
+    const t = (await api.post("/tours", { title: "T", startDate: "2026-10-01", endDate: "2026-10-01" })).body.data;
+    const ratings = [5, 4, 3, 2, 1, 5, 4];
+    for (const [i, r] of ratings.entries()) await api.post(`/tours/${t.id}/reviews`, { totalRating: r, guideRating: i < 2 ? 5 : null });
+    const page1 = await api.get(`/tours/${t.id}/reviews?limit=3&page=1`);
+    expect(page1.body.data).toHaveLength(3);
+    expect(page1.body.meta).toMatchObject({ total: 7, totalPages: 3 });
+    const s = (await api.get(`/tours/${t.id}/reviews/summary`)).body.data;
+    expect(s).toEqual({ count: 7, total: 3.4, restaurant: null, accommodation: null, attraction: null, guide: 5 });
+    // 투어 목록의 평균과 같다
+    expect((await api.get(`/tours/${t.id}`)).body.data.reviewStats).toEqual({ averageRating: 3.4, reviewCount: 7 });
+  });
+});

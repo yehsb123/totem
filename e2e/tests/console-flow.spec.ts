@@ -145,7 +145,9 @@ test.describe.serial("메인 → 콘솔 전체 흐름", () => {
     await page.getByRole("link", { name: "리뷰관리" }).click();
     await page.locator("tr", { hasText: "중문 리조트 가족여행" }).getByRole("button", { name: "리뷰 보기" }).click();
     await expect(page.getByText("가족 모두 만족했어요.")).toBeVisible();
-    await expect(page.getByText("평균 (3건)")).toBeVisible();
+    await expect(page.getByText("전체 평균 (3건)")).toBeVisible();
+    await expect(page.getByText("전체 3건")).toBeVisible();
+    await expect(page.getByText(/전체 \d+개 투어/)).toBeVisible();
   });
 
   test("설정: 결제 정보가 가격표 요금제(Basic)와 일치한다", async () => {

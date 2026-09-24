@@ -63,6 +63,7 @@ export const ROUTES = {
     detail: (id: string) => `/tours/${id}`,
     reviews: (tourId: string) => `/tours/${tourId}/reviews`,
     reviewImport: (tourId: string) => `/tours/${tourId}/reviews/import`,
+    reviewSummary: (tourId: string) => `/tours/${tourId}/reviews/summary`,
   },
 
   reviews: {

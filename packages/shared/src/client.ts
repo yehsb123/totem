@@ -42,7 +42,7 @@ import type {
 } from "./places";
 import type { Course, CourseListQuery, CourseSummary, CreateCourseRequest, UpdateCourseRequest } from "./courses";
 import type { CreateTourRequest, Tour, TourListQuery, UpdateTourRequest } from "./tours";
-import type { CreateReviewRequest, ImportReviewsResult, Review, ReviewListQuery } from "./reviews";
+import type { CreateReviewRequest, ImportReviewsResult, Review, ReviewListQuery, ReviewSummary } from "./reviews";
 import type {
   CreateEventRequest,
   EventListQuery,
@@ -327,6 +327,7 @@ export function createApiClient(options: ApiClientOptions) {
 
     reviews: {
       listByTour: (tourId: string, query?: ReviewListQuery) => paged<Review[]>(ROUTES.tours.reviews(tourId), query),
+      summary: (tourId: string) => get<ReviewSummary>(ROUTES.tours.reviewSummary(tourId)),
       create: (tourId: string, body: CreateReviewRequest) => send<Review>("POST", ROUTES.tours.reviews(tourId), body),
       importCsv: (tourId: string, csvUrl: string) =>
         send<ImportReviewsResult>("POST", ROUTES.tours.reviewImport(tourId), { csvUrl }),

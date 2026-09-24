@@ -32,6 +32,19 @@ export const createReviewRequest = z.object({
 });
 export type CreateReviewRequest = z.input<typeof createReviewRequest>;
 
+/**
+ * GET /tours/:tourId/reviews/summary — 리뷰관리 "평균" 행.
+ * 목록은 페이지로 나눠 받으므로, 평균은 반드시 서버가 전체 리뷰로 계산한 값을 쓴다 (불러온 페이지만으로 계산하면 틀림)
+ */
+export interface ReviewSummary {
+  count: number;
+  total: number | null;
+  restaurant: number | null;
+  accommodation: number | null;
+  attraction: number | null;
+  guide: number | null;
+}
+
 export const reviewListQuery = paginationQuery.extend({
   limit: z.coerce.number().int().min(1).max(200).default(100),
 });

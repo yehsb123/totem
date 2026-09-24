@@ -94,6 +94,7 @@
 | 메서드 | 경로 | |
 |---|---|---|
 | GET·POST | `/tours/:tourId/reviews` | 투어별 목록 / 직접 입력 |
+| GET | `/tours/:tourId/reviews/summary` | 전체 리뷰 기준 항목별 평균 — 리뷰관리 "전체 평균" 행 (목록 페이지와 무관) |
 | POST | `/tours/:tourId/reviews/import` | `{ csvUrl }` 구글 시트·CSV 가져오기 → `{ totalRows, imported, skipped, errors[] }` |
 | DELETE | `/reviews/:id` | |
 
