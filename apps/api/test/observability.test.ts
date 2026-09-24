@@ -55,3 +55,24 @@ describe("describeApiError (web·console 공통 오류 문구)", () => {
     expect(describeApiError("??")).toBe("알 수 없는 오류가 발생했습니다.");
   });
 });
+
+describe("접근 로그 비밀값 가리기", () => {
+  it("초대 토큰 경로·token/code/refreshToken 쿼리를 가린다 (수락 경로·다른 쿼리는 그대로)", async () => {
+    const { redactUrl } = await import("../src/lib/redact");
+    expect(redactUrl("/api/v1/auth/invitations/abc123SECRETtoken")).toBe("/api/v1/auth/invitations/[REDACTED]");
+    expect(redactUrl("/api/v1/auth/invitations/abc123SECRET?x=1")).toBe("/api/v1/auth/invitations/[REDACTED]?x=1");
+    expect(redactUrl("/api/v1/auth/invitations/accept")).toBe("/api/v1/auth/invitations/accept");
+    expect(redactUrl("/cb?code=HANDOFF&next=/schedule/")).toBe("/cb?code=[REDACTED]&next=/schedule/");
+    expect(redactUrl("/x?page=2&token=abc&refreshToken=zzz")).toBe("/x?page=2&token=[REDACTED]&refreshToken=[REDACTED]");
+    expect(redactUrl("/api/v1/tours?q=code")).toBe("/api/v1/tours?q=code");
+  });
+
+  it("앱이 pino 에 넘기는 로그 메시지·직렬화기가 초대 토큰 원문을 남기지 않는다", async () => {
+    const { accessLogMessage, accessLogSerializers } = await import("../src/app");
+    const req = { id: "r1", method: "GET", url: "/api/v1/auth/invitations/SuperSecretInviteToken1234", remoteAddress: "1.2.3.4" };
+    type Msg = Parameters<typeof accessLogMessage>;
+    const line = accessLogMessage(req as unknown as Msg[0], { statusCode: 410 } as unknown as Msg[1]) + JSON.stringify(accessLogSerializers.req(req));
+    expect(line).toContain("/auth/invitations/[REDACTED]");
+    expect(line).not.toContain("SuperSecretInviteToken1234");
+  });
+});

@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import type { IncomingMessage, ServerResponse } from "node:http";
 import cors from "cors";
 import express, { Router } from "express";
 import rateLimit from "express-rate-limit";
@@ -8,6 +9,7 @@ import { pinoHttp } from "pino-http";
 import { API_PREFIX, ROUTES } from "@totem/shared";
 import { env } from "./config/env";
 import { logger } from "./lib/logger";
+import { redactUrl } from "./lib/redact";
 import { errorHandler, notFoundHandler } from "./middlewares/error";
 import { authRouter } from "./modules/auth/router";
 import { billingRouter } from "./modules/billing/router";
@@ -22,6 +24,15 @@ import { orgRouter } from "./modules/org/router";
 import { usersRouter } from "./modules/users/router";
 
 const REQUEST_ID_RE = /^[A-Za-z0-9._-]{8,64}$/;
+
+/** 접근 로그 한 줄 — URL 안의 초대 토큰 등 비밀값은 가려서 남긴다 (테스트에서 직접 검증) */
+export const accessLogMessage = (req: IncomingMessage, res: ServerResponse) =>
+  `${req.method} ${redactUrl(req.url)} ${res.statusCode}`;
+
+export const accessLogSerializers = {
+  req: (req: { id?: unknown; method?: string; url?: string; remoteAddress?: string }) => ({ id: req.id, method: req.method, url: redactUrl(req.url), ip: req.remoteAddress }),
+  res: (res: { statusCode: number }) => ({ statusCode: res.statusCode }),
+};
 
 export function createApp() {
   const app = express();
@@ -40,17 +51,14 @@ export function createApp() {
       },
       autoLogging: { ignore: (req) => req.url === `${API_PREFIX}${ROUTES.health}` },
       customLogLevel: (_req, res, err) => (err || res.statusCode >= 500 ? "error" : res.statusCode >= 400 ? "warn" : "info"),
-      customSuccessMessage: (req, res) => `${req.method} ${req.url} ${res.statusCode}`,
-      customErrorMessage: (req, res) => `${req.method} ${req.url} ${res.statusCode}`,
+      customSuccessMessage: accessLogMessage,
+      customErrorMessage: accessLogMessage,
       // 누가(조직·사용자) 보낸 요청인지 — requireAuth 를 통과한 요청만 값이 있다
       customProps: (req) => {
         const auth = (req as { auth?: { userId: unknown; organizationId: unknown } }).auth;
         return auth ? { userId: String(auth.userId), orgId: String(auth.organizationId) } : {};
       },
-      serializers: {
-        req: (req) => ({ id: req.id, method: req.method, url: req.url, ip: req.remoteAddress }),
-        res: (res) => ({ statusCode: res.statusCode }),
-      },
+      serializers: accessLogSerializers,
     }),
   );
   app.use(helmet());

@@ -16,7 +16,7 @@
 
 **요청 ID**: 모든 응답에 `X-Request-Id` 헤더(앞단이 준 값이 `[A-Za-z0-9._-]{8,64}` 이면 이어 씀, 아니면 새 UUID), 모든 오류 본문에 `error.requestId`.
 화면은 5xx 일 때 "(오류 ID: 앞 8자리)" 를 보여준다 (`describeApiError`). 로그 찾기: 서버 로그에서 그 값으로 검색.
-접근 로그: 5xx=error · 4xx=warn · 나머지 info, 인증된 요청은 `userId`·`orgId` 포함, 헬스체크 제외.
+접근 로그: 5xx=error · 4xx=warn · 나머지 info, 인증된 요청은 `userId`·`orgId` 포함, 헬스체크 제외. URL 안의 초대 토큰(경로)·`token`/`code`/`refreshToken` 쿼리 값은 `[REDACTED]` 로 가려 남긴다.
 
 | code | HTTP | 의미 |
 |---|---|---|
