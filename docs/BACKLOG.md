@@ -74,6 +74,12 @@
 | DOC-001 | ✅ | README 재작성(구조 포함), `docs/API.md`, `docs/DATABASE.md`, `docs/DEPLOY.md` |
 | DOC-002 | ✅ | 작업 로그 `docs/WORKLOG.md` (지시사항·결정 누적) |
 
+## 4-1. 의존성
+
+| ID | 담당 | 상태 | 내용 |
+|---|---|---|---|
+| DEP-001 | M | ⏳ | Next 15 → 16 업그레이드 (postcss 취약점 해소, `next lint` 제거 대응 → eslint CLI) |
+
 ## 5. 검증 기록 (2026-09-25)
 
 | 항목 | 결과 |
