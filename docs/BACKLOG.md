@@ -35,17 +35,17 @@
 | API-080 | ✅ | 시드: 데모 조직·계정·라벨·장소·코스·투어·리뷰·결제·통계 |
 | API-090 | ✅ | 테스트: vitest + supertest + 인메모리 Mongo (인증·권한·조직 격리·코스 규칙) |
 
-## 2. 메인 사이트 (apps/web, Vercel) — 담당 S → 작업 에이전트(격리 워크트리)가 수행 🔄
+## 2. 메인 사이트 (apps/web, Vercel) — 작업 에이전트(격리 워크트리)가 수행, dev 에 머지
 
 | ID | 상태 | 내용 |
 |---|---|---|
-| WEB-001 | ⏳ | 앱 골격: root `layout.tsx`(lang=ko, metadata) + `MarketingShell` 을 레이아웃 컴포넌트로, 경로 `/`, `/pricing`, `/resources/*`, `/features/*` 확정 · 내부 링크 전수 교체(`/mainpage/...` 제거) |
-| WEB-002 | ⏳ | 로그인·회원가입 모달 → `@totem/shared` 클라이언트 (emailCheck → signup(agreements 포함) / login) → 성공 시 `createHandoff()` → `${NEXT_PUBLIC_CONSOLE_URL}/auth/callback/?code=...` 로 이동 |
-| WEB-003 | ⏳ | 카카오 로그인: JS SDK `Kakao.Auth.authorize({ redirectUri: ${SITE_URL}/auth/kakao/callback })` → 콜백 페이지에서 `api.auth.kakao({code, redirectUri})` → handoff 이동 |
-| WEB-004 | ⏳ | 누락 이미지 7건(AUDIT F17): 이미지 받기 전까지 자리표시 컴포넌트, 경로는 `public/images/` 로 통일 |
-| WEB-005 | ⏳ | vw 단위 인라인 스타일 → Tailwind, 모바일 대응 |
-| WEB-006 | ⏳ | SEO: 페이지별 metadata, OG 이미지, favicon |
-| WEB-007 | ⏳ | Vercel: Root Directory `apps/web`, env 3종 등록 방법 문서화 |
+| WEB-001 | ✅ | 앱 골격: root `layout.tsx`(lang=ko, metadata) + `MarketingShell` 을 레이아웃 컴포넌트로, 경로 `/`, `/pricing`, `/resources/*`, `/features/*` 확정 · 내부 링크 전수 교체(`/mainpage/...` 제거) |
+| WEB-002 | ✅ | 로그인·회원가입 모달 → `@totem/shared` 클라이언트 (emailCheck → signup(agreements 포함) / login) → 성공 시 `createHandoff()` → `${NEXT_PUBLIC_CONSOLE_URL}/auth/callback/?code=...` 로 이동 |
+| WEB-003 | ✅ | 카카오 로그인: JS SDK `Kakao.Auth.authorize({ redirectUri: ${SITE_URL}/auth/kakao/callback })` → 콜백 페이지에서 `api.auth.kakao({code, redirectUri})` → handoff 이동 |
+| WEB-004 | ✅ | 누락 이미지 7건(AUDIT F17): 이미지 받기 전까지 자리표시 컴포넌트, 경로는 `public/images/` 로 통일 |
+| WEB-005 | ✅ | vw 단위 인라인 스타일 → Tailwind, 모바일 대응 |
+| WEB-006 | ✅ | SEO: 페이지별 metadata, OG 이미지, favicon |
+| WEB-007 | ✅ | Vercel: Root Directory `apps/web`, env 3종 등록 방법 문서화 |
 
 ## 3. 콘솔 (apps/console, GitHub Pages) — 담당 M (서포트 세션 종료로 메인이 수행)
 
@@ -69,7 +69,19 @@
 | ENV-001 | ✅ | env 전수 정의 `docs/ENV.md` + 앱별 `.env.example` 3개 (S3, F6) |
 | OPS-001 | ✅ | CI: PR/`dev` push 에 lint · typecheck · test · build |
 | OPS-002 | ✅ | 콘솔 배포: `main` push → 정적 export → GitHub Pages (D1 제거) |
-| OPS-003 | 🔄 | 메인 배포: Vercel (Git 연동, Root `apps/web`) |
+| OPS-003 | 책임님 | 메인 배포: Vercel 프로젝트 연결 (Git 연동, Root `apps/web`) — 절차 docs/DEPLOY.md §2 |
 | OPS-004 | ⛔ | **API 배포 대상 결정 필요** (Render / Fly.io / Railway / 사내 VM). 결정 전까지 Dockerfile + 헬스체크만 준비 |
 | DOC-001 | ✅ | README 재작성(구조 포함), `docs/API.md`, `docs/DATABASE.md`, `docs/DEPLOY.md` |
 | DOC-002 | ✅ | 작업 로그 `docs/WORKLOG.md` (지시사항·결정 누적) |
+
+## 5. 검증 기록 (2026-09-25)
+
+| 항목 | 결과 |
+|---|---|
+| 타입 검사 (shared·api·web·console) | 통과 |
+| API 테스트 (vitest, 인메모리 MongoDB) | 25/25 |
+| 빌드 (api·web·console, console basePath=/totem) | 통과 |
+| 공용 클라이언트 E2E (라이브 API, 전 화면 흐름) | 17/17 |
+| 실제 브라우저 E2E (Chrome: 미로그인 차단 → 메인 로그인 → 콘솔 인계 → 투어·일정·대시보드·코스메이커(드래그·숙소 규칙·저장)·리뷰·설정 → 로그아웃) | 10/10 |
+| web 단독 브라우저 E2E (에이전트, 목 API) | 32/32 |
+| 남은 후속 | WEB 누락 스크린샷 9장 실제 이미지로 교체 · OG 전용 이미지 · 카카오 로그인 실제 키로 검증 |
