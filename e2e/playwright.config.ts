@@ -31,7 +31,16 @@ export default defineConfig({
       command: "npm run dev -w @totem/api",
       cwd: root,
       url: "http://localhost:8000/api/v1/health",
-      env: { MONGO_URI: "", LOG_LEVEL: "warn", AUTH_RATE_LIMIT_PER_15MIN: "1000" },
+      // 개발자 PC 의 apps/api/.env(실제 키·DB) 가 E2E 결과를 바꾸지 못하게 외부 연동은 비운다 (CI 와 같은 조건)
+      env: {
+        MONGO_URI: "",
+        LOG_LEVEL: "warn",
+        AUTH_RATE_LIMIT_PER_15MIN: "1000",
+        TOURAPI_SERVICE_KEY: "",
+        KAKAO_REST_API_KEY: "",
+        KAKAO_CLIENT_SECRET: "",
+        SEED_DEMO_PASSWORD: "",
+      },
       reuseExistingServer: !CI,
       timeout: 180_000,
     },

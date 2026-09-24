@@ -49,6 +49,20 @@ export interface PlaceSyncResult {
   modified: number;
 }
 
+/** GET /places/sync-status — 설정 > 데이터 관리 */
+export interface PlaceSyncStatus {
+  areaCode: string;
+  /** 활성 장소 수 (샘플 + TourAPI) */
+  total: number;
+  /** TourAPI 에서 받은 장소 수 */
+  tourapiCount: number;
+  lastSyncedAt: string | null;
+  /** 장소는 모든 조직이 함께 쓰는 공용 데이터라, 한 번 받으면 일정 시간 다시 받을 수 없다 (TourAPI 호출 한도 보호) */
+  nextAvailableAt: string | null;
+  /** 서버에 TourAPI 서비스키가 있는지 */
+  configured: boolean;
+}
+
 /**
  * 카카오 업종 그룹 코드 → 코스메이커 분류.
  * FD6 음식점 · CE7 카페 · AD5 숙박 · AT4 관광명소 · CT1 문화시설 · 그 외(편의점·주차장 등) etc

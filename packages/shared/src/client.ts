@@ -38,6 +38,7 @@ import type {
   PlaceListQuery,
   PlaceSyncRequest,
   PlaceSyncResult,
+  PlaceSyncStatus,
 } from "./places";
 import type { Course, CourseListQuery, CourseSummary, CreateCourseRequest, UpdateCourseRequest } from "./courses";
 import type { CreateTourRequest, Tour, TourListQuery, UpdateTourRequest } from "./tours";
@@ -299,6 +300,7 @@ export function createApiClient(options: ApiClientOptions) {
       list: (query?: Partial<PlaceListQuery>) => paged<Place[]>(ROUTES.places.list, query),
       get: (id: string) => get<Place>(ROUTES.places.detail(id)),
       sync: (body: PlaceSyncRequest = {}) => send<PlaceSyncResult>("POST", ROUTES.places.sync, body),
+      syncStatus: (areaCode = "39") => get<PlaceSyncStatus>(ROUTES.places.syncStatus, { areaCode }),
     },
 
     maps: {

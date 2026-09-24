@@ -51,6 +51,9 @@ const schema = z.object({
   TOURAPI_SERVICE_KEY: z.string().default(""),
   TOURAPI_BASE_URL: z.string().url().default("https://apis.data.go.kr/B551011/KorService2"),
 
+  /** 공용 장소 데이터(TourAPI) 동기화 간 최소 간격(시간) — 아무 조직 관리자나 반복 호출해 호출 한도를 소진하지 못하게 */
+  PLACE_SYNC_COOLDOWN_HOURS: z.coerce.number().min(0).max(720).default(6),
+
   /** 카카오 REST API 키 — 로컬 검색·길찾기·카카오 로그인 토큰 교환에 사용 (서버 전용) */
   KAKAO_REST_API_KEY: z.string().default(""),
   /** 카카오 로그인 보안 > Client Secret 을 켰다면 입력 */

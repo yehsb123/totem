@@ -73,7 +73,8 @@
 |---|---|---|
 | GET | `/places?q&category&sort&page&limit&areaCode` | 장소 목록 (검색·카테고리·인기순/외국인 인기순/이름순) |
 | GET | `/places/:id` | |
-| POST | `/places/sync` | (owner·admin) TourAPI 에서 지역 전체 동기화 |
+| GET | `/places/sync-status` | (owner·admin) 동기화 상태 — 장소 수·마지막 동기화·다음 가능 시각·키 유무 (설정 > 데이터 관리) |
+| POST | `/places/sync` | (owner·admin) TourAPI 에서 지역 전체 동기화. 공용 데이터라 **전역 간격** `PLACE_SYNC_COOLDOWN_HOURS` 안에는 429, 동시 실행 409 |
 | GET | `/maps/local-search?query&x&y` | 카카오 키워드 검색 프록시 — 코스메이커 "카카오 검색" 탭. 업종 코드 → `category`(FD6 식당·CE7 카페·AD5 숙소·AT4/CT1 관광지·그 외 기타). 키 없으면 503 |
 | POST | `/maps/directions` | 카카오모빌리티 경유지 길찾기 프록시 — 코스메이커 "동선 계산"(버튼 누를 때만, 순서: 시간대 → 숙소). 경로 없으면 422, 키 없으면 503 |
 | GET·POST | `/courses` | 목록(`placeCount`·`tourCount` 포함, "내 코스") / "코스 생성 완료" (`tour` 옵션 시 **투어 + 일정관리 일정("투어" 라벨)** 동시 생성) |

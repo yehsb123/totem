@@ -34,6 +34,7 @@
 | `RATE_LIMIT_PER_MINUTE` | | `300` | IP 당 전체 요청 |
 | `AUTH_RATE_LIMIT_PER_15MIN` | | `30` | IP 당 로그인·가입·refresh |
 | `TOURAPI_SERVICE_KEY` | 장소 동기화 시 | | 공공데이터포털 > 한국관광공사_국문 관광정보 서비스_GW > **일반 인증키(Decoding)** |
+| `PLACE_SYNC_COOLDOWN_HOURS` | | `6` | 공용 장소 동기화 간 최소 간격. 모든 조직이 같은 데이터를 쓰므로 한 번 받으면 이 시간 동안 다시 받을 수 없음 (TourAPI 호출 한도 보호) |
 | `TOURAPI_BASE_URL` | | `https://apis.data.go.kr/B551011/KorService2` | |
 | `KAKAO_REST_API_KEY` | 지도검색·길찾기·카카오로그인 시 | | 카카오 디벨로퍼스 > 앱 키 > **REST API 키** |
 | `KAKAO_CLIENT_SECRET` | | | 카카오 로그인 > 보안 > Client Secret 을 켠 경우만 |

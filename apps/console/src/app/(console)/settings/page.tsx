@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, CreditCard, UserCircle, Users } from "lucide-react";
+import { Bell, CreditCard, Database, UserCircle, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   PAYMENT_STATUS_LABELS,
@@ -15,6 +15,7 @@ import { api, errorMessage, fieldErrors } from "@/lib/api";
 import { env } from "@/lib/env";
 import { formatDateKo, formatWon } from "@/lib/format";
 import { useSession } from "@/lib/session";
+import DataTab from "./DataTab";
 import MembersTab from "./MembersTab";
 
 const TABS = [
@@ -22,16 +23,21 @@ const TABS = [
   { key: "notifications", label: "알림 설정", Icon: Bell },
   { key: "members", label: "멤버 관리", Icon: Users },
   { key: "billing", label: "결제 정보", Icon: CreditCard },
+  // 공용 데이터 관리 — 소유자·관리자에게만 보인다 (API 도 같은 권한으로 막혀 있음)
+  { key: "data", label: "데이터 관리", Icon: Database, managersOnly: true },
 ] as const;
 type TabKey = (typeof TABS)[number]["key"];
 
 export default function SettingsPage() {
   const [tab, setTab] = useState<TabKey>("account");
+  const { user } = useSession();
+  const isManager = user.role === "owner" || user.role === "admin";
+  const tabs = TABS.filter((t) => !("managersOnly" in t) || isManager);
   return (
     <div className="p-4">
       <div className="flex flex-col overflow-hidden rounded-lg bg-white shadow-sm md:flex-row">
         <nav className="flex gap-1 border-b border-slate-200 bg-slate-50 p-3 md:w-56 md:flex-col md:border-b-0 md:border-r">
-          {TABS.map(({ key, label, Icon }) => (
+          {tabs.map(({ key, label, Icon }) => (
             <button
               key={key}
               onClick={() => setTab(key)}
@@ -46,6 +52,7 @@ export default function SettingsPage() {
           {tab === "notifications" && <NotificationsTab />}
           {tab === "members" && <MembersTab />}
           {tab === "billing" && <BillingTab />}
+          {tab === "data" && isManager && <DataTab />}
         </div>
       </div>
     </div>

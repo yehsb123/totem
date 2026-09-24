@@ -44,6 +44,7 @@ export const ROUTES = {
     list: "/places",
     detail: (id: string) => `/places/${id}`,
     sync: "/places/sync",
+    syncStatus: "/places/sync-status",
   },
 
   maps: {

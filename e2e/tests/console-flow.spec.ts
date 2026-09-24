@@ -276,3 +276,16 @@ test("멤버 초대: 소유자가 링크를 만들고 → 새 사람이 메인�
   await expect(page.getByText("초대된 가이드")).toBeVisible();
   await expect(page.getByText("수락", { exact: true })).toBeVisible();
 });
+
+test("데이터 관리: 소유자는 관광정보 동기화 상태를 보고, 서버 키가 없으면 버튼이 막혀 있다", async ({ page }) => {
+  await page.goto(`${WEB}/?login=1&next=%2Fsettings%2F`);
+  await page.getByPlaceholder("이메일을 입력해주세요").fill(DEMO.email);
+  await page.getByPlaceholder("비밀번호를 입력해주세요").fill(DEMO.password);
+  await page.locator('form button[type="submit"]').first().click();
+  await page.waitForURL(/localhost:3200\/settings/);
+  await page.getByRole("button", { name: "데이터 관리" }).click();
+  await expect(page.getByText("사용 가능한 장소")).toBeVisible();
+  await expect(page.getByText("(지금은 샘플 장소만)")).toBeVisible();
+  await expect(page.getByText("TourAPI 서비스키")).toBeVisible();
+  await expect(page.getByRole("button", { name: "지금 동기화" })).toBeDisabled();
+});

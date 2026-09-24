@@ -187,3 +187,34 @@ describe("대시보드", () => {
     expect(o.change.totalVisitors).toBeNull(); // 2024-06 데이터 없음
   });
 });
+
+describe("관광정보 동기화 (공용 데이터 보호)", () => {
+  it("상태는 관리자 이상만, 키 없으면 configured=false, 동기화는 503 / 멤버는 403", async () => {
+    const owner = await signup();
+    const st = await authed(owner.token).get("/places/sync-status");
+    expect(st.status).toBe(200); // /places/:id 에 가로채이지 않는다
+    expect(st.body.data).toMatchObject({ areaCode: "39", tourapiCount: 0, lastSyncedAt: null, nextAvailableAt: null, configured: false });
+    expect(st.body.data.total).toBeGreaterThan(0); // 샘플 장소
+    expect((await authed(owner.token).post("/places/sync", {})).status).toBe(503);
+
+    const inv = (await authed(owner.token).post("/org/invitations", { email: "m@example.com" })).body.data;
+    const request = (await import("supertest")).default;
+    const { P, app } = await import("./helpers");
+    const m = await request(app).post(`${P}/auth/invitations/accept`).send({ token: inv.token, name: "m", password: "password1", agreements: { terms: true, privacy: true } });
+    const member = authed(m.body.data.accessToken);
+    expect((await member.get("/places/sync-status")).status).toBe(403);
+    expect((await member.post("/places/sync", {})).status).toBe(403);
+  });
+
+  it("최근 동기화 후 간격 안에는 어느 조직이 불러도 429 + 다음 가능 시각", async () => {
+    const { Place } = await import("../src/db/models");
+    await Place.create({ source: "tourapi", contentId: "t-1", category: "attraction", title: "동기화된 곳", areaCode: "39", mapX: 126.5, mapY: 33.4, syncedAt: new Date() });
+    const a = authed((await signup()).token);
+    const st = (await a.get("/places/sync-status")).body.data;
+    expect(st.tourapiCount).toBe(1);
+    expect(st.nextAvailableAt).not.toBeNull();
+    const again = await a.post("/places/sync", {});
+    expect(again.status).toBe(429);
+    expect(again.body.error.details.nextAvailableAt).toBe(st.nextAvailableAt);
+  });
+});
