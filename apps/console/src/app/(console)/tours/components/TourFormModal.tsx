@@ -1,57 +1,43 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { NATIONS, NATION_LABELS, TOUR_STATUSES, TOUR_STATUS_LABELS, createTourRequest, type CreateTourRequest, type Nation, type Tour, type TourStatus } from "@totem/shared";
 import { Field, Modal, btn, inputClass } from "@/components/ui";
 import { errorMessage, fieldErrors } from "@/lib/api";
 import { today } from "@/lib/format";
 
-export default function TourFormModal({
-  open,
+/** 닫혀 있을 땐 폼을 아예 마운트하지 않는다 — 열 때마다 새로 마운트돼 초기값이 useState 초기화로 들어간다 (effect 로 되돌리지 않음) */
+export default function TourFormModal(props: Parameters<typeof TourForm>[0] & { open: boolean }) {
+  return props.open ? <TourForm {...props} /> : null;
+}
+
+function TourForm({
   initial,
   onClose,
   onSubmit,
 }: {
-  open: boolean;
   initial: Tour | null;
   onClose: () => void;
   onSubmit: (body: CreateTourRequest) => Promise<void>;
 }) {
-  const [f, setF] = useState({
-    title: "",
-    type: "일반",
-    nation: "KR" as Nation,
-    startDate: today(),
-    endDate: today(),
-    status: "planned" as TourStatus,
-    managerName: "",
-    capacity: 0,
-    bookedSeats: 0,
-    note: "",
-  });
+  const [f, setF] = useState(() =>
+    initial
+      ? {
+          title: initial.title,
+          type: initial.type,
+          nation: initial.nation,
+          startDate: initial.startDate,
+          endDate: initial.endDate,
+          status: initial.status,
+          managerName: initial.managerName,
+          capacity: initial.capacity,
+          bookedSeats: initial.bookedSeats,
+          note: initial.note,
+        }
+      : { title: "", type: "일반", nation: "KR" as Nation, startDate: today(), endDate: today(), status: "planned" as TourStatus, managerName: "", capacity: 0, bookedSeats: 0, note: "" },
+  );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    if (!open) return;
-    setErrors({});
-    setF(
-      initial
-        ? {
-            title: initial.title,
-            type: initial.type,
-            nation: initial.nation,
-            startDate: initial.startDate,
-            endDate: initial.endDate,
-            status: initial.status,
-            managerName: initial.managerName,
-            capacity: initial.capacity,
-            bookedSeats: initial.bookedSeats,
-            note: initial.note,
-          }
-        : { title: "", type: "일반", nation: "KR", startDate: today(), endDate: today(), status: "planned", managerName: "", capacity: 0, bookedSeats: 0, note: "" },
-    );
-  }, [open, initial]);
 
   const set = <K extends keyof typeof f>(k: K, v: (typeof f)[K]) => setF((p) => ({ ...p, [k]: v }));
 
@@ -75,7 +61,7 @@ export default function TourFormModal({
 
   return (
     <Modal
-      open={open}
+      open
       onClose={onClose}
       title={initial ? "투어 수정" : "투어 추가"}
       footer={

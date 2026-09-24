@@ -1,18 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { ScheduleLabel } from "@totem/shared";
 import { Modal, btn, inputClass } from "@/components/ui";
 import { errorMessage } from "@/lib/api";
 
 /** 라벨을 쓰는 일정이 있으면 옮길 라벨(또는 라벨 없음)을 고르게 한 뒤 삭제 */
-export default function DeleteLabelModal({
+export default function DeleteLabelModal(props: Omit<Parameters<typeof DeleteLabelForm>[0], "label"> & { label: ScheduleLabel | null }) {
+  // 라벨이 바뀌면 key 로 새로 마운트 → 선택값·오류가 이전 라벨 것으로 남지 않는다
+  return props.label ? <DeleteLabelForm key={props.label.id} {...props} label={props.label} /> : null;
+}
+
+function DeleteLabelForm({
   label,
   labels,
   onClose,
   onConfirm,
 }: {
-  label: ScheduleLabel | null;
+  label: ScheduleLabel;
   labels: ScheduleLabel[];
   onClose: () => void;
   onConfirm: (reassignTo?: string) => Promise<void>;
@@ -21,12 +26,6 @@ export default function DeleteLabelModal({
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => {
-    setTarget("none");
-    setError(null);
-  }, [label]);
-
-  if (!label) return null;
   const inUse = label.eventCount > 0;
 
   const confirm = async () => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { LABEL_COLORS, LABEL_COLOR_LABELS, upsertLabelRequest, type LabelColor, type ScheduleLabel, type UpsertLabelRequest } from "@totem/shared";
 import { Field, Modal, btn, inputClass } from "@/components/ui";
 import { errorMessage, fieldErrors } from "@/lib/api";
@@ -8,34 +8,27 @@ import { colorOf } from "@/lib/labelColors";
 
 const EMOJIS = ["🚌", "✈️", "🏨", "🍽️", "☕", "🏖️", "🗻", "🏞️", "🚗", "🚢", "🎉", "💬", "📝", "🧑‍💻", "📅", "⭐", "❗", "🌴", "🏠", "🏢", "🎫", "🛍️", "📸", "🧳"];
 
-export default function LabelFormModal({
-  open,
+/** 닫혀 있을 땐 폼을 아예 마운트하지 않는다 — 열 때마다 새로 마운트돼 초기값이 useState 초기화로 들어간다 (effect 로 되돌리지 않음) */
+export default function LabelFormModal(props: Parameters<typeof LabelForm>[0] & { open: boolean }) {
+  return props.open ? <LabelForm {...props} /> : null;
+}
+
+function LabelForm({
   onClose,
   initial,
   onSubmit,
 }: {
-  open: boolean;
   onClose: () => void;
   initial: ScheduleLabel | null;
   onSubmit: (body: UpsertLabelRequest) => Promise<void>;
 }) {
-  const [name, setName] = useState("");
-  const [emoji, setEmoji] = useState(EMOJIS[0]);
-  const [color, setColor] = useState<LabelColor>("blue");
-  const [defaultPlace, setDefaultPlace] = useState("");
-  const [defaultManager, setDefaultManager] = useState("");
+  const [name, setName] = useState(initial?.name ?? "");
+  const [emoji, setEmoji] = useState(initial?.emoji ?? EMOJIS[0]);
+  const [color, setColor] = useState<LabelColor>(initial?.color ?? "blue");
+  const [defaultPlace, setDefaultPlace] = useState(initial?.defaultPlace ?? "");
+  const [defaultManager, setDefaultManager] = useState(initial?.defaultManager ?? "");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    if (!open) return;
-    setErrors({});
-    setName(initial?.name ?? "");
-    setEmoji(initial?.emoji ?? EMOJIS[0]);
-    setColor(initial?.color ?? "blue");
-    setDefaultPlace(initial?.defaultPlace ?? "");
-    setDefaultManager(initial?.defaultManager ?? "");
-  }, [open, initial]);
 
   const submit = async () => {
     const parsed = upsertLabelRequest.safeParse({ name, emoji, color, defaultPlace, defaultManager });
@@ -57,7 +50,7 @@ export default function LabelFormModal({
 
   return (
     <Modal
-      open={open}
+      open
       onClose={onClose}
       title={initial ? "라벨 수정" : "새 라벨"}
       footer={

@@ -9,8 +9,12 @@ import { api, errorMessage, fieldErrors } from "@/lib/api";
 type Item = { time: string; place: string };
 
 /** 일정 추가·수정 공용 폼. 색상은 라벨에서 온다 (구 코드는 일정마다 색을 골랐지만 저장되지 않았다) */
-export default function EventFormModal({
-  open,
+/** 닫혀 있을 땐 폼을 아예 마운트하지 않는다 — 열 때마다 새로 마운트돼 초기값이 useState 초기화로 들어간다 (effect 로 되돌리지 않음) */
+export default function EventFormModal(props: Parameters<typeof EventForm>[0] & { open: boolean }) {
+  return props.open ? <EventForm {...props} /> : null;
+}
+
+function EventForm({
   onClose,
   initial,
   defaultDate,
@@ -18,7 +22,6 @@ export default function EventFormModal({
   labels,
   onSubmit,
 }: {
-  open: boolean;
   onClose: () => void;
   initial: ScheduleEvent | null;
   defaultDate: string;
@@ -26,45 +29,27 @@ export default function EventFormModal({
   labels: ScheduleLabel[];
   onSubmit: (body: CreateEventRequest) => Promise<void>;
 }) {
-  const [name, setName] = useState("");
-  const [startDate, setStartDate] = useState(defaultDate);
-  const [endDate, setEndDate] = useState(defaultDate);
-  const [labelId, setLabelId] = useState<string>("");
-  const [tourId, setTourId] = useState<string>("");
-  const [manager, setManager] = useState("");
-  const [note, setNote] = useState("");
-  const [items, setItems] = useState<Item[]>([]);
+  const [name, setName] = useState(initial?.name ?? (presetLabel ? `${presetLabel.name} 일정` : ""));
+  const [startDate, setStartDate] = useState(initial?.startDate ?? defaultDate);
+  const [endDate, setEndDate] = useState(initial?.endDate ?? defaultDate);
+  const [labelId, setLabelId] = useState<string>(initial ? (initial.labelId ?? "") : (presetLabel?.id ?? ""));
+  const [tourId, setTourId] = useState<string>(initial?.tourId ?? "");
+  const [manager, setManager] = useState(initial?.manager ?? presetLabel?.defaultManager ?? "");
+  const [note, setNote] = useState(initial?.note ?? "");
+  const [items, setItems] = useState<Item[]>(
+    initial?.items ?? (presetLabel?.defaultPlace ? [{ time: "09:00", place: presetLabel.defaultPlace }] : []),
+  );
   const [tours, setTours] = useState<Tour[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
 
+  // 연결할 투어 선택지 — 비동기 응답에서만 setState
   useEffect(() => {
-    if (!open) return;
-    setErrors({});
-    if (initial) {
-      setName(initial.name);
-      setStartDate(initial.startDate);
-      setEndDate(initial.endDate);
-      setLabelId(initial.labelId ?? "");
-      setTourId(initial.tourId ?? "");
-      setManager(initial.manager);
-      setNote(initial.note);
-      setItems(initial.items);
-    } else {
-      setName(presetLabel ? `${presetLabel.name} 일정` : "");
-      setStartDate(defaultDate);
-      setEndDate(defaultDate);
-      setLabelId(presetLabel?.id ?? "");
-      setTourId("");
-      setManager(presetLabel?.defaultManager ?? "");
-      setNote("");
-      setItems(presetLabel?.defaultPlace ? [{ time: "09:00", place: presetLabel.defaultPlace }] : []);
-    }
     api.tours
       .list({ limit: 100 })
       .then((r) => setTours(r.items))
       .catch(() => setTours([]));
-  }, [open, initial, defaultDate, presetLabel]);
+  }, []);
 
   const submit = async () => {
     const body = { name, startDate, endDate, labelId: labelId || null, tourId: tourId || null, manager, note, items: items.filter((i) => i.place.trim()) };
@@ -89,7 +74,7 @@ export default function EventFormModal({
 
   return (
     <Modal
-      open={open}
+      open
       onClose={onClose}
       title={initial ? "일정 수정" : "새 일정"}
       footer={
