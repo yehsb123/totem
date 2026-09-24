@@ -17,12 +17,15 @@ export type UserStatus = (typeof USER_STATUSES)[number];
 export const AUTH_PROVIDERS = ["local", "kakao"] as const;
 export type AuthProvider = (typeof AUTH_PROVIDERS)[number];
 
-export const PLAN_TIERS = ["free", "premium", "enterprise"] as const;
+/** 메인 사이트 요금제(/pricing)와 1:1 — trial 은 가입 직후 "무료로 시작하기" 상태 */
+export const PLAN_TIERS = ["trial", "basic", "pro"] as const;
 export type PlanTier = (typeof PLAN_TIERS)[number];
+/** 월 요금(원, VAT 별도) — /pricing 표기와 같은 값. 결제 연동 시 이 값을 기준으로 청구 */
+export const PLAN_MONTHLY_PRICE: Record<PlanTier, number> = { trial: 0, basic: 29000, pro: 59000 };
 export const PLAN_TIER_LABELS: Record<PlanTier, string> = {
-  free: "무료",
-  premium: "프리미엄",
-  enterprise: "엔터프라이즈",
+  trial: "무료 체험",
+  basic: "Basic",
+  pro: "Pro",
 };
 
 export const SUBSCRIPTION_STATUSES = ["trialing", "active", "past_due", "canceled"] as const;

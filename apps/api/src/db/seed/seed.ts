@@ -1,4 +1,4 @@
-import { DEFAULT_TIME_SLOTS, HOTEL_SLOT_INDEX, enumerateDates } from "@totem/shared";
+import { DEFAULT_TIME_SLOTS, HOTEL_SLOT_INDEX, PLAN_MONTHLY_PRICE, enumerateDates } from "@totem/shared";
 import { env, isProd } from "../../config/env";
 import { logger } from "../../lib/logger";
 import { Course, Payment, Place, Review, ScheduleEvent, ScheduleLabel, Subscription, Tour, TourismStat, User } from "../models";
@@ -98,16 +98,18 @@ export async function seedDemoOrganization(password: string) {
   ]);
 
   const nextBilling = new Date(Date.now() + 20 * 86_400_000);
+  // 조직과 구독의 플랜은 항상 같은 값이어야 한다
+  await org.updateOne({ $set: { plan: "basic" } });
   await Subscription.updateOne(
     { organizationId },
-    { $set: { plan: "premium", status: "active", currentPeriodEnd: nextBilling, paymentMethod: { brand: "Visa", last4: "1234" } } },
+    { $set: { plan: "basic", status: "active", currentPeriodEnd: nextBilling, paymentMethod: { brand: "Visa", last4: "1234" } } },
   );
   await Payment.insertMany(
     [1, 2, 3].map((m) => ({
       organizationId,
       paidAt: new Date(nextBilling.getTime() - m * 30 * 86_400_000),
-      product: "프리미엄 플랜 (월간)",
-      amount: 15000,
+      product: "Basic 플랜 (월간)",
+      amount: PLAN_MONTHLY_PRICE.basic,
       status: "paid",
     })),
   );

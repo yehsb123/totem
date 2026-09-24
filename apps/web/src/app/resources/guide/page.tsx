@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import ScreenshotPlaceholder from "@/components/ScreenshotPlaceholder";
+import Image from "next/image";
 import BackLink from "../BackLink";
 
 export const metadata: Metadata = {
@@ -8,27 +8,27 @@ export const metadata: Metadata = {
   alternates: { canonical: "/resources/guide" },
 };
 
-// image: 받을 예정인 스크린샷 파일명 (현재 모두 미수령 → 자리표시)
+// image: 콘솔 데모 데이터로 캡처한 실제 화면 (1500×900)
 const STEPS = [
   {
     title: "코스 메이커로 첫 코스 만들기",
-    body: "코스 메이커 페이지에서 투어 API가 추천하는 관광지를 활용해 첫 번째 코스를 만들어 보세요. 카카오맵에서 목적지를 하나씩 추가하며 최적의 동선을 설계할 수 있습니다.",
-    image: "images/guide_course_maker.png",
+    body: "코스 메이커에서 관광지·식당·숙소를 검색하고 인기순으로 골라, 일차별 시간대 칸에 끌어다 놓으세요. 담긴 장소는 지도에 순서대로 표시되고, '투어관리에 등록'을 켜면 저장과 동시에 투어가 만들어집니다.",
+    image: "/images/guide_course_maker.png",
   },
   {
     title: "캘린더에서 일정 관리하기",
-    body: "생성한 코스가 캘린더에 자동으로 표시됩니다. 일정 기간을 드래그하거나 클릭하여 수정할 수 있으며, 목적지 및 중요한 메모를 추가하여 효율적으로 관리하세요.",
-    image: "images/guide_calendar.png",
+    body: "투어로 등록한 코스는 일정관리 달력에 자동으로 표시됩니다. 일정을 클릭해 기간·담당자·시간별 장소·메모를 수정하고, 라벨(투어·미팅·휴무 등)로 색을 나눠 한눈에 관리하세요.",
+    image: "/images/guide_calendar.png",
   },
   {
     title: "대시보드로 트렌드 파악하기",
-    body: "관광 데이터랩의 최신 데이터로 현재 관광 트렌드를 분석해 보세요. 어떤 지역이 인기 있는지, 관광객 수는 어떻게 변화하는지 확인하여 새로운 코스 기획에 활용할 수 있습니다.",
-    image: "images/guide_dashboard.png",
+    body: "한국관광데이터랩 기반의 제주 관광 통계로 월별 방문객·관광 소비·SNS 언급량·국가별 방문 비중을 확인하세요. 전월 대비 변화와 인기 동반·여행 유형을 코스 기획에 활용할 수 있습니다.",
+    image: "/images/guide_dashboard.png",
   },
   {
     title: "리뷰 관리 페이지 활용하기",
-    body: "고객에게 리뷰 요청 링크를 보내고, 받은 피드백을 한 곳에서 관리하세요. 고객의 소리를 분석하여 서비스 만족도를 높일 수 있습니다.",
-    image: "images/guide_review_management.png",
+    body: "구글 폼으로 받은 설문 응답 시트(CSV)를 불러오거나 직접 입력해 투어별 리뷰를 모으세요. 총점과 식당·숙소·관광지·가이드 항목별 평균이 자동으로 계산됩니다.",
+    image: "/images/guide_review_management.png",
   },
 ] as const;
 
@@ -54,7 +54,7 @@ export default function StartGuidePage() {
                   <p className="mt-2 leading-relaxed text-slate-600">{step.body}</p>
                 </div>
                 <div className={`w-full md:w-1/2 ${reversed ? "md:order-1" : ""}`}>
-                  <ScreenshotPlaceholder name={step.image} aspect="5 / 3" />
+                  <Image src={step.image} alt={`${step.title} 화면`} width={1500} height={900} sizes="(min-width: 768px) 50vw, 100vw" className="h-auto w-full rounded-lg border border-slate-200 shadow-sm" />
                 </div>
               </li>
             );

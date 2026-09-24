@@ -5,8 +5,8 @@ import { PAYMENT_STATUSES, PLAN_TIERS, SUBSCRIPTION_STATUSES } from "@totem/shar
 const subscriptionSchema = new Schema(
   {
     organizationId: { type: Schema.Types.ObjectId, ref: "Organization", required: true, unique: true },
-    plan: { type: String, enum: PLAN_TIERS, default: "free" },
-    status: { type: String, enum: SUBSCRIPTION_STATUSES, default: "active" },
+    plan: { type: String, enum: PLAN_TIERS, default: "trial" },
+    status: { type: String, enum: SUBSCRIPTION_STATUSES, default: "trialing" },
     currentPeriodEnd: { type: Date, default: null },
     /** PG 사 빌링키 등 민감정보는 저장하지 않고 표시용 정보만 둔다 */
     paymentMethod: {

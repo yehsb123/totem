@@ -8,7 +8,7 @@ import { AUTH_PROVIDERS, PLAN_TIERS, USER_ROLES, USER_STATUSES } from "@totem/sh
 const organizationSchema = new Schema(
   {
     name: { type: String, required: true, trim: true, maxlength: 100 },
-    plan: { type: String, enum: PLAN_TIERS, default: "free" },
+    plan: { type: String, enum: PLAN_TIERS, default: "trial" },
     ownerId: { type: Schema.Types.ObjectId, ref: "User", default: null },
     deletedAt: { type: Date, default: null },
   },

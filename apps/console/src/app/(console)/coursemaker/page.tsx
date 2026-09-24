@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import Script from "next/script";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useRef, useState } from "react";
@@ -125,6 +126,11 @@ function CourseMaker() {
             <span className="text-xs text-slate-500">
               {c.days.length}일 · 장소 {c.placeCount}곳{c.dirty && " · 저장 안 됨"}
             </span>
+            {c.isEdit && c.loaded && (
+              <Link href={`/itinerary/?courseId=${c.loaded.id}`} className={btn.secondary} aria-disabled={c.dirty} onClick={(e) => c.dirty && (e.preventDefault(), toast.error("변경사항을 먼저 저장해주세요."))}>
+                일정표 PDF
+              </Link>
+            )}
             <button className={btn.primary} onClick={save} disabled={saving}>
               {saving ? "저장 중…" : c.isEdit ? "변경사항 저장" : "코스 생성 완료"}
             </button>

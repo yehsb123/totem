@@ -36,8 +36,7 @@ export default function TourFeaturePage() {
           </>
         }
       >
-        {/* 이미지 미수령: images/tourmanage-toggle-example.png */}
-        <Screenshot alt="상태별 필터 토글 예시" placeholder="images/tourmanage-toggle-example.png" size="md" />
+        <Screenshot src="/images/tourmanage-toggle-example.png" width={1420} height={420} alt="투어 상태·좌석 관리 예시 — 필터와 상태 선택" size="md" />
       </FeatureSection>
     </>
   );

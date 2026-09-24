@@ -49,6 +49,14 @@ describe("코스메이커 규칙", () => {
     expect(res.body.data.course.tourIds).toHaveLength(1);
     expect(res.body.data.tour.status).toBe("planned");
     expect((await api.get(`/places/${spot.placeId}`)).body.data.popularity).toBe(before + 1);
+
+    // 투어로 등록하면 일정관리 달력에도 '투어' 라벨로 올라간다 (숙소 칸 제외, 시간대 시작 시각)
+    const events = (await api.get("/schedule/events?from=2026-10-01&to=2026-10-31")).body.data;
+    const labels = (await api.get("/schedule/labels")).body.data;
+    expect(events).toHaveLength(1);
+    expect(events[0].tourId).toBe(res.body.data.tour.id);
+    expect(events[0].labelId).toBe(labels.find((l: { name: string }) => l.name === "투어").id);
+    expect(events[0].items).toEqual([{ time: "09:00", place: spot.title }]);
   });
 
   it("숙소를 일반 시간대에, 일반 장소를 숙소 시간대에 넣으면 400", async () => {

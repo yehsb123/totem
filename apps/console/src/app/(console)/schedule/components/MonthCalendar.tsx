@@ -48,21 +48,26 @@ export default function MonthCalendar({
           return (
             <div
               key={date}
-              role="button"
-              tabIndex={0}
               onClick={() => onSelectDate(date)}
-              onKeyDown={(e) => e.key === "Enter" && onSelectDate(date)}
               className={`min-h-[96px] cursor-pointer border-b border-r border-slate-100 p-1.5 text-sm transition-colors hover:bg-slate-50 ${
                 inMonth ? "bg-white text-slate-800" : "bg-slate-50 text-slate-400"
               } ${isSelected ? "ring-2 ring-inset ring-blue-500" : ""}`}
             >
-              <div
-                className={`mb-1 flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
+              {/* 칸 전체는 마우스 클릭용, 키보드·스크린리더는 날짜 버튼으로 (버튼 안에 버튼을 두지 않기 위해 분리) */}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelectDate(date);
+                }}
+                aria-label={`${date} 선택`}
+                aria-pressed={isSelected}
+                className={`mb-1 flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium hover:ring-2 hover:ring-blue-200 ${
                   isToday ? "bg-red-500 text-white" : ""
                 }`}
               >
                 {parseLocalDate(date).getDate()}
-              </div>
+              </button>
               <div className="flex flex-col gap-0.5">
                 {dayEvents.slice(0, MAX_PER_CELL).map((ev) => {
                   const label = ev.labelId ? labelById.get(ev.labelId) : undefined;

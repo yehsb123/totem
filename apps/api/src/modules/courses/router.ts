@@ -1,8 +1,8 @@
 import { Router } from "express";
 import { Types } from "mongoose";
-import { ROUTES, courseListQuery, createCourseRequest, updateCourseRequest, type CourseDay } from "@totem/shared";
+import { HOTEL_SLOT_INDEX, ROUTES, courseListQuery, createCourseRequest, updateCourseRequest, type CourseDay } from "@totem/shared";
 import { escapeRegex, noContent, notFound, ok, okPaged, parse } from "../../lib/http";
-import { Course, Place, Tour } from "../../db/models";
+import { Course, Place, ScheduleEvent, ScheduleLabel, Tour } from "../../db/models";
 import { toCourse, toCourseSummary, toTour } from "../../db/serialize";
 import { authOf, objectIdParam, requireAuth } from "../../middlewares/auth";
 
@@ -68,6 +68,24 @@ coursesRouter.post(ROUTES.courses.list, async (req, res) => {
       capacity: tourOptions.capacity,
       note: body.note,
       createdBy: userId,
+    });
+    // 투어로 등록한 코스는 일정관리 달력에도 바로 보이게 한다 (첫날 일정의 시간대를 세부 일정으로)
+    const label = await ScheduleLabel.findOne({ organizationId, name: "투어" }).select("_id").lean();
+    const firstDay = body.days[0];
+    await ScheduleEvent.create({
+      organizationId,
+      createdBy: userId,
+      labelId: label?._id ?? null,
+      tourId: tour._id,
+      name: body.title,
+      startDate: body.startDate,
+      endDate: body.endDate,
+      manager: tourOptions.managerName,
+      items: (firstDay?.slots ?? [])
+        .filter((s) => s.slotIndex !== HOTEL_SLOT_INDEX)
+        .slice(0, 50)
+        .map((s) => ({ time: body.timeSlots[s.slotIndex]?.slice(0, 5) ?? "09:00", place: s.place.title })),
+      note: body.pickupLocation ? `픽업: ${body.pickupLocation}` : "",
     });
   }
   ok(res, { course: toCourse(course.toObject(), tour ? [tour._id] : []), tour: tour ? toTour(tour.toObject()) : null }, 201);

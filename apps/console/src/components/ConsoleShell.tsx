@@ -22,7 +22,7 @@ export default function ConsoleShell({ children }: { children: ReactNode }) {
   const { user, logout } = useSession();
   const [mobileOpen, setMobileOpen] = useState(false);
   const isActive = (href: string) => pathname.startsWith(href.replace(/\/$/, ""));
-  const current = MENUS.find((m) => isActive(m.href));
+  const current = MENUS.find((m) => isActive(m.href)) ?? (pathname.startsWith("/itinerary") ? { label: "투어 일정표" } : undefined);
 
   const nav = (
     <nav className="flex flex-col">
@@ -53,15 +53,15 @@ export default function ConsoleShell({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen">
       {/* 데스크톱 사이드바 */}
-      <aside className="hidden w-[180px] flex-shrink-0 flex-col bg-blue-500 lg:flex">
+      <aside className="no-print hidden w-[180px] flex-shrink-0 flex-col bg-blue-500 lg:flex">
         {brand}
         {nav}
       </aside>
 
       {/* 모바일 사이드바 */}
-      {mobileOpen && <div className="fixed inset-0 z-40 bg-black/40 lg:hidden" onClick={() => setMobileOpen(false)} />}
+      {mobileOpen && <div className="no-print fixed inset-0 z-40 bg-black/40 lg:hidden" onClick={() => setMobileOpen(false)} />}
       <aside
-        className={`fixed left-0 top-0 z-50 h-full w-64 bg-blue-500 transition-transform lg:hidden ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}
+        className={`no-print fixed left-0 top-0 z-50 h-full w-64 bg-blue-500 transition-transform lg:hidden ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
         <div className="flex items-center justify-between bg-white pr-2">
           {brand}
@@ -73,7 +73,7 @@ export default function ConsoleShell({ children }: { children: ReactNode }) {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-14 items-center justify-between border-b border-slate-200 bg-white px-4">
+        <header className="no-print flex h-14 items-center justify-between border-b border-slate-200 bg-white px-4">
           <div className="flex items-center gap-2">
             <button onClick={() => setMobileOpen(true)} className="p-2 text-slate-700 lg:hidden" aria-label="메뉴 열기">
               <Menu className="h-5 w-5" />

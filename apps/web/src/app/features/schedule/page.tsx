@@ -23,8 +23,7 @@ export default function ScheduleFeaturePage() {
           </>
         }
       />
-      {/* 이미지 미수령: images/schedule-intro.png */}
-      <Screenshot alt="일정 관리 페이지 예시" placeholder="images/schedule-intro.png" />
+      <Screenshot src="/images/schedule-intro.png" width={1600} height={900} alt="일정 관리 페이지 예시 — 라벨별 색상 달력" priority />
 
       <FeatureSection
         title="캘린더 기반 일정 관리"
@@ -35,8 +34,7 @@ export default function ScheduleFeaturePage() {
           </>
         }
       >
-        {/* 이미지 미수령: images/schedule-calendar-example.png */}
-        <Screenshot alt="캘린더 일정 관리 예시 화면" placeholder="images/schedule-calendar-example.png" size="md" />
+        <Screenshot src="/images/schedule-calendar-example.png" width={1180} height={609} alt="캘린더 일정 상세 예시 — 기간·담당자·시간별 장소" size="md" />
       </FeatureSection>
 
       <FeatureCards

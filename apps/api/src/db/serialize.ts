@@ -53,8 +53,8 @@ export function toUserProfile(u: any, org: { _id: Id; name: string }, hasPasswor
 
 export function toBillingSummary(s: any): BillingSummary {
   return {
-    plan: s?.plan ?? "free",
-    subscriptionStatus: s?.status ?? "active",
+    plan: s?.plan ?? "trial",
+    subscriptionStatus: s?.status ?? "trialing",
     nextBillingDate: iso(s?.currentPeriodEnd),
     paymentMethod: s?.paymentMethod?.last4 ? { brand: s.paymentMethod.brand, last4: s.paymentMethod.last4 } : null,
   };

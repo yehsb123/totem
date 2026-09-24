@@ -35,7 +35,7 @@
 | 필드 | 타입 | 비고 |
 |---|---|---|
 | name | string | 필수, ≤100 |
-| plan | `free`·`premium`·`enterprise` | 기본 free |
+| plan | `trial`·`basic`·`pro` | 기본 trial. 메인 `/pricing` 요금제와 1:1 (Basic ₩29,000 · Pro ₩59,000, `PLAN_MONTHLY_PRICE`) · subscriptions.plan 과 항상 같은 값 |
 | ownerId | ObjectId → users | |
 | deletedAt | Date? | 소유자 단독 탈퇴 시 |
 
@@ -68,7 +68,7 @@
 codeHash(unique) · userId · expiresAt(**TTL**) · usedAt — 조건부 업데이트로 1회만 사용
 
 ### subscriptions / payments
-- subscriptions: organizationId(**unique**) · plan · status(`trialing`·`active`·`past_due`·`canceled`) · currentPeriodEnd(=다음 결제일) · paymentMethod{brand,last4} (카드번호·빌링키 저장 안 함)
+- subscriptions: organizationId(**unique**) · plan(`trial`·`basic`·`pro`) · status(`trialing`·`active`·`past_due`·`canceled`) · currentPeriodEnd(=다음 결제일) · paymentMethod{brand,last4} (카드번호·빌링키 저장 안 함)
 - payments: organizationId · paidAt · product · amount(원) · currency(KRW) · status(`paid`·`failed`·`refunded`) · externalId(PG 거래ID) — index (organizationId, paidAt↓)
 
 ### places (공용)
@@ -140,4 +140,6 @@ region · month(`YYYY-MM`) — **(region, month) unique**
 | `npm run seed` | 공용 데이터(통계 12개월·제주 장소 17곳) upsert. `SEED_DEMO_PASSWORD` 가 있으면 데모 조직도 |
 | 개발 서버(`MONGO_URI` 비움) | 인메모리 DB 에 공용 데이터 + 데모 조직 자동. 계정 `demo@totem.dev` / `demo1234` |
 
-데모 조직: 코스 1 · 투어 3(예정·진행중·종료) · 리뷰 3 · 일정 3 · 프리미엄 구독 · 결제 3건
+데모 조직: 코스 1 · 투어 3(예정·진행중·종료) · 리뷰 3 · 일정 3 · Basic 구독 · 결제 3건(₩29,000)
+
+가입 직후 조직은 `trial`/`trialing` (무료로 시작하기). 체험 기간 길이는 미정 → 결제 연동 시 결정

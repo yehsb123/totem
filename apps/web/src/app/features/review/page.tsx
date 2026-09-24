@@ -33,8 +33,7 @@ export default function ReviewFeaturePage() {
           </>
         }
       >
-        {/* 이미지 미수령: images/review-combined-example.png */}
-        <Screenshot alt="리뷰 관리 기능 예시" placeholder="images/review-combined-example.png" size="md" />
+        <Screenshot src="/images/review-combined-example.png" width={1420} height={760} alt="리뷰 관리 기능 예시 — 투어별 평균 평점과 항목별 리뷰" size="md" />
       </FeatureSection>
     </>
   );

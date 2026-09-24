@@ -20,8 +20,7 @@ export default function CourseMakerFeaturePage() {
         }
         description="여행사만의 시그니처 코스를 쉽고 빠르게 완성하세요."
       />
-      {/* 이미지 미수령: example_coursemaker.png */}
-      <Screenshot alt="코스메이커 예시 화면" placeholder="example_coursemaker.png" />
+      <Screenshot src="/images/coursemaker-example.png" width={1600} height={900} alt="코스메이커 예시 화면 — 장소 목록과 일차별 시간대 일정" priority />
       <FeatureCards
         items={[
           { title: "관광지 추천", body: "관광공사 데이터 기반으로 지역·분류별 관광지를 골라 담을 수 있습니다." },

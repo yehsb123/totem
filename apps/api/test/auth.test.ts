@@ -13,7 +13,7 @@ describe("회원가입·로그인", () => {
 
     const api = authed(s.token);
     expect((await api.get("/schedule/labels")).body.data).toHaveLength(3);
-    expect((await api.get("/billing")).body.data.plan).toBe("free");
+    expect((await api.get("/billing")).body.data).toMatchObject({ plan: "trial", subscriptionStatus: "trialing" });
   });
 
   it("같은 이메일로 두 번 가입하면 409", async () => {

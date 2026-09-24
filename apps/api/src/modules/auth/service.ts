@@ -49,7 +49,7 @@ export async function createOrganizationWithOwner(input: {
     org.ownerId = user._id;
     await Promise.all([
       org.save(),
-      Subscription.create({ organizationId: org._id, plan: "free", status: "active" }),
+      Subscription.create({ organizationId: org._id, plan: "trial", status: "trialing" }),
       ScheduleLabel.insertMany(DEFAULT_LABELS.map((l) => ({ ...l, organizationId: org._id }))),
     ]);
     return { org, user };

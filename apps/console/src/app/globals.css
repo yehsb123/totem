@@ -14,14 +14,15 @@ body {
   font-family: var(--font-sans);
 }
 
-/* 인쇄(리뷰 PDF 내보내기): 화면 전용 요소 숨김 */
+/* 인쇄(리뷰·일정표 PDF): 콘솔 틀(사이드바·상단바)과 버튼만 숨긴다.
+   태그(header 등)로 숨기면 문서 안의 제목 영역까지 사라지므로 반드시 .no-print 로 지정 */
 @media print {
   .no-print {
     display: none !important;
   }
-  aside,
-  header {
-    display: none !important;
+  html,
+  body {
+    background: #fff !important;
   }
   main {
     overflow: visible !important;
