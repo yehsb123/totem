@@ -31,6 +31,7 @@ totem/
 │     ├─ components/             ConsoleShell(사이드바·헤더) · ui(모달·버튼·토스트)
 │     └─ lib/                    env · api(클라이언트) · session(인증 게이트) · format
 ├─ packages/shared/src/          auth · users · billing · places · courses · tours · reviews · schedules · dashboard · routes · client
+├─ e2e/                          실제 브라우저 E2E (Playwright: 메인 로그인 → 콘솔 전 화면, 모바일)
 ├─ docs/                         AUDIT · BACKLOG · API · DATABASE · ENV · DEPLOY · WORKLOG
 └─ .github/workflows/            ci.yml · deploy-console.yml
 ```
@@ -52,7 +53,8 @@ npm run dev:console    # http://localhost:3200
 | 명령 | 내용 |
 |---|---|
 | `npm run typecheck` | 전 패키지 타입 검사 |
-| `npm run test` | API 테스트 |
+| `npm run test` | API 테스트 (계약·인증 적용 범위 포함) |
+| `npm run e2e` | 브라우저 E2E (세 앱을 자동으로 띄움, 로컬은 `E2E_CHANNEL=chrome`) |
 | `npm run build` | 전 앱 빌드 |
 | `npm run seed` | MONGO_URI DB 에 공용 데이터 시드 (`SEED_DEMO_PASSWORD` 있으면 데모 조직) |
 

@@ -21,7 +21,7 @@
 |---|---|---|
 | API-010 | ✅ | 서버 골격: env 검증(zod, 운영에서 누락 시 기동 거부), pino 로거, 응답 봉투 `{data,meta}`/`{error}`, 검증 미들웨어, CORS 다중 origin, rate limit, 404/에러 핸들러 |
 | API-011 | ✅ | DB 연결: 실패 시 기동 중단, `MONGO_URI` 없으면 개발용 인메모리 Mongo 자동 기동 + 시드 |
-| API-020 | ✅ | Mongoose 모델 13종 + 인덱스 (`docs/DATABASE.md`) |
+| API-020 | ✅ | Mongoose 모델 14종 + 인덱스 (`docs/DATABASE.md`) |
 | API-030 | ✅ | 인증: signup · email-check · login · refresh(회전) · logout(세션 폐기) · handoff(web→console) · find-email · kakao |
 | API-031 | ✅ | 사용자: `/users/me` 조회·수정, 알림설정, 비밀번호 변경, 탈퇴(soft delete) |
 | API-032 | ✅ | 결제정보: 구독 요약, 결제 내역 |
@@ -107,5 +107,7 @@
 | 5 | AUTO-05 | ✅ | 메인 OG 전용 이미지 (1200×630) |
 | 6 | AUTO-06 | ✅ | 콘솔 모바일 레이아웃 점검·수정 (375px) |
 | 7 | AUTO-07 | ✅ | API 요청 ID·접근 로그 정리, 404/500 로그 품질 |
-| 8 | AUTO-08 | ⏳ | 전 화면 정합성 재점검 (화면 문구 ↔ API ↔ DB ↔ 문서) 후 AUDIT 갱신 |
+| 8 | AUTO-08 | ✅ | 전 화면 정합성 재점검 (화면 문구 ↔ API ↔ DB ↔ 문서) 후 AUDIT 갱신 |
 | 9 | AUTO-09 | ⏳ | DEP-001 Next 16 업그레이드 — 별도 브랜치에서 전 검증 통과 시에만 dev 머지 |
+| 10 | AUTO-10 | ⏳ | 조직 멤버 초대·역할 관리 (owner/admin/member 는 모델에만 있고 초대 기능이 없음 — B2B 핵심, AUTO-08 에서 발견) |
+| 11 | AUTO-11 | ⏳ | 탈퇴 소유자의 조직 데이터 정리 정책 문서화 + 조직 삭제 표시 후 API 접근 차단 확인 |

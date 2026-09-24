@@ -3,7 +3,7 @@ import BackLink from "../BackLink";
 
 export const metadata: Metadata = {
   title: "튜토리얼 영상",
-  description: "TOTEM 주요 기능의 사용법을 영상으로 쉽게 따라 해보세요.",
+  description: "ToTem 주요 기능의 사용법을 영상으로 쉽게 따라 해보세요.",
   alternates: { canonical: "/resources/tutorial" },
 };
 
@@ -12,9 +12,9 @@ export const metadata: Metadata = {
  * https://www.youtube-nocookie.com/embed/<youtubeId> iframe 을 넣는다.
  */
 const VIDEOS = [
-  { title: "시작하기: 첫 번째 프로젝트 만들기", body: "가장 기본적인 사용법을 빠르게 익히는 영상입니다." },
-  { title: "고급 기능 활용하기: 데이터 분석", body: "플랫폼의 데이터 분석 기능을 심도 있게 다룹니다." },
-  { title: "팀원과 협업하기", body: "팀원과 효과적으로 협업하는 방법을 알려드립니다." },
+  { title: "시작하기: 첫 코스 만들기", body: "기간 설정부터 장소 담기·저장까지 코스메이커 기본 사용법입니다." },
+  { title: "대시보드로 관광 트렌드 읽기", body: "월별 방문객·관광 소비·SNS 언급량을 코스 기획에 활용하는 방법입니다." },
+  { title: "투어 운영 한 바퀴", body: "코스 → 투어 등록 → 달력 일정 → 리뷰 수집까지 한 흐름으로 따라 합니다." },
 ] as const;
 
 function VideoPlaceholder() {

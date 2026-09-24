@@ -4,7 +4,7 @@ import BackLink from "../BackLink";
 
 export const metadata: Metadata = {
   title: "시작 가이드",
-  description: "코스메이커로 첫 코스 만들기부터 캘린더 일정 관리, 대시보드, 리뷰 관리까지 TOTEM 핵심 기능을 단계별로 익혀보세요.",
+  description: "코스메이커로 첫 코스 만들기부터 캘린더 일정 관리, 대시보드, 리뷰 관리까지 ToTem 핵심 기능을 단계별로 익혀보세요.",
   alternates: { canonical: "/resources/guide" },
 };
 
@@ -40,7 +40,7 @@ export default function StartGuidePage() {
 
         <h1 className="text-center text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">시작 가이드</h1>
         <p className="mb-12 mt-4 text-center text-base text-slate-600 sm:text-lg">
-          TOTEM의 핵심 기능을 단계별로 익히고, 여행 코스 기획을 시작해 보세요.
+          ToTem의 핵심 기능을 단계별로 익히고, 여행 코스 기획을 시작해 보세요.
         </p>
 
         <ol className="space-y-8">

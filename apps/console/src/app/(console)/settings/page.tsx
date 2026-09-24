@@ -297,7 +297,7 @@ function BillingTab() {
           <dt className="text-slate-600">결제 수단</dt>
           <dd className="font-semibold">{summary.paymentMethod ? `${summary.paymentMethod.brand} **** ${summary.paymentMethod.last4}` : "등록된 결제 수단 없음"}</dd>
         </dl>
-        <p className="mt-4 text-xs text-slate-500">플랜 변경·결제 수단 변경은 결제 대행사 연동 후 제공됩니다. 문의: 고객센터</p>
+        <p className="mt-4 text-xs text-slate-500">플랜 변경·결제 수단 변경은 결제 대행사(PG) 연동 후 제공됩니다. 요금제는 메인 사이트의 요금제 안내에서 확인할 수 있습니다.</p>
       </Section>
       <Section title="결제 내역">
         {payments.length === 0 ? (

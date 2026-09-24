@@ -3,7 +3,7 @@ import ResourceCard from "./ResourceCard";
 
 export const metadata: Metadata = {
   title: "리소스 센터",
-  description: "TOTEM 시작 가이드, 튜토리얼 영상, 자주 묻는 질문, API 문서 등 서비스 활용에 필요한 자료를 한곳에서 찾아보세요.",
+  description: "ToTem 시작 가이드, 튜토리얼 영상, 자주 묻는 질문, API 문서 등 서비스 활용에 필요한 자료를 한곳에서 찾아보세요.",
   alternates: { canonical: "/resources" },
 };
 
@@ -52,7 +52,7 @@ const SECTIONS: Section[] = [
         buttonText: "문서 보기",
         href: "/resources/api",
       },
-      { title: "통합 가이드", description: "다른 소프트웨어와 TOTEM을 연결하는 방법을 설명합니다.", buttonText: "가이드 보기" },
+      { title: "통합 가이드", description: "다른 소프트웨어와 ToTem을 연결하는 방법을 설명합니다.", buttonText: "가이드 보기" },
       { title: "시스템 상태", description: "플랫폼의 실시간 운영 상태 및 점검 정보를 확인하세요.", buttonText: "상태 확인" },
     ],
   },
@@ -88,7 +88,7 @@ export default function ResourcesPage() {
       <header className="mx-auto max-w-2xl text-center">
         <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">리소스 센터</h1>
         <p className="mt-4 text-base text-slate-600 sm:text-lg">
-          TOTEM을 더 효과적으로 활용하고, 최신 소식을 확인하며, 필요한 모든 정보를 한곳에서 찾아보세요.
+          ToTem을 더 효과적으로 활용하고, 최신 소식을 확인하며, 필요한 모든 정보를 한곳에서 찾아보세요.
         </p>
       </header>
 

@@ -45,7 +45,7 @@ export default function PricingPage() {
   return (
     <section className="bg-white px-4 py-20 text-slate-900 sm:px-6 sm:py-24">
       <header className="mx-auto max-w-2xl text-center">
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">TOTEM 요금제 안내</h1>
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">ToTem 요금제 안내</h1>
         <p className="mt-3 text-base text-slate-600 sm:text-lg">당신의 여행사를 위한 유연한 요금제를 선택하세요.</p>
       </header>
 

@@ -5,7 +5,7 @@ import BackLink from "../BackLink";
 
 export const metadata: Metadata = {
   title: "API 문서",
-  description: "TOTEM API 의 인증 방식, 응답 형식, 코스·투어·일정 주요 엔드포인트를 안내합니다.",
+  description: "ToTem API 의 인증 방식, 응답 형식, 코스·투어·일정 주요 엔드포인트를 안내합니다.",
   alternates: { canonical: "/resources/api" },
 };
 
@@ -66,7 +66,7 @@ export default function ApiDocsPage() {
 
         <h1 className="text-center text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">API 문서</h1>
         <p className="mb-12 mt-4 text-center text-base text-slate-600 sm:text-lg">
-          TOTEM API 로 코스·투어·일정 데이터를 조회하고 관리하는 방법을 안내합니다.
+          ToTem API 로 코스·투어·일정 데이터를 조회하고 관리하는 방법을 안내합니다.
         </p>
 
         <Section title="1. 기본 규칙">
@@ -138,7 +138,7 @@ Authorization: Bearer <accessToken>`}</Code>
         </Section>
 
         <p className="text-sm text-slate-500">
-          외부 연동용 API 키 발급은 준비 중입니다. 현재는 TOTEM 계정으로 로그인해 발급받은 토큰으로 호출할 수 있습니다.
+          외부 연동용 API 키 발급은 준비 중입니다. 현재는 ToTem 계정으로 로그인해 발급받은 토큰으로 호출할 수 있습니다.
         </p>
       </div>
     </div>
