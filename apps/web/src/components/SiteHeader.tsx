@@ -31,11 +31,13 @@ export default function SiteHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // 페이지 이동 시 메뉴 닫기
-  useEffect(() => {
+  // 페이지 이동 시 메뉴 닫기 — effect 대신 "이전 값과 비교해 렌더 중 조정" (https://react.dev/learn/you-might-not-need-an-effect)
+  const [lastPath, setLastPath] = useState(pathname);
+  if (pathname !== lastPath) {
+    setLastPath(pathname);
     setFeaturesOpen(false);
     setMobileOpen(false);
-  }, [pathname]);
+  }
 
   // 드롭다운 바깥 클릭·ESC 로 닫기
   useEffect(() => {
