@@ -5,6 +5,7 @@ import { useRef } from "react";
 import { useDrag, useDrop } from "react-dnd";
 import { PLACE_CATEGORY_LABELS, type CoursePlace } from "@totem/shared";
 import { DND, HOTEL_SLOT_INDEX, type DragPlace, type DragSlot, type EditorDay } from "../courseModel";
+import RouteSummary from "./RouteSummary";
 
 function Slot({
   index,
@@ -77,7 +78,9 @@ export default function DayPanel({
   onDropPlace,
   onMove,
   onRemove,
+  onRoute,
 }: {
+  onRoute: (path: [number, number][] | null) => void;
   day: EditorDay | null;
   dayIndex: number;
   dayCount: number;
@@ -103,6 +106,7 @@ export default function DayPanel({
           </div>
         )}
       </div>
+      {day && <RouteSummary day={day} onRoute={onRoute} />}
       {day && (
         <div className="-mr-2 flex-1 space-y-2 overflow-y-auto pr-2">
           {timeSlots.map((label, i) => (

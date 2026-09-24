@@ -121,6 +121,17 @@ test.describe.serial("메인 → 콘솔 전체 흐름", () => {
     await expect(page.getByText("성산일출봉").first()).toBeVisible();
   });
 
+  test("코스메이커 동선 계산: 장소 2곳 이상이면 버튼, 서버 키가 없으면 안내로 바뀐다", async () => {
+    await page.goto(`${CONSOLE}/coursemaker/`);
+    await page.getByRole("button", { name: "내 코스" }).click();
+    await page.getByRole("dialog").locator("li", { hasText: "제주 동부 2박 3일" }).getByRole("button", { name: "불러오기" }).click();
+    // 1일차: 식당·관광지·식당 3곳 + 숙소 = 4곳
+    const calc = page.getByRole("button", { name: "동선 계산 (4곳)" });
+    await expect(calc).toBeVisible();
+    await calc.click();
+    await expect(page.getByText("길찾기(동선 계산)는 서버에 카카오 키가 등록되면 사용할 수 있습니다.")).toBeVisible();
+  });
+
   test("일정표: 코스 일정표가 일차·시간대·장소로 나온다", async () => {
     await page.getByRole("link", { name: "투어관리" }).click();
     await page.locator("tr", { hasText: "제주 동부 2박 3일" }).getByRole("link", { name: "일정표" }).click();

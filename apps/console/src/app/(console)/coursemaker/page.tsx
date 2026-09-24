@@ -172,6 +172,7 @@ function CourseMaker({ courseId }: { courseId: string | null }) {
             onDropPlace={onDropPlace}
             onMove={onMove}
             onRemove={c.removeSlot}
+            onRoute={map.setRoutePath}
           />
         </div>
       </div>

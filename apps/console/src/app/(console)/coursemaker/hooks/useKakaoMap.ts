@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { EditorDay } from "../courseModel";
+import { HOTEL_SLOT_INDEX, type EditorDay } from "../courseModel";
 
 /* eslint-disable @typescript-eslint/no-explicit-any -- Kakao 지도 SDK 는 타입 정의를 제공하지 않는다 */
 declare global {
@@ -34,6 +34,8 @@ export function useKakaoMap(day: EditorDay | null) {
   const dayMarkers = useRef<any[]>([]);
   const polyline = useRef<any>(null);
   const focusMarker = useRef<{ marker: any; info: any } | null>(null);
+  const routeLine = useRef<any>(null);
+  const [routePath, setRoutePath] = useState<[number, number][] | null>(null);
 
   const init = useCallback(() => {
     const kakao = window.kakao;
@@ -61,7 +63,10 @@ export function useKakaoMap(day: EditorDay | null) {
     dayMarkers.current = [];
     polyline.current?.setMap(null);
 
-    const points = (day?.slots ?? []).filter((p): p is NonNullable<typeof p> => !!p);
+    // 번호·선 순서는 동선 계산(dayRoutePoints)과 같게: 시간대 순서, 숙소는 그날 마지막
+    const slots = day?.slots ?? [];
+    const hotel = slots[HOTEL_SLOT_INDEX];
+    const points = [...slots.filter((p, i): p is NonNullable<typeof p> => !!p && i !== HOTEL_SLOT_INDEX), ...(hotel ? [hotel] : [])];
     if (points.length === 0) return;
     const bounds = new kakao.maps.LatLngBounds();
     const path: any[] = [];
@@ -74,9 +79,28 @@ export function useKakaoMap(day: EditorDay | null) {
       bounds.extend(pos);
       path.push(pos);
     });
-    polyline.current = new kakao.maps.Polyline({ map, path, strokeWeight: 3, strokeColor: "#2563eb", strokeOpacity: 0.7 });
+    // 길찾기 결과가 없으면 방문 순서를 점선 직선으로만 잇는다
+    polyline.current = new kakao.maps.Polyline({ map, path, strokeWeight: 3, strokeColor: "#2563eb", strokeOpacity: 0.5, strokeStyle: "shortdash" });
     map.setBounds(bounds);
   }, [map, day]);
+
+  useEffect(() => {
+    const kakao = window.kakao;
+    routeLine.current?.setMap(null);
+    routeLine.current = null;
+    if (!map || !kakao || !routePath?.length) {
+      polyline.current?.setMap(map ?? null);
+      return;
+    }
+    polyline.current?.setMap(null);
+    routeLine.current = new kakao.maps.Polyline({
+      map,
+      path: routePath.map(([x, y]) => new kakao.maps.LatLng(y, x)),
+      strokeWeight: 5,
+      strokeColor: "#2563eb",
+      strokeOpacity: 0.85,
+    });
+  }, [map, routePath]);
 
   const focus = useCallback(
     (p: MapPoint) => {
@@ -94,5 +118,5 @@ export function useKakaoMap(day: EditorDay | null) {
     [map, clearFocus],
   );
 
-  return { containerRef, ready: !!map, init, focus, clearFocus };
+  return { containerRef, ready: !!map, init, focus, clearFocus, setRoutePath };
 }

@@ -57,3 +57,50 @@ describe("카카오 로컬 검색 프록시", () => {
     expect((await authed("nope").get("/maps/local-search?query=a")).status).toBe(401);
   });
 });
+
+describe("카카오모빌리티 길찾기 프록시", () => {
+  const body = { origin: { x: 126.5, y: 33.5 }, destination: { x: 126.9, y: 33.46 }, waypoints: [{ x: 126.7, y: 33.52 }] };
+
+  it("키가 없으면 503", async () => {
+    const api = authed((await signup()).token);
+    expect((await api.post("/maps/directions", body)).status).toBe(503);
+  });
+
+  it("거리·시간·요금과 경로 좌표(vertexes 를 [x,y] 쌍으로)를 돌려준다", async () => {
+    env.KAKAO_REST_API_KEY = "test-rest-key";
+    stubKakao({
+      routes: [
+        {
+          result_code: 0,
+          result_msg: "길찾기 성공",
+          summary: { distance: 52340, duration: 4210, fare: { taxi: 61200, toll: 0 } },
+          sections: [{ roads: [{ vertexes: [126.5, 33.5, 126.6, 33.51] }, { vertexes: [126.7, 33.52, 126.9, 33.46] }] }],
+        },
+      ],
+    });
+    const api = authed((await signup()).token);
+    const r = await api.post("/maps/directions", body);
+    expect(r.status).toBe(200);
+    expect(r.body.data).toEqual({
+      distance: 52340,
+      duration: 4210,
+      taxiFare: 61200,
+      tollFare: 0,
+      path: [
+        [126.5, 33.5],
+        [126.6, 33.51],
+        [126.7, 33.52],
+        [126.9, 33.46],
+      ],
+    });
+  });
+
+  it("경로를 못 찾으면 422 와 카카오 사유", async () => {
+    env.KAKAO_REST_API_KEY = "test-rest-key";
+    stubKakao({ routes: [{ result_code: 104, result_msg: "출발지와 도착지가 5 m 이내로 설정된 경우 경로를 탐색할 수 없음" }] });
+    const api = authed((await signup()).token);
+    const r = await api.post("/maps/directions", body);
+    expect(r.status).toBe(422);
+    expect(r.body.error.message).toContain("5 m 이내");
+  });
+});

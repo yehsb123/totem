@@ -46,6 +46,13 @@ export function snapshotFromKakao(k: LocalSearchItem): CoursePlace {
   };
 }
 
+/** 그날 이동 순서 — 시간대 칸 순서대로, 숙소가 있으면 하루의 끝(숙소로 복귀)으로 둔다 */
+export function dayRoutePoints(day: EditorDay): { x: number; y: number; name: string }[] {
+  const stops = day.slots.flatMap((p, i) => (p && i !== HOTEL_SLOT_INDEX ? [p] : []));
+  const hotel = day.slots[HOTEL_SLOT_INDEX];
+  return [...stops, ...(hotel ? [hotel] : [])].map((p) => ({ x: p.mapX, y: p.mapY, name: p.title }));
+}
+
 const emptySlots = (n: number) => Array<CoursePlace | null>(n).fill(null);
 
 /** 기간이 바뀌면 날짜별로 기존 편집 내용을 보존하며 일차 배열을 다시 만든다 */
