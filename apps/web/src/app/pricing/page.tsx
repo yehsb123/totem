@@ -1,148 +1,88 @@
-"use client";
+import type { Metadata } from "next";
+import StartButton from "@/components/auth/StartButton";
 
-import React from "react";
+export const metadata: Metadata = {
+  title: "요금제 안내",
+  description: "여행사를 위한 ToTem 요금제. Basic ₩29,000/월부터 코스 설계·투어 일정 PDF·관광 데이터 대시보드·투어/리뷰 관리를 제공합니다.",
+  alternates: { canonical: "/pricing" },
+};
+
+const PLANS = [
+  {
+    name: "Basic",
+    price: "₩29,000",
+    badge: null,
+    highlight: false,
+    features: ["일정/코스 설계 기능", "투어 일정 PDF 생성", "관광데이터랩 기반 대시보드", "투어/리뷰관리 기능"],
+  },
+  {
+    name: "Pro",
+    price: "₩59,000",
+    badge: "출시 예정",
+    highlight: true,
+    features: [
+      "모든 Basic 기능 포함",
+      "가이드 매칭 시스템",
+      "카카오톡 리마인더 (알림기능)",
+      "전체 관리 고급 (태그/기록/생성 무제한)",
+    ],
+  },
+] as const;
+
+function Check() {
+  return (
+    <svg viewBox="0 0 20 20" fill="currentColor" className="mt-0.5 size-4 shrink-0 text-indigo-500" aria-hidden>
+      <path
+        fillRule="evenodd"
+        d="M16.7 5.3a1 1 0 0 1 0 1.4l-8 8a1 1 0 0 1-1.4 0l-4-4a1 1 0 1 1 1.4-1.4L8 12.58l7.3-7.3a1 1 0 0 1 1.4 0Z"
+        clipRule="evenodd"
+      />
+    </svg>
+  );
+}
 
 export default function PricingPage() {
   return (
-    <div
-      style={{
-        backgroundColor: "#ffffff",
-        minHeight: "100vh",
-        paddingTop: "5.208vw",
-        paddingBottom: "4.167vw",
-        textAlign: "center",
-        color: "#222222",
-      }}
-    >
-      <h1
-        style={{
-          fontSize: "clamp(24px, 2.5vw, 48px)",
-          fontWeight: 700,
-          marginBottom: "0.833vw",
-        }}
-      >
-        TOTEM 요금제 안내
-      </h1>
-      <p
-        style={{
-          fontSize: "clamp(16px, 1.042vw, 20px)",
-          color: "#333",
-          marginBottom: "2.5vw",
-        }}
-      >
-        당신의 여행사를 위한 유연한 요금제를 선택하세요.
-      </p>
+    <section className="bg-white px-4 py-20 text-slate-900 sm:px-6 sm:py-24">
+      <header className="mx-auto max-w-2xl text-center">
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">TOTEM 요금제 안내</h1>
+        <p className="mt-3 text-base text-slate-600 sm:text-lg">당신의 여행사를 위한 유연한 요금제를 선택하세요.</p>
+      </header>
 
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          gap: "2.083vw",
-          flexWrap: "wrap",
-          padding: "0 2.083vw",
-        }}
-      >
-        <div
-          style={{
-            backgroundColor: "#ffffff",
-            borderRadius: "0.625vw",
-            boxShadow: "0 0.208vw 0.625vw rgba(0,0,0,0.1)",
-            padding: "1.667vw",
-            width: "clamp(280px, 15.625vw, 300px)",
-            textAlign: "left",
-            color: "#222",
-            border: "1px solid #e5e7eb",
-          }}
-        >
-          <h2
-            style={{
-              fontSize: "clamp(18px, 1.25vw, 24px)",
-              fontWeight: 700,
-            }}
+      <ul className="mx-auto mt-12 grid max-w-3xl gap-6 md:grid-cols-2">
+        {PLANS.map((plan) => (
+          <li
+            key={plan.name}
+            className={`relative flex flex-col rounded-2xl bg-white p-7 shadow-sm ${
+              plan.highlight ? "border-2 border-indigo-500" : "border border-slate-200"
+            }`}
           >
-            Basic
-          </h2>
-          <p
-            style={{
-              fontSize: "clamp(24px, 1.667vw, 32px)",
-              fontWeight: 600,
-              margin: "0.625vw 0",
-            }}
-          >
-            ₩29,000 /월
-          </p>
-          <ul style={{ listStyle: "none", padding: 0, lineHeight: "1.8" }}>
-            <li>✔ 일정/코스 설계 기능</li>
-            <li>✔ 투어 일정 PDF 생성</li>
-            <li>✔ 관광데이터랩 기반 대시보드</li>
-            <li>✔ 투어/리뷰관리 기능</li>
-          </ul>
-        </div>
+            {plan.badge && (
+              <span className="absolute right-5 top-5 rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-600">
+                {plan.badge}
+              </span>
+            )}
+            <h2 className={`text-xl font-bold ${plan.highlight ? "text-indigo-600" : ""}`}>{plan.name}</h2>
+            <p className="mt-3">
+              <span className="text-3xl font-bold tracking-tight">{plan.price}</span>
+              <span className="ml-1 text-sm text-slate-500">/월</span>
+            </p>
+            <ul className="mt-6 flex-1 space-y-2.5 text-sm text-slate-700">
+              {plan.features.map((f) => (
+                <li key={f} className="flex gap-2">
+                  <Check />
+                  {f}
+                </li>
+              ))}
+            </ul>
+          </li>
+        ))}
+      </ul>
 
-        <div
-          style={{
-            backgroundColor: "#ffffff",
-            borderRadius: "0.625vw",
-            boxShadow: "0 0.208vw 0.625vw rgba(0,0,0,0.1)",
-            padding: "1.667vw",
-            width: "clamp(280px, 15.625vw, 300px)",
-            textAlign: "left",
-            border: "2px solid #6366F1",
-            color: "#222",
-            position: "relative",
-          }}
-        >
-          <div
-            style={{
-              position: "absolute",
-              top: "-1.042vw",
-              right: "-1.042vw",
-              backgroundColor: "#6366F1",
-              color: "#fff",
-              padding: "0.521vw 1.042vw",
-              borderRadius: "0.625vw 0 0.625vw 0",
-              fontSize: "0.833vw",
-              fontWeight: 600,
-            }}
-          >
-            예정
-          </div>
-          <h2
-            style={{
-              fontSize: "clamp(18px, 1.25vw, 24px)",
-              fontWeight: 700,
-              color: "#6366F1",
-            }}
-          >
-            Pro
-          </h2>
-          <p
-            style={{
-              fontSize: "clamp(24px, 1.667vw, 32px)",
-              fontWeight: 600,
-              margin: "0.625vw 0",
-            }}
-          >
-            ₩59,000 /월
-          </p>
-          <ul style={{ listStyle: "none", padding: 0, lineHeight: "1.8" }}>
-            <li>✔ 모든 Basic 기능 포함</li>
-            <li>✔ 가이드 매칭 시스템</li>
-            <li>✔ 카카오톡 리마인더 (알림기능)</li>
-            <li>✔ 전체 관리 고급 (태그/기록/생성 무제한)</li>
-          </ul>
-        </div>
+      <div className="mt-12 text-center">
+        <StartButton className="rounded-full bg-indigo-500 px-8 py-3.5 text-base font-semibold text-white transition hover:bg-indigo-600" />
+        <p className="mt-6 text-sm text-slate-500">* 모든 요금제는 부가세(VAT) 별도입니다.</p>
       </div>
-
-      <p
-        style={{
-          marginTop: "3.125vw",
-          fontSize: "clamp(12px, 0.833vw, 16px)",
-          color: "#777",
-        }}
-      >
-        * 모든 요금제는 부가세(VAT) 별도입니다.
-      </p>
-    </div>
+    </section>
   );
 }
