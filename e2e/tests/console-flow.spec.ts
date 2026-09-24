@@ -225,3 +225,54 @@ test.describe("모바일 375px", () => {
     await expect(page.getByRole("button", { name: "새 일정" }).filter({ visible: true })).toBeVisible();
   });
 });
+
+test("멤버 초대: 소유자가 링크를 만들고 → 새 사람이 메인에서 수락 → 같은 조직의 멤버로 콘솔 진입", async ({ page, browser }) => {
+  const email = `invitee-${Date.now()}@example.com`;
+  await page.goto(`${WEB}/?login=1&next=%2Fsettings%2F`);
+  await page.getByPlaceholder("이메일을 입력해주세요").fill(DEMO.email);
+  await page.getByPlaceholder("비밀번호를 입력해주세요").fill(DEMO.password);
+  await page.locator('form button[type="submit"]').first().click();
+  await page.waitForURL(/localhost:3200\/settings/);
+  await page.getByRole("button", { name: "멤버 관리" }).click();
+  await page.getByPlaceholder("teammate@company.com").fill(email);
+  await page.getByRole("button", { name: "초대 링크 만들기" }).click();
+  const link = await page.getByLabel("초대 링크").inputValue();
+  expect(link).toMatch(/^http:\/\/localhost:3100\/invite\?token=/);
+  await expect(page.getByText(email)).toBeVisible();
+
+  // 다른 브라우저(로그인 안 된 사람)로 수락
+  const ctx = await browser.newContext();
+  const guest = await ctx.newPage();
+  await guest.goto(link);
+  await expect(guest.getByText("토템 데모 여행사")).toBeVisible();
+  await expect(guest.getByLabel("이메일")).toHaveValue(email);
+  await guest.getByPlaceholder("이름").fill("초대된 가이드");
+  await guest.getByPlaceholder("비밀번호 (영문·숫자 포함 8자 이상)").fill("password1");
+  await guest.getByPlaceholder("비밀번호를 한번 더 입력해주세요").fill("password1");
+  await guest.getByText("이용약관에 동의합니다").click();
+  await guest.getByText("개인정보 수집 및 이용에 동의합니다").click();
+  await guest.getByRole("button", { name: "초대 수락하고 시작하기" }).click();
+  await guest.waitForURL(/localhost:3200\/schedule/);
+  await expect(guest.getByText("초대된 가이드").first()).toBeVisible();
+  await expect(guest.getByText("토템 데모 여행사").first()).toBeVisible();
+  // 같은 조직 데이터
+  await guest.goto(`${CONSOLE}/tours/`);
+  await expect(guest.getByText("제주 동부 2박 3일").first()).toBeVisible();
+  // 멤버는 관리 불가
+  await guest.goto(`${CONSOLE}/settings/`);
+  await guest.getByRole("button", { name: "멤버 관리" }).click();
+  await expect(guest.getByText("멤버 초대·관리는 소유자와 관리자만 할 수 있습니다.")).toBeVisible();
+  await expect(guest.getByRole("button", { name: "초대 링크 만들기" })).toHaveCount(0);
+
+  // 같은 링크는 다시 못 쓴다
+  const again = await ctx.newPage();
+  await again.goto(link);
+  await expect(again.getByText("이미 수락된 초대입니다.")).toBeVisible();
+  await ctx.close();
+
+  // 소유자 화면: 새 멤버가 보이고 초대는 '수락'
+  await page.reload();
+  await page.getByRole("button", { name: "멤버 관리" }).click();
+  await expect(page.getByText("초대된 가이드")).toBeVisible();
+  await expect(page.getByText("수락", { exact: true })).toBeVisible();
+});

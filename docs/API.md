@@ -96,6 +96,18 @@
 | POST | `/tours/:tourId/reviews/import` | `{ csvUrl }` 구글 시트·CSV 가져오기 → `{ totalRows, imported, skipped, errors[] }` |
 | DELETE | `/reviews/:id` | |
 
+### 멤버 관리 (설정 > 멤버 관리, 메인 /invite)
+| 메서드 | 경로 | |
+|---|---|---|
+| GET 🔓 | `/auth/invitations/:token` | 초대 미리보기(조직·이메일·역할). 수락·취소·만료는 410 |
+| POST 🔓 | `/auth/invitations/accept` | 초대 수락 = 그 조직·역할 계정 생성 + 로그인 |
+| GET | `/org/members` | 멤버 목록 (모든 역할) |
+| PATCH | `/org/members/:id` | 역할 변경 `{role: admin\|member}` — 소유자만 |
+| DELETE | `/org/members/:id` | 제외(개인정보 삭제·세션 폐기) — 관리자 이상, 관리자 제외는 소유자만 |
+| POST | `/org/transfer-ownership` | `{userId}` 소유권 이전 — 소유자만, 기존 소유자는 관리자 |
+| GET·POST | `/org/invitations` | 초대 내역 / 링크 만들기(토큰은 이 응답에만) — 관리자 이상, 관리자 초대는 소유자만 |
+| DELETE | `/org/invitations/:id` | 대기 중 초대 취소 |
+
 ### 설정
 | 메서드 | 경로 | |
 |---|---|---|

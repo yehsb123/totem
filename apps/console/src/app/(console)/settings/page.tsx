@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, CreditCard, UserCircle } from "lucide-react";
+import { Bell, CreditCard, UserCircle, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   PAYMENT_STATUS_LABELS,
@@ -15,10 +15,12 @@ import { api, errorMessage, fieldErrors } from "@/lib/api";
 import { env } from "@/lib/env";
 import { formatDateKo, formatWon } from "@/lib/format";
 import { useSession } from "@/lib/session";
+import MembersTab from "./MembersTab";
 
 const TABS = [
   { key: "account", label: "계정 관리", Icon: UserCircle },
   { key: "notifications", label: "알림 설정", Icon: Bell },
+  { key: "members", label: "멤버 관리", Icon: Users },
   { key: "billing", label: "결제 정보", Icon: CreditCard },
 ] as const;
 type TabKey = (typeof TABS)[number]["key"];
@@ -42,6 +44,7 @@ export default function SettingsPage() {
         <div className="flex-1 p-6">
           {tab === "account" && <AccountTab />}
           {tab === "notifications" && <NotificationsTab />}
+          {tab === "members" && <MembersTab />}
           {tab === "billing" && <BillingTab />}
         </div>
       </div>
