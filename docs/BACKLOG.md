@@ -116,3 +116,5 @@
 | 14 | AUTO-14 | ✅ | 초대 토큰이 URL 경로(GET /auth/invitations/:token)라 접근 로그에 평문으로 남음 → 로그 경로 마스킹 (재점검 3차) |
 | 15 | AUTO-15 | ✅ | 시간 검증 느슨함: "24:59" 통과, 시간대 "15:00~09:00" 처럼 끝<시작 허용 (재점검 3차) |
 | 16 | AUTO-16 | ✅ | 보안 설계 문서(SECURITY.md): 통제 목록 + 알려진 맞교환(refresh token 을 localStorage 에 보관 → XSS 시 탈취 가능, 회전·재사용 탐지로 완화) (재점검 3차) |
+| 17 | AUTO-17 | ✅ | 프런트 CSP (SECURITY R2) — web 응답 헤더, console meta. connect-src 를 API 로 제한해 XSS 시 토큰 외부 유출 차단 (재점검 4차) |
+| 18 | AUTO-18 | ✅ | 콘솔 일정관리·코스메이커가 셸 `<main>` 안에 `<main>` 을 또 둠(랜드마크 중복, 화면 읽기 프로그램 혼란) → section + aria-label. 인쇄 시 안쪽 스크롤 영역이 잘리지 않게 (AUTO-17 브라우저 점검 중 발견) |

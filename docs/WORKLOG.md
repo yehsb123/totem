@@ -76,3 +76,5 @@
 - AUTO-15 ✅ 시간 검증 강화(24:59·끝<시작 차단), 기존 기본값·시드·입력칸은 영향 없음. API 58 · E2E 19
 - AUTO-16 ✅ docs/SECURITY.md (통제 = 코드로 확인한 것만, 근거 위치·테스트 표기, 맞교환 R1~R8). 대조 중 콘솔 next 검증 누락(/\) 발견 → shared sanitizeNext 로 통일. API 59 · E2E 19
   - **책임님 확인 필요**: R1 운영 도메인을 한 상위 도메인으로 묶을지(쿠키 세션 전환 가능), R2 콘솔 호스팅(GitHub Pages 는 CSP 헤더 불가), R4 계정 잠금 정책
+- AUTO-17 ✅ 프런트 CSP: 공용 생성기 `@totem/shared/csp`, web 응답 헤더(+X-Frame-Options·nosniff·Referrer-Policy), console `<meta>`(GitHub Pages). connect-src = 자기 자신+API 만 → XSS 시 토큰 외부 유출 차단. 운영 빌드 브라우저 점검: 위반 0건·외부 fetch 차단. AUTO-18 ✅ 중첩 `<main>` 해소. API 59 · E2E 19
+  - **책임님 확인 필요**: 카카오 로그인·지도 화면의 CSP 는 키가 없어 실제 로드 확인 못 함 — 키 등록 후 브라우저 콘솔에 "Content Security Policy" 경고가 없는지 확인(있으면 그 출처를 `packages/shared/csp.mjs` 에 추가)

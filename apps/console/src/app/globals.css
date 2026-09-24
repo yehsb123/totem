@@ -24,7 +24,9 @@ body {
   body {
     background: #fff !important;
   }
-  main {
+  /* 화면에서는 스크롤 영역이지만 인쇄에서는 잘리지 않게 (콘솔 본문·달력 등) */
+  main,
+  main .overflow-auto {
     overflow: visible !important;
   }
 }

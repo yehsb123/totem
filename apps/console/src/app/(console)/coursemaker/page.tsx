@@ -186,14 +186,14 @@ function CourseMaker({ courseId }: { courseId: string | null }) {
         </div>
         <div className="flex min-h-0 flex-1">
           <PlacePanel onPlaceClick={(p) => (focusPlace(p), setPanel("map"))} onAdd={onAdd} className={show("places")} />
-          <main className={`relative flex-1 border-r border-slate-200 bg-blue-50 ${panel === "map" ? "block" : "hidden"} lg:block`}>
+          <section aria-label="지도" className={`relative flex-1 border-r border-slate-200 bg-blue-50 ${panel === "map" ? "block" : "hidden"} lg:block`}>
             <div ref={containerRef} className="h-full w-full" />
             {!mapReady && (
               <div className="absolute inset-0 flex items-center justify-center p-6 text-center text-sm text-slate-500">
                 {env.kakaoMapAppKey ? "지도 불러오는 중…" : "지도 키(NEXT_PUBLIC_KAKAO_MAP_APP_KEY)가 설정되지 않아 지도를 표시하지 않습니다. 코스 편집은 그대로 가능합니다."}
               </div>
             )}
-          </main>
+          </section>
           <DayPanel
             day={c.current}
             dayIndex={c.dayIndex}

@@ -138,3 +138,10 @@
 | T2 | 검증 | 시간 `24:59` 통과, 시간대 끝<시작 허용 | ✅ 시각 00:00~23:59, 시간대 끝 ≤24:00·시작<끝 (AUTO-15) |
 | T3 | 문서 | refresh token localStorage 보관의 XSS 맞교환이 문서에 없음 | ✅ docs/SECURITY.md — 통제·근거 코드·테스트, 맞교환 R1~R8 (AUTO-16) |
 | T4 | 보안 | 문서 작성 중 대조: 콘솔 `next` 검증이 `/\`(브라우저가 `//` 로 해석)를 막지 않음 — web 과 규칙이 달랐다 (유효한 1회용 코드가 필요해 실제 악용은 어려움) | ✅ 검증을 `@totem/shared sanitizeNext` 하나로 통일 + 테스트 |
+
+## 11. 재점검 4차 — 프런트 방어선 (2026-09-25)
+
+| # | 영역 | 발견 | 처리 |
+|---|---|---|---|
+| U1 | 보안 | 프런트에 CSP 없음 → XSS 시 localStorage 토큰을 임의 서버로 전송 가능 (SECURITY R1·R2) | ✅ web 응답 헤더·console meta CSP, connect-src 를 API 로 제한. 운영 빌드(`next start`·정적 out) 브라우저 점검: 로그인 인계·5개 화면 위반 0건, 외부 fetch 차단 확인 (AUTO-17) |
+| U2 | 접근성 | 일정관리·코스메이커가 `<main>` 을 중첩 | ✅ section + aria-label, 인쇄 시 안쪽 스크롤 영역 펼침 (AUTO-18) |

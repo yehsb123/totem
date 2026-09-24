@@ -47,7 +47,7 @@
 
 | 이름 | 설명 | 로컬 예 | 운영 예 |
 |---|---|---|---|
-| `NEXT_PUBLIC_API_BASE_URL` | API 주소 | `http://localhost:8000` | `https://api.<도메인>` |
+| `NEXT_PUBLIC_API_BASE_URL` | API 주소. **CSP connect-src 에도 빌드 시점에 들어간다** — 바꾸면 재배포해야 로그인됨 | `http://localhost:8000` | `https://api.<도메인>` |
 | `NEXT_PUBLIC_CONSOLE_URL` | 로그인 후 보낼 콘솔 주소 (**basePath 포함**) | `http://localhost:3200` | `https://yehsb123.github.io/totem` |
 | `NEXT_PUBLIC_SITE_URL` | 메인 사이트 자신의 주소 (카카오 redirect 계산, 공유 미리보기 og:image 절대 주소). 비우면 og 는 Vercel 운영 도메인(`VERCEL_PROJECT_PRODUCTION_URL`, 자동)으로 대체되지만 **카카오 로그인엔 필수** | `http://localhost:3100` | `https://<vercel 도메인>` |
 | `NEXT_PUBLIC_KAKAO_JS_KEY` | 카카오 **JavaScript 키** (로그인 SDK). 비우면 카카오 버튼 숨김 | | |
@@ -56,7 +56,7 @@
 
 | 이름 (로컬 .env.local) | GitHub Variables 이름 | 설명 | 운영 예 |
 |---|---|---|---|
-| `NEXT_PUBLIC_API_BASE_URL` | `CONSOLE_API_BASE_URL` | API 주소 | `https://api.<도메인>` |
+| `NEXT_PUBLIC_API_BASE_URL` | `CONSOLE_API_BASE_URL` | API 주소 (CSP connect-src 에도 들어감 → 바꾸면 재배포) | `https://api.<도메인>` |
 | `NEXT_PUBLIC_WEB_URL` | `CONSOLE_WEB_URL` | 로그인 안 됐을 때 보낼 메인 주소 | `https://<vercel 도메인>` |
 | `NEXT_PUBLIC_KAKAO_MAP_APP_KEY` | `CONSOLE_KAKAO_MAP_APP_KEY` | 카카오 **JavaScript 키** (지도). 비우면 지도 없이 편집 | |
 | `NEXT_PUBLIC_BASE_PATH` | (워크플로가 자동으로 `/<레포이름>`) | GitHub Pages 하위 경로. 로컬은 비움 | `/totem` |

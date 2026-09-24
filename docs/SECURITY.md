@@ -35,6 +35,7 @@
 | XSS | 화면은 React 텍스트 렌더(`dangerouslySetInnerHTML` 사용 0건). 카카오 지도 인포윈도우(HTML 문자열)는 장소명을 이스케이프 | `coursemaker/hooks/useKakaoMap.ts` |
 | 오픈 리다이렉트 | 로그인 후 이동할 `next` 는 `/` 로 시작하고 `//`·`/\`·제어문자가 없는 내부 경로만 — web·console 이 **같은 구현**(`@totem/shared sanitizeNext`) | `packages/shared/src/navigation.ts` · `observability.test.ts`, E2E "//evil.com" |
 | 헤더 | helmet 기본값, `X-Powered-By` 제거, CORS 는 허용 출처(`CORS_ORIGINS`)만 | `app.ts` · `observability.test.ts` |
+| 프런트 CSP | **connect-src = 자기 자신 + API 주소(빌드 시 `NEXT_PUBLIC_API_BASE_URL`)만** → XSS 가 생겨도 토큰을 외부로 보내지 못한다. 스크립트 출처는 자기 자신 + 카카오(web: `t1.kakaocdn.net`, console: `dapi.kakao.com`·`t1.daumcdn.net`), object·frame 금지, base-uri·form-action 자기 자신. web 은 응답 헤더(+ `X-Frame-Options: DENY`·`nosniff`·`Referrer-Policy`), console 은 `<meta>`. 운영 빌드에만(개발 서버 HMR 제외) | `packages/shared/csp.mjs`, `apps/web/next.config.mjs`, `apps/console/src/app/layout.tsx` · 운영 빌드 브라우저 점검(외부 fetch 차단·정상 화면 위반 0건) |
 
 ## 4. 로그·추적
 
@@ -59,7 +60,7 @@
 | # | 위험 | 왜 이렇게 했나 / 완화 | 권장 후속 |
 |---|---|---|---|
 | R1 | **토큰을 브라우저 localStorage(`totem.auth`)에 보관** → 페이지에 XSS 가 생기면 access·refresh 토큰을 읽어갈 수 있다 | 메인(Vercel)·콘솔(GitHub Pages)·API 가 서로 다른 도메인이라 쿠키 기반 세션을 쓰려면 같은 상위 도메인이 필요. 완화: access 15분, refresh 회전 + **재사용 탐지 시 전 세션 폐기**, XSS 통로 최소화(위 §3) | 운영 도메인을 `*.totem.co.kr` 처럼 한 상위 도메인으로 묶으면 refresh 를 `HttpOnly; Secure; SameSite` 쿠키로 옮길 것 |
-| R2 | **프런트에 CSP 헤더 없음** — XSS 가 생겼을 때 피해를 줄일 마지막 방어선이 없다 | GitHub Pages 는 응답 헤더를 설정할 수 없다. Vercel(web) 은 가능 | web: `next.config` `headers()` 로 CSP(스크립트 출처: 자기 자신·`t1.kakaocdn.net`·`dapi.kakao.com`). console: `<meta http-equiv="Content-Security-Policy">` 또는 헤더를 설정할 수 있는 호스팅으로 |
+| R2 | **CSP 가 `script-src 'unsafe-inline'` 을 허용**, 콘솔은 `<meta>` 라 `frame-ancestors`(클릭재킹 방지) 불가 | Next 정적 페이지는 인라인 부트스트랩 스크립트를 쓰고, 정적 export(GitHub Pages)는 요청마다 nonce 를 만들 수 없다. 핵심인 connect-src 제한(토큰 유출 차단)은 적용됨(§3) | 콘솔을 헤더 설정 가능한 호스팅으로 옮기면 헤더 CSP + `frame-ancestors 'none'`, 이어 nonce 기반으로 `'unsafe-inline'` 제거 |
 | R3 | **제3자 스크립트**(카카오 로그인 SDK·지도 SDK)가 토큰이 있는 페이지에서 실행 | 카카오 기능에 필수. 키가 없으면 불러오지 않는다 | 버전 고정 SDK 에 SRI(`integrity`) 적용 |
 | R4 | **계정 단위 잠금 없음**(IP 단위 속도 제한만) → 여러 IP 로 한 계정을 두드리는 대입 공격에 약함 | 잠금은 공격자가 남의 계정을 잠그는 DoS 로도 쓰여 설계 결정이 필요 | 계정·IP 조합 지연(점증 대기) 또는 CAPTCHA |
 | R5 | **가입 시 이메일 소유 확인 없음** — 남의 이메일로 가입해 그 이메일을 선점할 수 있다 | 메일 발송 수단이 없음 (초대 메일과 같은 결정) | 메일 서비스 결정 후 인증 메일 |

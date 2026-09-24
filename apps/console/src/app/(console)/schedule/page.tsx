@@ -171,7 +171,7 @@ export default function SchedulePage() {
           </aside>
 
           {/* 가운데: 달력 */}
-          <main className="min-w-0 flex-1 overflow-auto">
+          <section aria-label="달력" className="min-w-0 flex-1 overflow-auto">
             {s.loading && s.events.length === 0 ? (
               <LoadingState />
             ) : (
@@ -192,7 +192,7 @@ export default function SchedulePage() {
               />
             )}
             <section className="border-t border-slate-200 bg-white p-4 lg:hidden">{sidePanel}</section>
-          </main>
+          </section>
 
           {/* 오른쪽: 선택한 날짜 / 일정 상세 */}
           <aside className="hidden w-80 flex-shrink-0 overflow-y-auto border-l border-slate-200 bg-white p-4 lg:block">
