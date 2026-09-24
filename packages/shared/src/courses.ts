@@ -28,9 +28,15 @@ export const DEFAULT_TIME_SLOTS = [
 
 export const MAX_COURSE_DAYS = 31;
 
+/**
+ * 시간대 칸 이름: "(숙소)" 또는 "HH:mm~HH:mm" — 시작 00:00~23:59, 끝은 24:00 까지 허용, 시작 < 끝.
+ * (구 정규식은 24:59 와 "15:00~09:00" 처럼 끝이 앞선 시간대를 통과시켰다)
+ */
+const toMinutes = (hhmm: string) => Number(hhmm.slice(0, 2)) * 60 + Number(hhmm.slice(3, 5));
 const timeSlotLabel = z
   .string()
-  .regex(/^(\(숙소\)|([01]\d|2[0-3]):[0-5]\d~([01]\d|2[0-4]):[0-5]\d)$/, "시간대 형식이 올바르지 않습니다.");
+  .regex(/^(\(숙소\)|([01]\d|2[0-3]):[0-5]\d~(([01]\d|2[0-3]):[0-5]\d|24:00))$/, "시간대 형식이 올바르지 않습니다.")
+  .refine((v) => v === "(숙소)" || toMinutes(v.slice(0, 5)) < toMinutes(v.slice(6, 11)), "시간대의 끝이 시작보다 늦어야 합니다.");
 
 /** 코스에 담긴 장소 스냅샷 — 장소 캐시가 바뀌어도 저장된 코스는 그대로 보이도록 복사해 둔다 */
 export const coursePlace = z.object({

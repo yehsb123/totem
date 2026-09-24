@@ -234,3 +234,25 @@ describe("리뷰 평균은 전체 기준", () => {
     expect((await api.get(`/tours/${t.id}`)).body.data.reviewStats).toEqual({ averageRating: 3.4, reviewCount: 7 });
   });
 });
+
+describe("시간 검증", () => {
+  it("일정 세부 시간은 00:00~23:59 만 (구: 24:59 통과)", async () => {
+    const api = authed((await signup()).token);
+    const ev = (time: string) => api.post("/schedule/events", { name: "E", startDate: "2026-10-01", endDate: "2026-10-01", items: [{ time, place: "공항" }] });
+    expect((await ev("23:59")).status).toBe(201);
+    expect((await ev("00:00")).status).toBe(201);
+    expect((await ev("24:00")).status).toBe(400);
+    expect((await ev("24:59")).status).toBe(400);
+  });
+
+  it("코스 시간대는 끝이 시작보다 늦어야 하고 끝은 24:00 까지 (구: 15:00~09:00·24:59 통과)", async () => {
+    const api = authed((await signup()).token);
+    const { spot } = await pickPlaces(api);
+    const withSlots = (timeSlots: string[]) =>
+      api.post("/courses", { title: "C", startDate: "2026-10-01", endDate: "2026-10-01", timeSlots, days: [{ dayNumber: 1, date: "2026-10-01", slots: [{ slotIndex: 1, place: spot }] }] });
+    expect((await withSlots(["(숙소)", "23:00~24:00"])).status).toBe(201);
+    expect((await withSlots(["(숙소)", "15:00~09:00"])).status).toBe(400);
+    expect((await withSlots(["(숙소)", "10:00~10:00"])).status).toBe(400);
+    expect((await withSlots(["(숙소)", "23:00~24:59"])).status).toBe(400);
+  });
+});

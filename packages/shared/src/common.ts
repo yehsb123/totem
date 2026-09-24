@@ -13,7 +13,8 @@ export const isoDate = z
 export const isoMonth = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, "월은 YYYY-MM 형식이어야 합니다.");
 
 /** HH:mm */
-export const clockTime = z.string().regex(/^([01]\d|2[0-4]):[0-5]\d$/, "시간은 HH:mm 형식이어야 합니다.");
+/** HH:mm (00:00~23:59) — 구 정규식은 24:59 를 통과시켰다 */
+export const clockTime = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "시간은 00:00~23:59 사이의 HH:mm 이어야 합니다.");
 
 /** ISO-8601 datetime (응답의 createdAt 등) */
 export const isoDateTime = z.string();
