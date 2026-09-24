@@ -1,0 +1,13 @@
+{
+  "name": "@totem/e2e",
+  "version": "0.2.0",
+  "private": true,
+  "description": "실제 브라우저로 web → console → api 전체 흐름을 검증하는 E2E (Playwright)",
+  "scripts": {
+    "e2e": "playwright test",
+    "e2e:headed": "playwright test --headed"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0"
+  }
+}

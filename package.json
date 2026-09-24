@@ -7,7 +7,8 @@
   },
   "workspaces": [
     "apps/*",
-    "packages/*"
+    "packages/*",
+    "e2e"
   ],
   "scripts": {
     "dev": "concurrently -k -n api,web,console -c blue,green,magenta \"npm run dev -w @totem/api\" \"npm run dev -w @totem/web\" \"npm run dev -w @totem/console\"",
@@ -18,7 +19,8 @@
     "lint": "npm run lint --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
-    "seed": "npm run seed -w @totem/api"
+    "seed": "npm run seed -w @totem/api",
+    "e2e": "npm run e2e -w @totem/e2e"
   },
   "devDependencies": {
     "concurrently": "^9.2.4"

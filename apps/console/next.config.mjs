@@ -11,6 +11,9 @@ const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 const nextConfig = {
   // 모노레포 루트 기준으로 파일 추적 (상위 폴더의 다른 lockfile 을 루트로 오인하지 않게)
   outputFileTracingRoot: fileURLToPath(new URL("../../", import.meta.url)),
+  // next dev 와 next build 가 같은 .next 를 쓰면, 개발 서버가 떠 있는 동안 빌드할 때
+  // 개발 서버의 청크가 지워져 화면이 멈춘다 → 개발 산출물은 별도 폴더
+  distDir: process.env.NODE_ENV === "development" ? ".next-dev" : ".next",
   output: "export",
   trailingSlash: true,
   basePath,

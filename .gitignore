@@ -3,6 +3,7 @@ node_modules/
 
 # build output
 .next/
+.next-dev/
 out/
 dist/
 coverage/
@@ -35,3 +36,7 @@ Thumbs.db
 
 # Claude Code 작업 워크트리 (로컬 전용)
 /.claude/worktrees/
+
+# Playwright 산출물
+/e2e/test-results/
+/e2e/playwright-report/

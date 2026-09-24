@@ -53,3 +53,4 @@
 **진행**: npm audit 정리(vitest 5), 요금제 모델을 가격표와 일치(trial/basic/pro), 투어 일정표 PDF 구현, 투어 등록 시 달력 자동 표시,
 인쇄 규칙 버그·달력 접근성 버그 수정, 메인 스크린샷 9장 실제 캡처로 교체, 가이드 문구 교정.
 **자율 큐**: docs/BACKLOG.md §6
+- AUTO-01 ✅ 브라우저 E2E 13건을 `e2e/`(Playwright)로 편입·CI 잡 추가. 과정에서 `next dev`/`next build` 가 같은 `.next` 를 공유해 빌드 시 개발 서버가 멈추는 결함 발견 → 개발 산출물 `.next-dev` 분리
