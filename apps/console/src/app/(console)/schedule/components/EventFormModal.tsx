@@ -3,7 +3,7 @@
 import { Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createEventRequest, type CreateEventRequest, type ScheduleEvent, type ScheduleLabel, type Tour } from "@totem/shared";
-import { Field, Modal, btn, inputClass } from "@/components/ui";
+import { Field, Modal, btn, inputBase, inputClass } from "@/components/ui";
 import { api, errorMessage, fieldErrors } from "@/lib/api";
 
 type Item = { time: string; place: string };
@@ -152,7 +152,7 @@ export default function EventFormModal({
           <div className="space-y-2">
             {items.map((it, i) => (
               <div key={i} className="flex gap-2">
-                <input type="time" className={`${inputClass} w-28`} value={it.time} onChange={(e) => setItem(i, { time: e.target.value })} />
+                <input type="time" className={`${inputBase} w-28`} value={it.time} onChange={(e) => setItem(i, { time: e.target.value })} />
                 <input className={inputClass} value={it.place} placeholder="장소" onChange={(e) => setItem(i, { place: e.target.value })} />
                 <button type="button" className={btn.ghost} onClick={() => setItems((a) => a.filter((_, idx) => idx !== i))} aria-label="삭제">
                   <Trash2 className="h-4 w-4" />

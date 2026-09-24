@@ -60,8 +60,11 @@ export const btn = {
   ghost: `${btnBase} text-slate-600 hover:bg-slate-100`,
 };
 
-export const inputClass =
-  "w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100";
+/** 너비 없는 기본 입력 스타일 — 도구줄처럼 너비를 직접 줄 때 (w-full 과 섞으면 어느 쪽이 이길지 CSS 순서에 달려 버린다) */
+export const inputBase =
+  "rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100";
+/** 폼 안에서 가로 전체를 쓰는 입력 */
+export const inputClass = `w-full ${inputBase}`;
 
 export function Field({ label, error, hint, children }: { label: string; error?: string; hint?: string; children: ReactNode }) {
   return (

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { NATION_LABELS, TOUR_STATUSES, TOUR_STATUS_LABELS, type PageMeta, type Tour, type TourStatus } from "@totem/shared";
-import { EmptyState, ErrorState, LoadingState, btn, inputClass, useToast } from "@/components/ui";
+import { EmptyState, ErrorState, LoadingState, btn, inputBase, inputClass, useToast } from "@/components/ui";
 import { api, errorMessage } from "@/lib/api";
 import TourFormModal from "./components/TourFormModal";
 
@@ -91,8 +91,8 @@ export default function ToursPage() {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input className={`${inputClass} pl-9`} placeholder="투어명 검색" value={q} onChange={(e) => (setQ(e.target.value), setPage(1))} />
         </div>
-        <input type="date" className={`${inputClass} w-44`} value={date} onChange={(e) => (setDate(e.target.value), setPage(1))} title="이 날짜에 진행 중인 투어" />
-        <select className={`${inputClass} w-36`} value={type} onChange={(e) => (setType(e.target.value), setPage(1))}>
+        <input type="date" className={`${inputBase} w-44`} value={date} onChange={(e) => (setDate(e.target.value), setPage(1))} title="이 날짜에 진행 중인 투어" />
+        <select className={`${inputBase} w-36`} value={type} onChange={(e) => (setType(e.target.value), setPage(1))}>
           <option value="">모든 타입</option>
           {types.map((t) => (
             <option key={t} value={t}>
@@ -100,7 +100,7 @@ export default function ToursPage() {
             </option>
           ))}
         </select>
-        <select className={`${inputClass} w-32`} value={status} onChange={(e) => (setStatus(e.target.value as TourStatus | ""), setPage(1))}>
+        <select className={`${inputBase} w-32`} value={status} onChange={(e) => (setStatus(e.target.value as TourStatus | ""), setPage(1))}>
           <option value="">모든 상태</option>
           {TOUR_STATUSES.map((s) => (
             <option key={s} value={s}>

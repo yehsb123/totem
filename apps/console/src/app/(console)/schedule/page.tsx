@@ -4,7 +4,7 @@ import Link from "next/link";
 import { CalendarDays, ChevronLeft, ChevronRight, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { useState } from "react";
 import type { ScheduleEvent, ScheduleLabel } from "@totem/shared";
-import { ErrorState, LoadingState, btn, inputClass, useToast } from "@/components/ui";
+import { ErrorState, LoadingState, btn, inputBase, useToast } from "@/components/ui";
 import { errorMessage } from "@/lib/api";
 import { formatMonthKo, shiftMonth, today, toMonth } from "@/lib/format";
 import { colorOf } from "@/lib/labelColors";
@@ -74,7 +74,7 @@ export default function SchedulePage() {
         </div>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-          <input className={`${inputClass} w-60 pl-9`} placeholder="일정·담당자·장소 검색" value={s.query} onChange={(e) => s.setQuery(e.target.value)} />
+          <input className={`${inputBase} w-60 pl-9`} placeholder="일정·담당자·장소 검색" value={s.query} onChange={(e) => s.setQuery(e.target.value)} />
         </div>
       </div>
 

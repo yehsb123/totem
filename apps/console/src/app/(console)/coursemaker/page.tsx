@@ -6,7 +6,7 @@ import { Suspense, useCallback, useRef, useState } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { MAX_COURSE_DAYS, NATIONS, NATION_LABELS, type CoursePlace, type Nation } from "@totem/shared";
-import { ErrorState, LoadingState, btn, inputClass, useToast } from "@/components/ui";
+import { ErrorState, LoadingState, btn, inputBase, useToast } from "@/components/ui";
 import { errorMessage } from "@/lib/api";
 import { addDays } from "@/lib/format";
 import { env } from "@/lib/env";
@@ -62,17 +62,17 @@ function CourseMaker() {
       )}
       <div className="flex h-[calc(100vh-3.5rem)] flex-col">
         <div className="flex flex-shrink-0 flex-wrap items-end gap-3 border-b border-slate-200 bg-white px-4 py-3">
-          <label className="text-xs font-medium text-slate-600">
+          <label className="flex flex-col text-xs font-medium text-slate-600">
             코스 이름
-            <input className={`${inputClass} mt-1 w-56`} value={c.title} onChange={(e) => c.setTitle(e.target.value)} placeholder="예: 제주 동부 2박 3일" />
+            <input className={`${inputBase} mt-1 w-56`} value={c.title} onChange={(e) => c.setTitle(e.target.value)} placeholder="예: 제주 동부 2박 3일" />
           </label>
-          <label className="text-xs font-medium text-slate-600">
+          <label className="flex flex-col text-xs font-medium text-slate-600">
             픽업 장소
-            <input className={`${inputClass} mt-1 w-48`} value={c.pickupLocation} onChange={(e) => c.setPickupLocation(e.target.value)} placeholder="예: 제주공항 3번 게이트" />
+            <input className={`${inputBase} mt-1 w-48`} value={c.pickupLocation} onChange={(e) => c.setPickupLocation(e.target.value)} placeholder="예: 제주공항 3번 게이트" />
           </label>
-          <label className="text-xs font-medium text-slate-600">
+          <label className="flex flex-col text-xs font-medium text-slate-600">
             고객 국가
-            <select className={`${inputClass} mt-1 w-28`} value={c.nation} onChange={(e) => c.setNation(e.target.value as Nation)}>
+            <select className={`${inputBase} mt-1 w-28`} value={c.nation} onChange={(e) => c.setNation(e.target.value as Nation)}>
               {NATIONS.map((n) => (
                 <option key={n} value={n}>
                   {NATION_LABELS[n]}
@@ -80,12 +80,12 @@ function CourseMaker() {
               ))}
             </select>
           </label>
-          <label className="text-xs font-medium text-slate-600">
+          <label className="flex flex-col text-xs font-medium text-slate-600">
             기간
             <div className="mt-1 flex items-center gap-1">
               <input
                 type="date"
-                className={`${inputClass} w-[150px]`}
+                className={`${inputBase} w-[150px]`}
                 value={c.startDate}
                 onChange={(e) => {
                   const s = e.target.value;
@@ -94,7 +94,7 @@ function CourseMaker() {
                 }}
               />
               <span className="text-slate-400">~</span>
-              <input type="date" className={`${inputClass} w-[150px]`} value={c.endDate} min={c.startDate} max={c.startDate ? addDays(c.startDate, MAX_COURSE_DAYS - 1) : undefined} onChange={(e) => c.setPeriod(c.startDate, e.target.value)} />
+              <input type="date" className={`${inputBase} w-[150px]`} value={c.endDate} min={c.startDate} max={c.startDate ? addDays(c.startDate, MAX_COURSE_DAYS - 1) : undefined} onChange={(e) => c.setPeriod(c.startDate, e.target.value)} />
             </div>
           </label>
           {!c.isEdit && (
@@ -105,17 +105,17 @@ function CourseMaker() {
               </label>
               {c.tour.enabled && (
                 <>
-                  <label className="text-xs text-slate-600">
+                  <label className="flex flex-col text-xs text-slate-600">
                     타입
-                    <input className={`${inputClass} mt-1 w-20 py-1`} value={c.tour.type} onChange={(e) => c.setTour({ ...c.tour, type: e.target.value })} />
+                    <input className={`${inputBase} mt-1 w-20 py-1`} value={c.tour.type} onChange={(e) => c.setTour({ ...c.tour, type: e.target.value })} />
                   </label>
-                  <label className="text-xs text-slate-600">
+                  <label className="flex flex-col text-xs text-slate-600">
                     담당자
-                    <input className={`${inputClass} mt-1 w-20 py-1`} value={c.tour.managerName} onChange={(e) => c.setTour({ ...c.tour, managerName: e.target.value })} />
+                    <input className={`${inputBase} mt-1 w-20 py-1`} value={c.tour.managerName} onChange={(e) => c.setTour({ ...c.tour, managerName: e.target.value })} />
                   </label>
-                  <label className="text-xs text-slate-600">
+                  <label className="flex flex-col text-xs text-slate-600">
                     예상 인원
-                    <input type="number" min={0} className={`${inputClass} mt-1 w-20 py-1`} value={c.tour.capacity} onChange={(e) => c.setTour({ ...c.tour, capacity: Math.max(0, Number(e.target.value)) })} />
+                    <input type="number" min={0} className={`${inputBase} mt-1 w-20 py-1`} value={c.tour.capacity} onChange={(e) => c.setTour({ ...c.tour, capacity: Math.max(0, Number(e.target.value)) })} />
                   </label>
                 </>
               )}

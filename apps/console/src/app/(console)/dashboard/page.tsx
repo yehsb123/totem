@@ -3,7 +3,7 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { DashboardOverview, MonthlyTourismStats } from "@totem/shared";
-import { EmptyState, ErrorState, LoadingState, inputClass } from "@/components/ui";
+import { EmptyState, ErrorState, LoadingState, inputBase } from "@/components/ui";
 import { api, errorMessage } from "@/lib/api";
 import { formatMonthKo } from "@/lib/format";
 import ComprehensiveDashboard from "./components/ComprehensiveDashboard";
@@ -84,7 +84,7 @@ export default function DashboardPage() {
             <button className="p-2 hover:bg-slate-100 disabled:opacity-30" onClick={() => go(-1)} disabled={idx <= 0} aria-label="이전 달">
               <ChevronLeft className="h-5 w-5" />
             </button>
-            <select className={`${inputClass} w-40 rounded-none border-0`} value={month} onChange={(e) => setMonth(e.target.value)} aria-label="월 선택">
+            <select className={`${inputBase} w-40 rounded-none border-0`} value={month} onChange={(e) => setMonth(e.target.value)} aria-label="월 선택">
               {data.months.map((m) => (
                 <option key={m} value={m}>
                   {formatMonthKo(m)}

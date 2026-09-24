@@ -242,7 +242,7 @@ const ComprehensiveDashboard = ({
         />
         <StatCard
           title="총 관광 소비액"
-          value={`₩ ${formattedTotalSpending}`}
+          value={formattedTotalSpending}
           icon={<ShoppingCartIcon className="text-white" />}
         />
         <StatCard
