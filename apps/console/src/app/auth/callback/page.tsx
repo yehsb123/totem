@@ -2,11 +2,12 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
+import { sanitizeNext } from "@totem/shared";
 import { api, errorMessage } from "@/lib/api";
 import { env } from "@/lib/env";
 
-/** 내부 경로만 허용 (//evil.com 같은 프로토콜 상대 주소로의 오픈 리다이렉트 방지) */
-const safeNext = (v: string | null) => (v && v.startsWith("/") && !v.startsWith("//") ? v : "/schedule/");
+/** 내부 경로만 허용 — 규칙은 web 과 같은 @totem/shared sanitizeNext (오픈 리다이렉트 방지) */
+const safeNext = (v: string | null) => sanitizeNext(v) ?? "/schedule/";
 
 /**
  * 메인 사이트에서 로그인하면 ?code=<1회용 코드>&next=<경로> 로 이 페이지에 온다.

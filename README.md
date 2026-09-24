@@ -68,6 +68,7 @@ npm run dev:console    # http://localhost:3200
 | [docs/DATABASE.md](docs/DATABASE.md) | 컬렉션 ↔ 화면, 필드·인덱스·규칙 |
 | [docs/ENV.md](docs/ENV.md) | 환경변수 전체 (어디에 두는지, 구 이름 대응표) |
 | [docs/DEPLOY.md](docs/DEPLOY.md) | Vercel·GitHub Pages·API 배포 설정, 롤백 |
+| [docs/SECURITY.md](docs/SECURITY.md) | 보안 통제(근거 코드·테스트)와 알고 받아들인 위험 |
 
 ## 개발 규칙
 

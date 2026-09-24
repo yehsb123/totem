@@ -76,3 +76,14 @@ describe("접근 로그 비밀값 가리기", () => {
     expect(line).not.toContain("SuperSecretInviteToken1234");
   });
 });
+
+describe("sanitizeNext (web·console 공통 오픈 리다이렉트 방지)", () => {
+  it("내부 경로만 통과, //·/\·외부 주소·제어문자는 거부", async () => {
+    const { sanitizeNext } = await import("@totem/shared");
+    expect(sanitizeNext("/schedule/")).toBe("/schedule/");
+    expect(sanitizeNext("/coursemaker/?courseId=abc")).toBe("/coursemaker/?courseId=abc");
+    for (const bad of ["//evil.com", "/\\evil.com", "https://evil.com", "evil.com", "/ok\nSet-Cookie:x", "", null, undefined]) {
+      expect(sanitizeNext(bad as string | null)).toBeNull();
+    }
+  });
+});

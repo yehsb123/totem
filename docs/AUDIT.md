@@ -136,4 +136,5 @@
 |---|---|---|---|
 | T1 | 보안 | 초대 미리보기 `GET /auth/invitations/<토큰>` 의 토큰이 접근 로그에 평문 → 로그 열람자가 초대를 가로채 가입 가능 | ✅ 로그 URL 마스킹(경로 토큰, token·code·refreshToken 쿼리), 실제 서버 로그로 원문 0건 확인 (AUTO-14) |
 | T2 | 검증 | 시간 `24:59` 통과, 시간대 끝<시작 허용 | ✅ 시각 00:00~23:59, 시간대 끝 ≤24:00·시작<끝 (AUTO-15) |
-| T3 | 문서 | refresh token localStorage 보관의 XSS 맞교환이 문서에 없음 | ⏳ AUTO-16 |
+| T3 | 문서 | refresh token localStorage 보관의 XSS 맞교환이 문서에 없음 | ✅ docs/SECURITY.md — 통제·근거 코드·테스트, 맞교환 R1~R8 (AUTO-16) |
+| T4 | 보안 | 문서 작성 중 대조: 콘솔 `next` 검증이 `/\`(브라우저가 `//` 로 해석)를 막지 않음 — web 과 규칙이 달랐다 (유효한 1회용 코드가 필요해 실제 악용은 어려움) | ✅ 검증을 `@totem/shared sanitizeNext` 하나로 통일 + 테스트 |
