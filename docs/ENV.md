@@ -24,7 +24,7 @@
 | `MONGO_URI` | **운영 필수** | (빈 값) | 비우면 개발/테스트에서 **인메모리 MongoDB + 데모 데이터**로 뜬다 |
 | `MONGO_DB_NAME` | | `totem` | |
 | `SEED_ON_EMPTY` | | `false` | 영속 DB 가 비었을 때 기동 시 시드 (개발용) |
-| `SEED_DEMO_PASSWORD` | | (빈 값) | `npm run seed` 시 데모 계정 `demo@totem.dev` 비밀번호. 비우면 데모 계정 미생성 |
+| `SEED_DEMO_PASSWORD` | | (빈 값) | `npm run seed`·`SEED_ON_EMPTY` 때 데모 계정 `demo@totem.dev` 비밀번호. 비우면 데모 계정 미생성 — **인메모리 DB(MONGO_URI 비움)만 예외로 `demo1234`** |
 | `CORS_ORIGINS` | **운영 필수** | 개발: `http://localhost:3100,http://localhost:3200` | 브라우저 호출 허용 출처 = **web 주소, console 주소** (쉼표 구분, 끝 `/` 없이. console 은 `https://yehsb123.github.io` 처럼 **경로 없이 도메인만**) |
 | `JWT_ACCESS_SECRET` | **운영 필수 (32자↑)** | 개발 전용 기본값 | 생성: `node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"` |
 | `JWT_ACCESS_TTL` | | `15m` | access token 수명 |
@@ -32,7 +32,7 @@
 | `AUTH_HANDOFF_TTL_SECONDS` | | `60` | 메인 → 콘솔 로그인 인계 코드 수명 |
 | `BCRYPT_ROUNDS` | | `12` | |
 | `RATE_LIMIT_PER_MINUTE` | | `300` | IP 당 전체 요청 |
-| `AUTH_RATE_LIMIT_PER_15MIN` | | `30` | IP 당 로그인·가입·refresh |
+| `AUTH_RATE_LIMIT_PER_15MIN` | | `30` | IP 당 로그인·가입·refresh·카카오 로그인·인계 코드 교환. (이메일 중복 확인·아이디 찾기 10, 초대 확인·수락 30 은 코드 고정 — docs/API.md) |
 | `TOURAPI_SERVICE_KEY` | 장소 동기화 시 | | 공공데이터포털 > 한국관광공사_국문 관광정보 서비스_GW > **일반 인증키(Decoding)** |
 | `PLACE_SYNC_COOLDOWN_HOURS` | | `6` | 공용 장소 동기화 간 최소 간격. 모든 조직이 같은 데이터를 쓰므로 한 번 받으면 이 시간 동안 다시 받을 수 없음 (TourAPI 호출 한도 보호) |
 | `TOURAPI_BASE_URL` | | `https://apis.data.go.kr/B551011/KorService2` | |
@@ -49,7 +49,7 @@
 |---|---|---|---|
 | `NEXT_PUBLIC_API_BASE_URL` | API 주소. **CSP connect-src 에도 빌드 시점에 들어간다** — 바꾸면 재배포해야 로그인됨 | `http://localhost:8000` | `https://api.<도메인>` |
 | `NEXT_PUBLIC_CONSOLE_URL` | 로그인 후 보낼 콘솔 주소 (**basePath 포함**) | `http://localhost:3200` | `https://yehsb123.github.io/totem` |
-| `NEXT_PUBLIC_SITE_URL` | 메인 사이트 자신의 주소 (카카오 redirect 계산, 공유 미리보기 og:image 절대 주소). 비우면 og 는 Vercel 운영 도메인(`VERCEL_PROJECT_PRODUCTION_URL`, 자동)으로 대체되지만 **카카오 로그인엔 필수** | `http://localhost:3100` | `https://<vercel 도메인>` |
+| `NEXT_PUBLIC_SITE_URL` | 메인 사이트 자신의 주소 (카카오 redirect 계산, 공유 미리보기 og:image 절대 주소). 비우면 og 는 Vercel 운영 도메인(`VERCEL_PROJECT_PRODUCTION_URL` → 없으면 배포별 `VERCEL_URL`, 둘 다 자동)으로 대체되지만 **카카오 로그인엔 필수** | `http://localhost:3100` | `https://<vercel 도메인>` |
 | `NEXT_PUBLIC_KAKAO_JS_KEY` | 카카오 **JavaScript 키** (로그인 SDK). 비우면 카카오 버튼 숨김 | | |
 
 ## console (`apps/console`) — 공개 값만

@@ -18,13 +18,25 @@
 화면은 5xx 일 때 "(오류 ID: 앞 8자리)" 를 보여준다 (`describeApiError`). 로그 찾기: 서버 로그에서 그 값으로 검색.
 접근 로그: 5xx=error · 4xx=warn · 나머지 info, 인증된 요청은 `userId`·`orgId` 포함, 헬스체크 제외. URL 안의 초대 토큰(경로)·`token`/`code`/`refreshToken` 쿼리 값은 `[REDACTED]` 로 가려 남긴다.
 
+**목록 페이지 크기**(`?page=&limit=`): 기본 20·최대 100 이 원칙이고, 화면 사용량에 맞춘 예외는 아래와 같다.
+
+| 목록 | 기본 | 최대 |
+|---|---|---|
+| 장소 `/places` | 50 | 200 |
+| 투어 `/tours` | 50 | 100 |
+| 리뷰 `/tours/:tourId/reviews` | 100 | 200 |
+| 일정 `/schedule/events` | 페이지 없음 (기간 조회) | 1,000건 상한 |
+| 대기 초대 `/org/invitations` | 페이지 없음 | 100건 상한 |
+
+**속도 제한 (IP 당, 넘으면 429 `RATE_LIMITED`)**: 전체 `RATE_LIMIT_PER_MINUTE`(300/분) · 로그인·가입·refresh·카카오 로그인·인계 코드 교환 `AUTH_RATE_LIMIT_PER_15MIN`(30/15분) · 이메일 중복 확인·아이디 찾기 10/15분(고정) · 초대 확인·수락 30/15분(고정).
+
 | code | HTTP | 의미 |
 |---|---|---|
-| `VALIDATION_ERROR` | 400 | 입력값 오류 (`details.fields` 에 필드별 메시지) |
+| `VALIDATION_ERROR` | 400 · 422 | 입력값 오류 (`details.fields` 에 필드별 메시지). 422 는 형식은 맞지만 처리할 수 없는 요청 — 동선 계산(`/maps/directions`)에서 카카오가 경로를 찾지 못한 경우 |
 | `UNAUTHORIZED` / `TOKEN_EXPIRED` | 401 | 로그인 필요 / access 만료 |
 | `FORBIDDEN` | 403 | 권한 없음·정지 계정 |
 | `NOT_FOUND` | 404 | 없음 **또는 다른 조직 데이터** |
-| `CONFLICT` | 409 | 중복·사용 중 |
+| `CONFLICT` | 409 · 410 | 409 중복·사용 중 / 410 초대가 이미 수락·취소·만료됨 (`/auth/invitations/*`) |
 | `RATE_LIMITED` | 429 | 요청 과다 |
 | `UPSTREAM_ERROR` | 502 | TourAPI·카카오 등 외부 오류 |
 | `NOT_CONFIGURED` | 503 | 서버에 외부 API 키 미설정 |
@@ -95,7 +107,7 @@
 |---|---|---|
 | GET·POST | `/tours/:tourId/reviews` | 투어별 목록 / 직접 입력 |
 | GET | `/tours/:tourId/reviews/summary` | 전체 리뷰 기준 항목별 평균 — 리뷰관리 "전체 평균" 행 (목록 페이지와 무관) |
-| POST | `/tours/:tourId/reviews/import` | `{ csvUrl }` 구글 시트·CSV 가져오기 → `{ totalRows, imported, skipped, errors[] }` |
+| POST | `/tours/:tourId/reviews/import` | `{ csvUrl }` 구글 시트·CSV 가져오기 → `{ batchId, totalRows, imported, skipped, errors[] }` (errors 는 앞 100건까지) |
 | DELETE | `/reviews/:id` | |
 
 ### 멤버 관리 (설정 > 멤버 관리, 메인 /invite)

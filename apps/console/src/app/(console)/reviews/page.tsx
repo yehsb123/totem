@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { createReviewRequest, type ImportReviewsResult, type PageMeta, type Review, type ReviewSummary, type Tour } from "@totem/shared";
 import { EmptyState, ErrorState, Field, LoadingState, Modal, btn, inputClass, useToast } from "@/components/ui";
 import { api, errorMessage } from "@/lib/api";
+import { toLocalDate } from "@/lib/format";
 
 function Stars({ value }: { value: number | null }) {
   const rounded = Math.round(value ?? 0);
@@ -219,7 +220,7 @@ export default function ReviewsPage() {
                 <tbody>
                   {reviews.map((r) => (
                     <tr key={r.id} className="border-t border-slate-100 text-center">
-                      <td className="whitespace-nowrap p-2">{r.submittedAt.slice(0, 10)}</td>
+                      <td className="whitespace-nowrap p-2">{toLocalDate(new Date(r.submittedAt))}</td>
                       <td className="p-2">{r.reviewerName ?? "익명"}</td>
                       <td className="p-2">
                         <Stars value={r.totalRating} />

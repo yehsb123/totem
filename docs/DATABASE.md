@@ -39,6 +39,9 @@
 | plan | `trial`·`basic`·`pro` | 기본 trial. 메인 `/pricing` 요금제와 1:1 (Basic ₩29,000 · Pro ₩59,000, `PLAN_MONTHLY_PRICE`) · subscriptions.plan 과 항상 같은 값 |
 | ownerId | ObjectId → users | |
 | deletedAt | Date? | 소유자 단독 탈퇴 시 |
+| purgedAt | Date? | 영구 삭제 완료 시각 — 이후 이름을 지운 표지로만 남음 |
+
+index: (deletedAt, purgedAt) — 영구 삭제 대상 찾기
 
 ### users
 | 필드 | 타입 | 비고 |
@@ -50,7 +53,7 @@
 | phone | string? | 아이디 찾기(name+phone index) |
 | role | `owner`·`admin`·`member` | |
 | status | `active`·`suspended`·`withdrawn` | active 외에는 모든 API 401/403 |
-| identities[] | {provider:`kakao`, providerUserId} | (provider, providerUserId) unique |
+| identities[] | {provider:`local`·`kakao`, providerUserId} — 현재 가입 경로가 만드는 것은 `kakao` 뿐 | (provider, providerUserId) unique |
 | notifications | {email: bool, push: bool} | 기본 true / false |
 | agreements | {terms, privacy, marketing: Date?} | 약관 동의 시각 (증빙) |
 | lastLoginAt, deletedAt | Date? | |
@@ -91,7 +94,7 @@ organizationId · email(소문자) · role(`admin`·`member`) · tokenHash(uniqu
 | popularity / foreignPopularity | number | 코스에 담길 때 +1 (코스 nation 이 KR 이면 popularity, 아니면 foreign) |
 | isActive, syncedAt | | |
 
-index: (areaCode, category, popularity↓), text(title, addr1)
+index: category, (areaCode, category, popularity↓), text(title, addr1)
 
 ### courses
 | 필드 | 타입 | 비고 |
@@ -129,7 +132,7 @@ index: (areaCode, category, popularity↓), text(title, addr1)
 - 사용 중인 라벨 삭제는 409, `?reassignTo=<labelId|none>` 로 옮긴 뒤 삭제
 
 ### tourism_stats (공용)
-region · month(`YYYY-MM`) — **(region, month) unique**
+region · month(`YYYY-MM`) — **(region, month) unique** · source(기본 `한국관광데이터랩`, 출처 표기)
 | 필드 | 대시보드 탭 |
 |---|---|
 | domesticVisitors, genderAge[{ageGroup, maleRatio, femaleRatio}] | 방문자 통계(국내) |
@@ -147,8 +150,8 @@ region · month(`YYYY-MM`) — **(region, month) unique**
 |---|---|---|
 | 1. 삭제 표시 | 소유자가 혼자 남은 상태에서 탈퇴 | `organizations.deletedAt`, 대기 초대 취소, 소유자 개인정보 즉시 삭제. 이후 **모든 요청·로그인 401**("삭제된 조직입니다.") |
 | 2. 유예 | `ORG_PURGE_AFTER_DAYS`(기본 30일) | 데이터는 남아 있지만 누구도 접근 불가 (복구 요청 대응 기간) |
-| 3. 영구 삭제 | `npm run purge -w @totem/api` (운영: 하루 1회 예약 실행) | 코스·투어·리뷰·가져오기 이력·일정·라벨·초대·구독·사용자·세션 삭제. 조직 문서는 이름을 지운 표지(`purgedAt`)로만 남김 |
-| 보존 | 5년 | `payments` — 전자상거래법 대금결제 기록 보존. 개인정보 없음 |
+| 3. 영구 삭제 | `npm run purge -w @totem/api` (운영: 하루 1회 예약 실행) | 코스·투어·리뷰·가져오기 이력·일정·라벨·초대·구독·사용자·세션·인계 코드 삭제. 조직 문서는 이름을 지운 표지(`purgedAt`)로만 남김 |
+| 보존 | 5년 (목표) | `payments` — 전자상거래법 대금결제 기록 보존. 개인정보 없음. **5년 경과분 삭제는 아직 구현하지 않음**(현재는 계속 보존) — 보존 기간 확정 후 purge 에 추가 |
 
 멤버 제외·개인 탈퇴는 조직과 무관하게 **즉시** 개인정보(이메일·이름·전화·인증수단)를 지우고 세션을 폐기한다.
 
@@ -158,6 +161,7 @@ region · month(`YYYY-MM`) — **(region, month) unique**
 |---|---|
 | `npm run seed` | 공용 데이터(통계 12개월·제주 장소 17곳) upsert. `SEED_DEMO_PASSWORD` 가 있으면 데모 조직도 |
 | 개발 서버(`MONGO_URI` 비움) | 인메모리 DB 에 공용 데이터 + 데모 조직 자동. 계정 `demo@totem.dev` / `demo1234` |
+| `SEED_ON_EMPTY=true` + 영속 DB | 비어 있으면 공용 데이터. 데모 조직은 `SEED_DEMO_PASSWORD` 가 있을 때만 (알려진 기본 비밀번호는 인메모리 전용) |
 
 데모 조직: 코스 1 · 투어 3(예정·진행중·종료) · 리뷰 3 · 일정 3 · Basic 구독 · 결제 3건(₩29,000)
 

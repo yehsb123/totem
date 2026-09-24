@@ -13,7 +13,7 @@ import {
 import { ErrorState, Field, LoadingState, btn, inputClass, useToast } from "@/components/ui";
 import { api, errorMessage, fieldErrors } from "@/lib/api";
 import { env } from "@/lib/env";
-import { formatDateKo, formatWon } from "@/lib/format";
+import { formatDateKo, formatWon, toLocalDate } from "@/lib/format";
 import { useSession } from "@/lib/session";
 import DataTab from "./DataTab";
 import MembersTab from "./MembersTab";
@@ -286,7 +286,8 @@ function NotificationsTab() {
       <Section title="알림 수신">
         <NotificationRow k="email" label="이메일 알림" desc="투어 일정 변경·리뷰 등록 소식을 이메일로 받습니다." checked={user.notifications.email} busy={busy === "email"} onToggle={toggle} />
         <NotificationRow k="push" label="푸시 알림" desc="브라우저 알림으로 받습니다." checked={user.notifications.push} busy={busy === "push"} onToggle={toggle} />
-        <p className="mt-2 text-xs text-slate-500">변경 즉시 저장됩니다.</p>
+        {/* 메일·푸시 발송 수단이 아직 없다 (WORKLOG 책임님 확인 필요: 메일 서비스) — 받을지 여부만 미리 저장 */}
+        <p className="mt-2 text-xs text-slate-500">변경 즉시 저장됩니다. 알림 발송은 준비 중이며, 시작되면 이 설정대로 보내 드립니다.</p>
       </Section>
     </div>
   );
@@ -295,6 +296,7 @@ function NotificationsTab() {
 function BillingTab() {
   const [summary, setSummary] = useState<BillingSummary | null>(null);
   const [payments, setPayments] = useState<Payment[]>([]);
+  const [paymentTotal, setPaymentTotal] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
   const [retry, setRetry] = useState(0);
@@ -305,6 +307,7 @@ function BillingTab() {
         if (cancelled) return;
         setSummary(sum);
         setPayments(pay.items);
+        setPaymentTotal(pay.meta.total);
       })
       .catch((e) => !cancelled && setError(errorMessage(e)));
     return () => {
@@ -349,7 +352,7 @@ function BillingTab() {
             <tbody>
               {payments.map((p) => (
                 <tr key={p.id} className="border-t border-slate-100">
-                  <td className="px-4 py-2">{p.paidAt.slice(0, 10)}</td>
+                  <td className="px-4 py-2">{toLocalDate(new Date(p.paidAt))}</td>
                   <td className="px-4 py-2">{p.product}</td>
                   <td className="px-4 py-2">{formatWon(p.amount)}</td>
                   <td className="px-4 py-2">{PAYMENT_STATUS_LABELS[p.status]}</td>
@@ -357,6 +360,11 @@ function BillingTab() {
               ))}
             </tbody>
           </table>
+        )}
+        {paymentTotal > payments.length && (
+          <p className="mt-2 text-xs text-slate-500">
+            최근 {payments.length}건만 보여 줍니다 (전체 {paymentTotal.toLocaleString("ko-KR")}건).
+          </p>
         )}
       </Section>
     </div>

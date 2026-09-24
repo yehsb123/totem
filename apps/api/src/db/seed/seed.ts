@@ -1,6 +1,7 @@
 import { DEFAULT_TIME_SLOTS, HOTEL_SLOT_INDEX, PLAN_MONTHLY_PRICE, enumerateDates } from "@totem/shared";
-import { env, isProd } from "../../config/env";
+import { env } from "../../config/env";
 import { logger } from "../../lib/logger";
+import { isMemoryDb } from "../connect";
 import { Course, Payment, Place, Review, ScheduleEvent, ScheduleLabel, Subscription, Tour, TourismStat, User } from "../models";
 import { createOrganizationWithOwner, hashPassword } from "../../modules/auth/service";
 import { placesJeju } from "./data/places-jeju";
@@ -52,8 +53,10 @@ export async function seedDemoOrganization(password: string) {
   };
   const slot = (i: number, t: string) => ({ slotIndex: i, place: byTitle(t), memo: null });
 
-  const today = now.toISOString().slice(0, 10);
-  const plusDays = (n: number) => new Date(Date.now() + n * 86_400_000).toISOString().slice(0, 10);
+  // 한국 날짜 기준 (toISOString 은 UTC 라 오전 9시 전에 시드하면 "오늘" 투어가 어제로 들어간다)
+  const seoulDate = (d: Date) => d.toLocaleDateString("en-CA", { timeZone: "Asia/Seoul" });
+  const today = seoulDate(now);
+  const plusDays = (n: number) => seoulDate(new Date(now.getTime() + n * 86_400_000));
   const [s1, e1] = [plusDays(7), plusDays(9)];
   const days1 = enumerateDates(s1, e1);
 
@@ -116,10 +119,19 @@ export async function seedDemoOrganization(password: string) {
   logger.info({ email: DEMO_EMAIL }, "데모 조직 시드 완료");
 }
 
+/**
+ * 데모 계정 비밀번호. 알려진 기본값(demo1234)은 **인메모리 DB 에서만** — 끄면 사라지는 DB 라 안전하다.
+ * 영속 DB(스테이징·공용 개발 DB)에 SEED_ON_EMPTY 로 기동할 때는 SEED_DEMO_PASSWORD 가 있어야 만든다
+ * (예전에는 NODE_ENV 만 봐서, 운영이 아닌 영속 DB 에 누구나 아는 비밀번호로 계정이 생겼다 — AUDIT §12).
+ */
+export function demoPasswordFor({ configured, memoryDb }: { configured: string; memoryDb: boolean }) {
+  return configured || (memoryDb ? MEMORY_DEMO_PASSWORD : "");
+}
+
 /** 서버 기동 시: DB 가 비어 있을 때만 */
 export async function seedIfEmpty() {
   if ((await TourismStat.estimatedDocumentCount()) === 0) await seedReferenceData();
-  const password = env.SEED_DEMO_PASSWORD || (isProd ? "" : MEMORY_DEMO_PASSWORD);
+  const password = demoPasswordFor({ configured: env.SEED_DEMO_PASSWORD, memoryDb: isMemoryDb() });
   if (password && !(await User.exists({ email: DEMO_EMAIL }))) {
     await seedDemoOrganization(password);
     if (!env.SEED_DEMO_PASSWORD) logger.warn(`개발용 데모 계정: ${DEMO_EMAIL} / ${MEMORY_DEMO_PASSWORD}`);

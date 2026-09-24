@@ -78,3 +78,5 @@
   - **책임님 확인 필요**: R1 운영 도메인을 한 상위 도메인으로 묶을지(쿠키 세션 전환 가능), R2 콘솔 호스팅(GitHub Pages 는 CSP 헤더 불가), R4 계정 잠금 정책
 - AUTO-17 ✅ 프런트 CSP: 공용 생성기 `@totem/shared/csp`, web 응답 헤더(+X-Frame-Options·nosniff·Referrer-Policy), console `<meta>`(GitHub Pages). connect-src = 자기 자신+API 만 → XSS 시 토큰 외부 유출 차단. 운영 빌드 브라우저 점검: 위반 0건·외부 fetch 차단. AUTO-18 ✅ 중첩 `<main>` 해소. API 59 · E2E 19
   - **책임님 확인 필요**: 카카오 로그인·지도 화면의 CSP 는 키가 없어 실제 로드 확인 못 함 — 키 등록 후 브라우저 콘솔에 "Content Security Policy" 경고가 없는지 확인(있으면 그 출처를 `packages/shared/csp.mjs` 에 추가)
+- 재점검 5차(문서↔코드 전수 대조 + 화면 문구) → AUTO-19~22 ✅: 영속 DB 데모 계정 기본 비밀번호 차단(보안), UTC 날짜 표시 3곳, 없는 기능 약속 문구 3건, API·DATABASE·ENV 문서 불일치 12건 — AUDIT §12. API 60 · E2E 19
+  - **책임님 확인 필요**: 결제 기록 5년 경과분 자동 삭제를 넣을지(지금은 계속 보존 — 보존 기간 결정과 함께)
