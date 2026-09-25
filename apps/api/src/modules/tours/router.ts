@@ -1,3 +1,4 @@
+import { Types } from "mongoose";
 import { Router } from "express";
 import { ROUTES, createTourRequest, tourListQuery, updateTourRequest } from "@totem/shared";
 import { badRequest, escapeRegex, noContent, notFound, ok, okPaged, parse } from "../../lib/http";
@@ -45,6 +46,27 @@ toursRouter.post(ROUTES.tours.list, async (req, res) => {
   ok(res, toTour(tour.toObject()), 201);
 });
 
+/**
+ * 투어에 연결된 일정(코스메이커로 투어 등록 시 자동 생성·일정에서 연결)을 투어에 맞춘다.
+ * 투어관리에서 날짜·이름을 바꿔도 일정관리 달력이 옛 날짜로 남던 불일치 (AUDIT §24).
+ *  - 날짜: 항상 투어를 따른다 (일정이 투어 기간을 나타내므로)
+ *  - 이름·담당자: 일정 쪽 값이 투어의 **이전 값과 같을 때만** 바꾼다 (일정에서 따로 고친 값은 존중)
+ */
+async function syncLinkedEvents(
+  organizationId: Types.ObjectId,
+  tourId: Types.ObjectId,
+  before: { title: string; managerName: string },
+  after: { title: string; managerName?: string | null; startDate: string; endDate: string },
+) {
+  const byTour = { organizationId, tourId };
+  await Promise.all([
+    ScheduleEvent.updateMany(byTour, { $set: { startDate: after.startDate, endDate: after.endDate } }),
+    after.title !== before.title && ScheduleEvent.updateMany({ ...byTour, name: before.title }, { $set: { name: after.title } }),
+    (after.managerName ?? "") !== before.managerName &&
+      ScheduleEvent.updateMany({ ...byTour, manager: before.managerName }, { $set: { manager: after.managerName ?? "" } }),
+  ]);
+}
+
 /** 표 인라인 수정(상태 드롭다운·좌석 입력). 기존 값과 합친 결과로 날짜·좌석 규칙을 다시 검증한다 */
 toursRouter.patch(ROUTES.tours.detail(":id"), async (req, res) => {
   const body = parse(updateTourRequest, req.body);
@@ -57,8 +79,10 @@ toursRouter.patch(ROUTES.tours.detail(":id"), async (req, res) => {
   if (merged.startDate > merged.endDate) throw badRequest("종료일은 시작일과 같거나 이후여야 합니다.");
   if (merged.bookedSeats > merged.capacity) throw badRequest("예약 인원이 예상 인원을 초과할 수 없습니다.");
 
+  const before = { title: tour.title, managerName: tour.managerName ?? "" };
   tour.set(body);
   await tour.save();
+  await syncLinkedEvents(organizationId, tour._id, before, tour.toObject());
   ok(res, toTour(tour.toObject()));
 });
 

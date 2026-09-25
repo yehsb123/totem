@@ -171,5 +171,6 @@ const scheduleEventSchema = new Schema(
 // 달력 범위 조회: startDate ≤ to AND endDate ≥ from
 scheduleEventSchema.index({ organizationId: 1, startDate: 1, endDate: 1 });
 scheduleEventSchema.index({ organizationId: 1, labelId: 1 });
+scheduleEventSchema.index({ organizationId: 1, tourId: 1 }); // 투어 수정·삭제 시 연결된 일정 맞추기
 export const ScheduleEvent = model("ScheduleEvent", scheduleEventSchema, "schedule_events");
 export type ScheduleEventDoc = InferSchemaType<typeof scheduleEventSchema> & { _id: Types.ObjectId; createdAt: Date; updatedAt: Date };

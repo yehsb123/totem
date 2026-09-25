@@ -100,7 +100,7 @@
 | GET | `/tours?q&date&type&status&page&limit` | 표 (date = 그날 진행 중) · `reviewStats` 포함 |
 | GET | `/tours/types` | 타입 필터 항목 |
 | POST | `/tours` | 코스 없이 투어 추가 |
-| GET·PATCH·DELETE | `/tours/:id` | 인라인 수정(상태·좌석, 예약 ≤ 예상 검증) / 삭제 표시 |
+| GET·PATCH·DELETE | `/tours/:id` | 인라인 수정(상태·좌석, 예약 ≤ 예상 검증 — 저장된 값과 합쳐서) — **연결된 일정의 날짜·이름·담당자도 맞춤** / 삭제 표시(연결된 일정은 연결만 끊음) |
 
 ### 리뷰관리
 | 메서드 | 경로 | |

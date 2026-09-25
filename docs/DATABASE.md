@@ -130,7 +130,8 @@ index: category, (areaCode, category, popularity↓), text(title, addr1)
 
 ### schedule_labels / schedule_events
 - labels: organizationId · name(**조직 내 unique**) · emoji · color(`blue`·`red`·`purple`·`green`·`yellow`·`teal`·`indigo`·`pink`·`gray`) · defaultPlace · defaultManager
-- events: organizationId · labelId? · tourId? · name · startDate · endDate · manager · items[{time `HH:mm`, place}] · note · createdBy — index (organizationId, startDate, endDate): 달력 범위 조회 `startDate ≤ to AND endDate ≥ from`
+- events: organizationId · labelId? · tourId? · name · startDate · endDate · manager · items[{time `HH:mm`, place}] · note · createdBy — index (organizationId, startDate, endDate): 달력 범위 조회 `startDate ≤ to AND endDate ≥ from` · (organizationId, labelId) · (organizationId, tourId)
+- 투어 연결 일정(tourId): 투어를 수정하면 날짜는 항상 투어를 따르고, 이름·담당자는 일정 값이 투어의 이전 값과 같을 때만 따라간다(일정에서 따로 고친 값 유지). 투어를 삭제하면 연결만 끊고 일정은 남는다
 - 사용 중인 라벨 삭제는 409, `?reassignTo=<labelId|none>` 로 옮긴 뒤 삭제
 
 ### tourism_stats (공용)
