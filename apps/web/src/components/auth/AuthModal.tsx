@@ -13,6 +13,8 @@ import SignupStepInfo, { type SignupInfo } from "./SignupStepInfo";
 import SignupStepTerms, { type Agreements } from "./SignupStepTerms";
 import { KakaoLoginButton } from "./kakao";
 
+const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+
 export type AuthMode = "login" | "signup";
 
 type View = "login" | "findEmail" | "signup-email" | "signup-info" | "signup-terms" | "signup-complete";
@@ -42,10 +44,23 @@ export default function AuthModal({ initialMode, next, onClose }: AuthModalProps
   const [isLoading, setIsLoading] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
 
-  // ESC 로 닫기 + 배경 스크롤 잠금 + 첫 입력칸 포커스
+  // ESC 로 닫기 + Tab 은 모달 안에서만 + 배경 스크롤 잠금
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") return onClose();
+      const dialog = dialogRef.current;
+      if (e.key !== "Tab" || !dialog) return;
+      const items = [...dialog.querySelectorAll<HTMLElement>(FOCUSABLE)].filter((el) => el.offsetParent !== null);
+      if (items.length === 0) return;
+      const [first, last] = [items[0], items[items.length - 1]];
+      const inside = dialog.contains(document.activeElement);
+      if (e.shiftKey && (document.activeElement === first || !inside)) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && (document.activeElement === last || !inside)) {
+        e.preventDefault();
+        first.focus();
+      }
     };
     document.addEventListener("keydown", onKey);
     const prevOverflow = document.body.style.overflow;
@@ -55,6 +70,14 @@ export default function AuthModal({ initialMode, next, onClose }: AuthModalProps
       document.body.style.overflow = prevOverflow;
     };
   }, [onClose]);
+
+  // 닫히면 모달을 연 버튼(로그인·시작하기)으로 포커스를 되돌린다
+  useEffect(() => {
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    return () => {
+      if (opener?.isConnected) opener.focus();
+    };
+  }, []);
 
   useEffect(() => {
     dialogRef.current?.querySelector<HTMLInputElement>("input:not([disabled])")?.focus();

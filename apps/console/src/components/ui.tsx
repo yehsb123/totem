@@ -1,10 +1,31 @@
 "use client";
 
 import { X } from "lucide-react";
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
 
 /* ───────── 모달 ───────── */
 
+const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+/** 열린 모달 순서 — Esc·Tab 은 맨 위 모달만 처리한다 (모달 위에 모달이 뜨는 경우) */
+const modalStack: symbol[] = [];
+/**
+ * 모달 밖에서 마지막으로 포커스된 요소 = 모달을 연 버튼.
+ * 모달의 effect 가 돌 때는 자식 입력칸의 autoFocus 가 이미 포커스를 옮긴 뒤라 activeElement 로는 알 수 없다.
+ */
+let lastOutsideFocus: HTMLElement | null = null;
+if (typeof document !== "undefined") {
+  document.addEventListener("focusin", (e) => {
+    const t = e.target;
+    if (t instanceof HTMLElement && !t.closest('[role="dialog"]')) lastOutsideFocus = t;
+  });
+}
+
+/**
+ * 공용 모달. 키보드 사용자를 위해:
+ *  - 열리면 autoFocus 요소(없으면 첫 입력·버튼)로 포커스, 닫히면 연 버튼으로 되돌린다
+ *  - Tab·Shift+Tab 은 모달 안에서만 돈다 (뒤 화면으로 빠지지 않음)
+ *  - Esc 는 맨 위 모달 하나만 닫는다
+ */
 export function Modal({
   open,
   title,
@@ -20,25 +41,71 @@ export function Modal({
   footer?: ReactNode;
   width?: string;
 }) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const onCloseRef = useRef(onClose);
+  const titleId = useId();
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    const me = Symbol("modal");
+    modalStack.push(me);
+    const dialog = dialogRef.current;
+    const active = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const opener = active && !dialog?.contains(active) ? active : lastOutsideFocus;
+    // 자식의 autoFocus 가 먼저 잡았으면 그대로, 아니면 첫 입력칸(없으면 첫 버튼·대화상자 자체)
+    if (dialog && !dialog.contains(document.activeElement)) {
+      const first = dialog.querySelector<HTMLElement>("input:not([disabled]),select:not([disabled]),textarea:not([disabled])") ?? dialog.querySelector<HTMLElement>(FOCUSABLE);
+      (first ?? dialog).focus();
+    }
+
+    const onKey = (e: KeyboardEvent) => {
+      if (modalStack[modalStack.length - 1] !== me || !dialog) return;
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        onCloseRef.current();
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const items = [...dialog.querySelectorAll<HTMLElement>(FOCUSABLE)].filter((el) => el.offsetParent !== null);
+      if (items.length === 0) return e.preventDefault();
+      const [firstEl, lastEl] = [items[0], items[items.length - 1]];
+      const inside = dialog.contains(document.activeElement);
+      if (e.shiftKey && (document.activeElement === firstEl || !inside)) {
+        e.preventDefault();
+        lastEl.focus();
+      } else if (!e.shiftKey && (document.activeElement === lastEl || !inside)) {
+        e.preventDefault();
+        firstEl.focus();
+      }
+    };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      modalStack.splice(modalStack.indexOf(me), 1);
+      // 닫힌 뒤 연 버튼으로 (그 버튼이 아직 화면에 있을 때만)
+      if (opener?.isConnected) opener.focus();
+    };
+  }, [open]);
 
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-slate-900/40 p-4" onMouseDown={onClose}>
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
-        aria-label={title}
-        className={`flex max-h-[90vh] w-full ${width} flex-col rounded-lg bg-white shadow-xl`}
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        className={`flex max-h-[90vh] w-full ${width} flex-col rounded-lg bg-white shadow-xl outline-none`}
         onMouseDown={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-slate-200 px-5 py-3">
-          <h3 className="text-base font-semibold text-slate-900">{title}</h3>
+          <h3 id={titleId} className="text-base font-semibold text-slate-900">
+            {title}
+          </h3>
           <button onClick={onClose} className="rounded p-1 text-slate-500 hover:bg-slate-100" aria-label="닫기">
             <X className="h-5 w-5" />
           </button>
