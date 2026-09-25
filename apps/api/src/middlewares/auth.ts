@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import { Types } from "mongoose";
 import type { UserRole } from "@totem/shared";
 import { env } from "../config/env";
-import { HttpError, forbidden, unauthorized } from "../lib/http";
+import { HttpError, forbidden, notFound, unauthorized } from "../lib/http";
 import { Organization, User } from "../db/models";
 
 export interface AuthContext {
@@ -78,6 +78,6 @@ export function authOf(req: Request): AuthContext {
 
 /** URL 의 :id 를 ObjectId 로 (형식이 틀리면 404 — 존재 여부를 흘리지 않음) */
 export function objectIdParam(value: string | string[] | undefined, what: string): Types.ObjectId {
-  if (typeof value !== "string" || !Types.ObjectId.isValid(value)) throw new HttpError(404, "NOT_FOUND", `${what}을(를) 찾을 수 없습니다.`);
+  if (typeof value !== "string" || !Types.ObjectId.isValid(value)) throw notFound(what);
   return new Types.ObjectId(value);
 }

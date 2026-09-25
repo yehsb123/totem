@@ -116,3 +116,17 @@ describe("검증 오류 문구는 한국어 (web·console 폼과 API 400 이 같
     expect(r.body.error.details.fields[0]).toMatchObject({ path: "title", message: "100자 이하로 입력해주세요." });
   });
 });
+
+describe("오류 문구 조사", () => {
+  it("받침에 맞춰 을/를·이/가 (괄호 설명은 건너뜀, 한글이 아니면 두 형태)", async () => {
+    const { josa, notFound, notConfigured } = await import("../src/lib/http");
+    expect(josa("계정", "을", "를")).toBe("계정을");
+    expect(josa("투어", "을", "를")).toBe("투어를");
+    expect(josa("카카오 REST API 키(KAKAO_REST_API_KEY)", "이", "가")).toBe("카카오 REST API 키(KAKAO_REST_API_KEY)가");
+    expect(josa("TourAPI 서비스키(TOURAPI_SERVICE_KEY)", "이", "가")).toBe("TourAPI 서비스키(TOURAPI_SERVICE_KEY)가");
+    expect(josa("API", "이", "가")).toBe("API이(가)");
+    expect(notFound("일치하는 계정").message).toBe("일치하는 계정을 찾을 수 없습니다.");
+    expect(notFound("대기 중인 초대").message).toBe("대기 중인 초대를 찾을 수 없습니다.");
+    expect(notConfigured("카카오 로그인(KAKAO_REST_API_KEY)").message).toContain("카카오 로그인(KAKAO_REST_API_KEY)이 서버에");
+  });
+});

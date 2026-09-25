@@ -80,7 +80,9 @@ export default function AuthModal({ initialMode, next, onClose }: AuthModalProps
   }, []);
 
   useEffect(() => {
-    dialogRef.current?.querySelector<HTMLInputElement>("input:not([disabled])")?.focus();
+    // 첫 **빈** 입력칸으로 — 가입 → "로그인" 으로 넘어오면 이메일은 이미 채워져 있어 비밀번호 칸이 맞다
+    const inputs = [...(dialogRef.current?.querySelectorAll<HTMLInputElement>("input:not([disabled]):not([type=checkbox])") ?? [])];
+    (inputs.find((i) => !i.value) ?? inputs[0])?.focus();
   }, [view]);
 
   const go = (v: View) => {

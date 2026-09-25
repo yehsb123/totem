@@ -17,10 +17,21 @@ export class HttpError extends Error {
 export const badRequest = (message: string, details?: unknown) => new HttpError(400, "VALIDATION_ERROR", message, details);
 export const unauthorized = (message = "로그인이 필요합니다.") => new HttpError(401, "UNAUTHORIZED", message);
 export const forbidden = (message = "권한이 없습니다.") => new HttpError(403, "FORBIDDEN", message);
-export const notFound = (what: string) => new HttpError(404, "NOT_FOUND", `${what}을(를) 찾을 수 없습니다.`);
+/**
+ * 받침에 맞는 조사 ("계정을(를)" 대신 "계정을", "투어를"). 끝 글자가 한글이 아니면(영문 키 이름 등) 두 형태를 함께 쓴다.
+ */
+export function josa(word: string, withFinal: string, withoutFinal: string) {
+  // 끝의 괄호 설명은 건너뛰고 본 단어로 판단: "카카오 REST API 키(KAKAO_REST_API_KEY)" → "키" → "가"
+  const base = word.trim().replace(/\s*\([^)]*\)$/, "");
+  const code = base.charCodeAt(base.length - 1);
+  if (code < 0xac00 || code > 0xd7a3) return `${word}${withFinal}(${withoutFinal})`;
+  return word + ((code - 0xac00) % 28 === 0 ? withoutFinal : withFinal);
+}
+
+export const notFound = (what: string) => new HttpError(404, "NOT_FOUND", `${josa(what, "을", "를")} 찾을 수 없습니다.`);
 export const conflict = (message: string, details?: unknown) => new HttpError(409, "CONFLICT", message, details);
 export const notConfigured = (what: string) =>
-  new HttpError(503, "NOT_CONFIGURED", `${what} 이(가) 서버에 설정되지 않았습니다. 관리자에게 문의하세요.`);
+  new HttpError(503, "NOT_CONFIGURED", `${josa(what, "이", "가")} 서버에 설정되지 않았습니다. 관리자에게 문의하세요.`);
 export const upstream = (message: string) => new HttpError(502, "UPSTREAM_ERROR", message);
 
 /** zod 로 입력을 검증하고, 실패하면 필드별 메시지를 담아 400 을 던진다 */
