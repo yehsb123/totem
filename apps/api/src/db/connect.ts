@@ -10,7 +10,8 @@ let memoryServer: { stop: () => Promise<boolean> } | null = null;
  */
 async function startMemoryServer() {
   const { MongoMemoryServer } = await import("mongodb-memory-server");
-  const server = await MongoMemoryServer.create();
+  // 기본 기동 한도 10초는 테스트 파일마다 인스턴스를 동시에 띄우면(11개) 느린 PC·CI 에서 넘겨 테스트가 통째로 건너뛰어진다
+  const server = await MongoMemoryServer.create({ instance: { launchTimeout: 60_000 } });
   memoryServer = server;
   return server.getUri();
 }

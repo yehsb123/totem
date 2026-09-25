@@ -36,6 +36,14 @@ describe("요청 ID", () => {
     expect(r.body.error.requestId).toBe(r.headers["x-request-id"]);
   });
 
+  it("속도 제한(429) 응답도 같은 오류 본문 + requestId", async () => {
+    let last!: request.Response;
+    for (let i = 0; i < 11; i++) last = await request(app).post(`${P}/auth/email-check`).send({ email: `limit${i}@example.com` });
+    expect(last.status).toBe(429);
+    expect(last.body.error).toMatchObject({ code: "RATE_LIMITED", message: expect.stringContaining("요청이 너무 많습니다") });
+    expect(last.body.error.requestId).toBe(last.headers["x-request-id"]);
+  });
+
   it("CORS 로 브라우저가 X-Request-Id 헤더를 읽을 수 있다", async () => {
     const r = await request(app).get(`${P}/health`).set("Origin", "http://localhost:3200");
     expect(r.headers["access-control-expose-headers"]).toContain("X-Request-Id");

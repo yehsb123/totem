@@ -2,12 +2,12 @@ import { randomUUID } from "node:crypto";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import cors from "cors";
 import express, { Router } from "express";
-import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import mongoose from "mongoose";
 import { pinoHttp } from "pino-http";
 import { API_PREFIX, ROUTES } from "@totem/shared";
 import { env } from "./config/env";
+import { limiter } from "./lib/rate-limit";
 import { logger } from "./lib/logger";
 import { redactUrl } from "./lib/redact";
 import { errorHandler, notFoundHandler } from "./middlewares/error";
@@ -77,13 +77,7 @@ export function createApp() {
     }),
   );
   app.use(
-    rateLimit({
-      windowMs: 60_000,
-      limit: env.RATE_LIMIT_PER_MINUTE,
-      standardHeaders: "draft-7",
-      legacyHeaders: false,
-      message: { error: { code: "RATE_LIMITED", message: "요청이 너무 많습니다. 잠시 후 다시 시도해주세요." } },
-    }),
+    limiter({ windowMs: 60_000, limit: env.RATE_LIMIT_PER_MINUTE }),
   );
   app.use(express.json({ limit: "1mb" }));
   // Express 5 는 본문이 없으면 req.body 가 undefined — 검증기가 일관되게 동작하도록 빈 객체로 맞춘다

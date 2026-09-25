@@ -135,3 +135,4 @@
 | 33 | AUTO-33 | ✅ | 운영: API Dockerfile 이 빌드 불가(실행 단계 npm install 이 devDependencies 의 @totem/shared 를 레지스트리에서 찾다 404, lockfile 없이 ^ 범위 설치), 배포 문서의 운영 시드 `npm run seed` 는 운영 이미지에 없는 tsx 사용 (재점검 12차) |
 | 34 | AUTO-34 | ✅ | 콘솔 배포: 없는 콘솔 주소가 Next 기본 영어 404("This page could not be found") — 돌아갈 길 없음. 배포 변수에 http 주소를 넣어도 통과(Pages 는 https → API 혼합 콘텐츠 차단으로 로그인 불가) (재점검 13차) |
 | 35 | AUTO-35 | ✅ | web 배포: Vercel 에 `NEXT_PUBLIC_API_BASE_URL`·`CONSOLE_URL` 을 빠뜨려도 빌드 성공 → localhost 가 번들·CSP 에 박혀 운영 로그인 전부 실패. 카카오 redirect 가 `NEXT_PUBLIC_SITE_URL`(비우면 localhost) 기준이라 og 기준(Vercel 도메인 자동)과 어긋남 (재점검 14차) |
+| 36 | AUTO-36 | ✅ | 계약: 속도 제한(429) 응답 본문에 requestId 없음 (API.md "모든 오류 본문에 requestId" 와 불일치). 응답 모양 ↔ 공용 스키마 자동 대조 테스트 부재. 테스트용 인메모리 DB 기동 한도(10초) 초과로 API 테스트가 가끔 통째로 건너뛰어짐 (재점검 15차) |

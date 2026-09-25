@@ -1,5 +1,5 @@
 import { Router } from "express";
-import rateLimit from "express-rate-limit";
+import { limiter } from "../../lib/rate-limit";
 import type { Types } from "mongoose";
 import {
   INVITATION_TTL_DAYS,
@@ -21,8 +21,7 @@ import { hashPassword, issueSession, revokeAllSessions } from "../auth/service";
 export const orgRouter = Router();
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-const limitMessage = { error: { code: "RATE_LIMITED", message: "요청이 너무 많습니다. 잠시 후 다시 시도해주세요." } };
-const invitationLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 30, standardHeaders: "draft-7", legacyHeaders: false, message: limitMessage });
+const invitationLimiter = limiter({ windowMs: 15 * 60 * 1000, limit: 30 });
 
 /* eslint-disable @typescript-eslint/no-explicit-any -- lean() 결과를 응답 모양으로 좁힌다 */
 const toMember = (u: any): Member => ({

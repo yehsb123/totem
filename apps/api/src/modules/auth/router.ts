@@ -1,5 +1,5 @@
 import { Router } from "express";
-import rateLimit from "express-rate-limit";
+import { limiter } from "../../lib/rate-limit";
 import {
   ROUTES,
   emailCheckRequest,
@@ -29,16 +29,9 @@ import {
 
 export const authRouter = Router();
 
-const limitMessage = { error: { code: "RATE_LIMITED", message: "요청이 너무 많습니다. 잠시 후 다시 시도해주세요." } };
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  limit: env.AUTH_RATE_LIMIT_PER_15MIN,
-  standardHeaders: "draft-7",
-  legacyHeaders: false,
-  message: limitMessage,
-});
+const authLimiter = limiter({ windowMs: 15 * 60 * 1000, limit: env.AUTH_RATE_LIMIT_PER_15MIN });
 // 계정 존재 여부를 알려주는 엔드포인트는 더 엄격하게
-const lookupLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 10, standardHeaders: "draft-7", legacyHeaders: false, message: limitMessage });
+const lookupLimiter = limiter({ windowMs: 15 * 60 * 1000, limit: 10 });
 
 authRouter.post(ROUTES.auth.emailCheck, lookupLimiter, async (req, res) => {
   const { email } = parse(emailCheckRequest, req.body);
