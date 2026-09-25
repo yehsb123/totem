@@ -3,25 +3,14 @@ import type { ReactNode } from "react";
 import AuthProvider from "@/components/auth/AuthProvider";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
-import { env } from "@/lib/env";
+import { siteBaseUrl } from "@/lib/site";
 import "./globals.css";
 
 const description =
   "ToTem 은 여행사를 위한 투어 운영 도구입니다. 코스메이커로 코스를 설계하고, 투어·일정·리뷰를 한곳에서 관리하며, 관광 데이터 대시보드로 트렌드를 확인하세요.";
 
-/**
- * 공유 미리보기(og:image 등)의 절대 주소 기준.
- * NEXT_PUBLIC_SITE_URL 을 우선 쓰고, 비어 있으면 Vercel 이 빌드 때 넣어 주는 운영 도메인으로 대체한다.
- * (둘 다 없으면 localhost 가 박혀 카카오톡·슬랙 미리보기 이미지가 깨진다)
- */
-function metadataBaseUrl() {
-  if (process.env.NEXT_PUBLIC_SITE_URL?.trim()) return env.siteUrl;
-  const vercel = process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL;
-  return vercel ? `https://${vercel}` : env.siteUrl;
-}
-
 export const metadata: Metadata = {
-  metadataBase: new URL(metadataBaseUrl()),
+  metadataBase: new URL(siteBaseUrl()),
   title: {
     default: "ToTem — 여행사를 위한 투어·코스 운영 도구",
     template: "%s | ToTem",

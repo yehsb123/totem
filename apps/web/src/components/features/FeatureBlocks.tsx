@@ -68,13 +68,19 @@ export function Screenshot(props: ShotProps) {
 /** 기능 요약 카드 3열 */
 export function FeatureCards({ items }: { items: { title: string; body: string }[] }) {
   return (
-    <ul className="mx-auto mt-16 grid max-w-5xl gap-5 text-left sm:grid-cols-2 lg:grid-cols-3">
-      {items.map((item) => (
-        <li key={item.title} className="rounded-xl bg-white p-6 text-slate-800 shadow-md">
-          <h3 className="text-lg font-bold text-slate-900">{item.title}</h3>
-          <p className="mt-2 text-sm leading-relaxed text-slate-600">{item.body}</p>
-        </li>
-      ))}
-    </ul>
+    <section aria-labelledby="feature-cards-title">
+      {/* 카드 제목(h3) 위에 h2 가 없는 페이지도 있어 제목 단계가 건너뛰지 않게 (화면 읽기용) */}
+      <h2 id="feature-cards-title" className="sr-only">
+        주요 기능
+      </h2>
+      <ul className="mx-auto mt-16 grid max-w-5xl gap-5 text-left sm:grid-cols-2 lg:grid-cols-3">
+        {items.map((item) => (
+          <li key={item.title} className="rounded-xl bg-white p-6 text-slate-800 shadow-md">
+            <h3 className="text-lg font-bold text-slate-900">{item.title}</h3>
+            <p className="mt-2 text-sm leading-relaxed text-slate-600">{item.body}</p>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
