@@ -92,3 +92,4 @@
 - 재점검 12차(운영 준비: 배포 문서대로 실제 수행) → AUTO-33 ✅ API Dockerfile 빌드 불가 결함(devDependencies 404·lockfile 미사용)·운영 시드 명령 오류 수정, CI api-image 잡 추가(이미지 빌드·운영 기동·시드·정리·기동 거부). 로컬 Docker 데몬이 꺼져 있어 이미지는 CI 로 확인 → 첫 실행 통과(빌드·헬스 200·시드·정리·기동 거부) — AUDIT §19
 - 재점검 13차(콘솔 GitHub Pages 배포: 워크플로 ↔ out/ ↔ Pages 동작 흉내) → AUTO-34 ✅ 한국어 콘솔 404, 배포 변수 https 검사. E2E 24 — AUDIT §20
   - **책임님 확인 필요**: 콘솔 배포 워크플로는 테스트를 기다리지 않고 main push 로 바로 배포됨(빌드 실패만 막음) — CI 통과 후에만 배포하도록 묶을지(main 은 PR·CI 통과 후 머지하는 운영이면 지금대로 충분)
+- 재점검 14차(web Vercel 배포) → AUTO-35 ✅ 필수 공개 변수 누락·http 시 Vercel 빌드 실패, 카카오 redirect 를 브라우저 주소로. 카카오 로그인 SDK 의 CSP 통과 확인(AUTO-17 의 확인 필요 항목 중 로그인 SDK 해소 — 지도 SDK 는 여전히 키 등록 후 확인). E2E 24 — AUDIT §21

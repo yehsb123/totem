@@ -37,7 +37,7 @@ export default function KakaoCallback() {
 
     (async () => {
       try {
-        await api.auth.kakao({ code, redirectUri: kakaoRedirectUri });
+        await api.auth.kakao({ code, redirectUri: kakaoRedirectUri() });
         await redirectToConsole(next);
       } catch (e) {
         setError(errorMessage(e, "카카오 로그인 중 오류가 발생했습니다."));

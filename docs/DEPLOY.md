@@ -28,7 +28,9 @@
 1. vercel.com > Add New Project > GitHub `yehsb123/totem` Import
 2. **Root Directory: `apps/web`** (Framework: Next.js 자동 인식. npm workspaces 라 루트 lockfile 로 설치됨)
 3. Environment Variables (Production·Preview 각각):
-   `NEXT_PUBLIC_API_BASE_URL`, `NEXT_PUBLIC_CONSOLE_URL`(= `https://yehsb123.github.io/totem`), `NEXT_PUBLIC_SITE_URL`(= Vercel 주소), `NEXT_PUBLIC_KAKAO_JS_KEY`
+   `NEXT_PUBLIC_API_BASE_URL`(**필수, https**), `NEXT_PUBLIC_CONSOLE_URL`(**필수, https** = `https://yehsb123.github.io/totem`), `NEXT_PUBLIC_SITE_URL`(= 운영 도메인, 비우면 Vercel 운영 도메인 자동), `NEXT_PUBLIC_KAKAO_JS_KEY`
+   - 필수 두 개가 없거나 https 가 아니면 **Vercel 빌드가 일부러 실패**한다 (없으면 localhost 가 번들·CSP 에 박혀 배포는 되는데 로그인이 전부 실패하기 때문)
+   - 카카오 로그인 redirect 는 브라우저의 현재 주소(`<도메인>/auth/kakao/callback`)라, api `KAKAO_REDIRECT_URIS`·카카오 콘솔에 **운영 도메인**을 등록한다. Preview 배포 주소는 등록되지 않으므로 Preview 에서는 카카오 로그인이 안 된다(이메일 로그인은 됨)
 4. Settings > Git > **Ignored Build Step**: `git diff --quiet HEAD^ HEAD -- apps/web packages/shared package-lock.json` (web 과 무관한 커밋엔 빌드 생략)
 5. Production Branch: `main`
 

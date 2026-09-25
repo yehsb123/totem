@@ -13,6 +13,21 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
  * API 주소는 빌드 시점 NEXT_PUBLIC_API_BASE_URL — Vercel 환경변수와 같은 값이어야 로그인이 된다.
  */
 const isProd = process.env.NODE_ENV === "production";
+
+/**
+ * Vercel 빌드에서 필수 공개 변수가 없거나 https 가 아니면 빌드를 멈춘다.
+ * 없으면 코드 기본값(localhost)이 번들·CSP 에 그대로 박혀, 배포는 성공하는데 사용자의 로그인이 전부 실패한다 (AUDIT §21).
+ * (CI·로컬 빌드는 VERCEL 이 없어 기본값으로 빌드된다)
+ */
+if (process.env.VERCEL) {
+  const problems = ["NEXT_PUBLIC_API_BASE_URL", "NEXT_PUBLIC_CONSOLE_URL"].flatMap((name) => {
+    const v = process.env[name]?.trim();
+    if (!v) return [`${name} 가 없습니다`];
+    return v.startsWith("https://") ? [] : [`${name} 는 https:// 로 시작해야 합니다 (지금: ${v})`];
+  });
+  if (problems.length) throw new Error(`[vercel] 환경변수 확인 필요 — docs/DEPLOY.md 2절\n- ${problems.join("\n- ")}`);
+}
+
 const csp = buildCsp({
   apiOrigin: process.env.NEXT_PUBLIC_API_BASE_URL?.trim() || "http://localhost:8000",
   scriptSrc: KAKAO_LOGIN_SCRIPT_SRC,

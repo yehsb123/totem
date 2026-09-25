@@ -239,3 +239,12 @@ zod 입력 스키마의 길이·숫자 상한과 Mongoose 모델(maxlength)을 �
 |---|---|---|---|
 | G1 | 화면 | 없는 콘솔 주소 → Next 기본 **영어** 404, 링크 없음 | ✅ 한국어 404 + 콘솔 첫 화면(하위 경로 자동)·메인 버튼. Pages 흉내 서버에서 상태 404·스타일·링크 확인 (AUTO-34) |
 | G2 | 배포 | `CONSOLE_API_BASE_URL`·`CONSOLE_WEB_URL` 에 http 주소도 통과 → https 페이지에서 API 요청이 혼합 콘텐츠로 차단, CSP 에도 잘못 들어감 | ✅ 워크플로가 https 가 아니면 실패 (AUTO-34) |
+
+## 21. 재점검 14차 — 메인 사이트(Vercel) 배포 (2026-09-25)
+
+| # | 영역 | 발견 | 처리 |
+|---|---|---|---|
+| V1 | 배포 | Vercel 에 필수 공개 변수(`NEXT_PUBLIC_API_BASE_URL`·`NEXT_PUBLIC_CONSOLE_URL`)가 없어도 빌드 성공 → 코드 기본값 localhost 가 번들·CSP 에 박혀 **배포는 되는데 모든 사용자의 로그인이 실패** | ✅ Vercel 빌드(`VERCEL=1`)에서 없거나 https 가 아니면 빌드 실패. 3가지(없음·http·정상)와 일반 CI 빌드 영향 없음을 확인 (AUTO-35) |
+| V2 | 로그인 | 카카오 redirect 가 `NEXT_PUBLIC_SITE_URL`(비우면 localhost) 기준 — og·sitemap 은 Vercel 도메인 자동 대체라 둘이 어긋남 | ✅ redirect 는 브라우저 현재 주소로 (인가·코드 교환 동일). `localhost`·`127.0.0.1` 로 열어 각각 그 주소가 되는 것 확인 (AUTO-35) |
+
+정상 확인(운영 빌드 `next start`): 응답 헤더 CSP·X-Frame-Options·nosniff·Referrer-Policy, **카카오 로그인 SDK 가 CSP 아래에서 로드·위반 0건**(AUTO-17 에서 키가 없어 못 했던 확인). 인가 자체는 등록된 앱 키가 있어야 해 확인 불가.

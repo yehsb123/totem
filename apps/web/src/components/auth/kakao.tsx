@@ -7,7 +7,12 @@ import { env, isKakaoEnabled } from "@/lib/env";
 import { sanitizeNext } from "@/lib/handoff";
 
 export const KAKAO_SDK_URL = "https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js";
-export const kakaoRedirectUri = `${env.siteUrl}/auth/kakao/callback`;
+/**
+ * 카카오 인가 후 돌아올 주소 = **지금 열려 있는 사이트 자신**.
+ * (예전에는 NEXT_PUBLIC_SITE_URL 로 만들어, 비워 두면 운영에서도 localhost 로 돌아가 카카오 로그인이 깨졌다 — AUDIT §21)
+ * 인가 요청과 코드 교환이 같은 값을 써야 하므로 둘 다 이 함수를 쓴다. api `KAKAO_REDIRECT_URIS` 에 이 주소가 있어야 한다.
+ */
+export const kakaoRedirectUri = () => `${window.location.origin}/auth/kakao/callback`;
 
 function initKakao(): boolean {
   const kakao = window.Kakao;
@@ -37,7 +42,7 @@ export function KakaoLoginButton({ next }: { next?: string | null }) {
       return;
     }
     const state = sanitizeNext(next) ?? undefined;
-    window.Kakao!.Auth.authorize({ redirectUri: kakaoRedirectUri, state });
+    window.Kakao!.Auth.authorize({ redirectUri: kakaoRedirectUri(), state });
   };
 
   return (

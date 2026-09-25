@@ -22,7 +22,7 @@ export const env = {
   apiBaseUrl: readUrl("NEXT_PUBLIC_API_BASE_URL", process.env.NEXT_PUBLIC_API_BASE_URL, "http://localhost:8000"),
   /** 로그인 후 이동할 콘솔(GitHub Pages) 주소 */
   consoleUrl: readUrl("NEXT_PUBLIC_CONSOLE_URL", process.env.NEXT_PUBLIC_CONSOLE_URL, "http://localhost:3200"),
-  /** 이 사이트 자신의 주소 — 카카오 redirectUri, metadataBase 에 쓴다 */
+  /** 이 사이트 자신의 주소 — og·canonical·sitemap 기준 (비우면 Vercel 운영 도메인, lib/site.ts). 카카오 redirect 는 브라우저 주소를 쓴다 */
   siteUrl: readUrl("NEXT_PUBLIC_SITE_URL", process.env.NEXT_PUBLIC_SITE_URL, "http://localhost:3100"),
   /** 카카오 JavaScript 키. 비어 있으면 카카오 로그인 버튼을 숨긴다 */
   kakaoJsKey: process.env.NEXT_PUBLIC_KAKAO_JS_KEY?.trim() ?? "",

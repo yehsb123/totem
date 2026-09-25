@@ -47,9 +47,9 @@
 
 | 이름 | 설명 | 로컬 예 | 운영 예 |
 |---|---|---|---|
-| `NEXT_PUBLIC_API_BASE_URL` | API 주소. **CSP connect-src 에도 빌드 시점에 들어간다** — 바꾸면 재배포해야 로그인됨 | `http://localhost:8000` | `https://api.<도메인>` |
-| `NEXT_PUBLIC_CONSOLE_URL` | 로그인 후 보낼 콘솔 주소 (**basePath 포함**) | `http://localhost:3200` | `https://yehsb123.github.io/totem` |
-| `NEXT_PUBLIC_SITE_URL` | 메인 사이트 자신의 주소 (카카오 redirect 계산, 공유 미리보기 og:image 절대 주소, robots.txt·sitemap.xml 의 주소). 비우면 og 는 Vercel 운영 도메인(`VERCEL_PROJECT_PRODUCTION_URL` → 없으면 배포별 `VERCEL_URL`, 둘 다 자동)으로 대체되지만 **카카오 로그인엔 필수** | `http://localhost:3100` | `https://<vercel 도메인>` |
+| `NEXT_PUBLIC_API_BASE_URL` | API 주소. **CSP connect-src 에도 빌드 시점에 들어간다** — 바꾸면 재배포해야 로그인됨. Vercel 빌드에서 없거나 https 가 아니면 빌드 실패 | `http://localhost:8000` | `https://api.<도메인>` |
+| `NEXT_PUBLIC_CONSOLE_URL` | 로그인 후 보낼 콘솔 주소 (**basePath 포함**). Vercel 빌드에서 없거나 https 가 아니면 빌드 실패 | `http://localhost:3200` | `https://yehsb123.github.io/totem` |
+| `NEXT_PUBLIC_SITE_URL` | 메인 사이트 자신의 주소 (공유 미리보기 og:image·canonical·robots.txt·sitemap.xml 의 절대 주소). 비우면 Vercel 운영 도메인(`VERCEL_PROJECT_PRODUCTION_URL` → 없으면 배포별 `VERCEL_URL`, 둘 다 자동). 카카오 redirect 는 이 값이 아니라 **브라우저의 현재 주소**로 만든다 | `http://localhost:3100` | `https://<vercel 도메인>` |
 | `NEXT_PUBLIC_KAKAO_JS_KEY` | 카카오 **JavaScript 키** (로그인 SDK). 비우면 카카오 버튼 숨김 | | |
 
 ## console (`apps/console`) — 공개 값만
