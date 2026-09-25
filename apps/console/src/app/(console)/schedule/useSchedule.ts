@@ -54,6 +54,27 @@ export function useSchedule() {
     };
   }, [queryKey, range, debouncedQuery]);
 
+  /**
+   * 검색은 **전체 기간**에서 — 달력 조회는 보이는 달로 한정돼, 다른 달의 일정을 검색하면
+   * 빈 달력만 보여 "없는 일정"처럼 보였다 (AUDIT §28). 결과 목록을 누르면 그 달로 이동한다.
+   */
+  const [search, setSearch] = useState<{ key: string; items: ScheduleEvent[] } | null>(null);
+  const [searchVersion, setSearchVersion] = useState(0);
+  const searchKey = `${debouncedQuery}|${searchVersion}`;
+  useEffect(() => {
+    if (!debouncedQuery) return;
+    let cancelled = false;
+    api.schedule
+      .events({ q: debouncedQuery })
+      .then((items) => !cancelled && setSearch({ key: searchKey, items }))
+      .catch(() => undefined); // 검색 목록 실패는 달력 조회 오류 화면이 이미 알린다
+    return () => {
+      cancelled = true;
+    };
+  }, [debouncedQuery, searchKey]);
+  const searchResults = debouncedQuery ? (search?.key === searchKey ? search.items : null) : null;
+  const searching = !!debouncedQuery && searchResults === null;
+
   const error = failure?.key === queryKey ? failure.message : null;
   const loading = loadedKey !== queryKey && !error;
   /** 오류 화면의 [다시 시도] — 이벤트 핸들러에서 조회 키를 바꿔 다시 불러온다 */
@@ -64,7 +85,10 @@ export function useSchedule() {
    * (사용자가 다시 눌러 일정이 두 번 생긴다) → 실패하면 조회를 다시 걸어 화면의 오류·재시도로 넘긴다.
    */
   const refreshAfterWrite = useCallback(
-    (what: "all" | "labels" = "all") => (what === "all" ? Promise.all([loadEvents(), loadLabels()]) : loadLabels()).then(() => undefined, reload),
+    (what: "all" | "labels" = "all") => {
+      setSearchVersion((n) => n + 1); // 검색 중이면 결과 목록도 새로
+      return (what === "all" ? Promise.all([loadEvents(), loadLabels()]) : loadLabels()).then(() => undefined, reload);
+    },
     [loadEvents, loadLabels, reload],
   );
 
@@ -78,6 +102,8 @@ export function useSchedule() {
     labels,
     labelById,
     events,
+    searchResults,
+    searching,
     loading,
     error,
     reload,

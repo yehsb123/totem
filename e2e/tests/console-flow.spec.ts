@@ -392,3 +392,24 @@ test("코스메이커 기간 변경: 시작일을 옮겨도 담은 장소가 일
   expect(asked).toContain("장소가 담긴");
   await expect(endInput).not.toHaveValue("2027-03-01");
 });
+
+test("일정 검색은 전체 기간 — 다른 달의 일정도 결과에 나오고, 누르면 그 달로 이동한다", async ({ page, request }) => {
+  const API = "http://localhost:8000/api/v1";
+  const token = (await (await request.post(`${API}/auth/login`, { data: DEMO })).json()).data.accessToken;
+  const name = `먼 미래 답사 ${Date.now()}`;
+  const r = await request.post(`${API}/schedule/events`, { headers: { Authorization: `Bearer ${token}` }, data: { name, startDate: "2027-05-10", endDate: "2027-05-11", manager: "검색담당" } });
+  expect(r.status()).toBe(201);
+
+  await page.goto(`${WEB}/?login=1&next=%2Fschedule%2F`);
+  await page.getByPlaceholder("이메일을 입력해주세요").fill(DEMO.email);
+  await page.getByPlaceholder("비밀번호를 입력해주세요").fill(DEMO.password);
+  await page.locator('form button[type="submit"]').first().click();
+  await page.waitForURL(`${CONSOLE}/schedule/`);
+  await page.getByPlaceholder("일정·담당자·장소 검색").fill("검색담당");
+  const hit = page.getByRole("button", { name: new RegExp(name) }).filter({ visible: true });
+  await expect(hit).toBeVisible();
+  await expect(page.getByText(/전체 기간 \d+건/).filter({ visible: true })).toBeVisible();
+  await hit.click();
+  await expect(page.getByText("2027년 5월").first()).toBeVisible();
+  await expect(page.getByText("기간: 2027-05-10 ~ 2027-05-11").filter({ visible: true })).toBeVisible();
+});
