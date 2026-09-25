@@ -15,13 +15,13 @@
 2. **Settings > Secrets and variables > Actions > Variables** 탭 > New repository variable
    | 이름 | 값 |
    |---|---|
-   | `CONSOLE_API_BASE_URL` | API 운영 주소 (끝 `/` 없이) |
-   | `CONSOLE_WEB_URL` | Vercel 운영 주소 |
+   | `CONSOLE_API_BASE_URL` | API 운영 주소 (**https**, 끝 `/` 없이) |
+   | `CONSOLE_WEB_URL` | Vercel 운영 주소 (**https**) |
    | `CONSOLE_KAKAO_MAP_APP_KEY` | 카카오 JavaScript 키 (선택) |
 3. Actions 탭 > "Deploy console to GitHub Pages" > Run workflow (또는 main 머지)
 4. 확인: `https://yehsb123.github.io/totem/` → 로그인 안 된 상태면 메인 사이트로 이동하면 정상
 
-변수가 없으면 워크플로가 "Actions Variables 가 없습니다" 로 **일부러 실패**한다 (잘못된 주소로 배포되는 것 방지).
+변수가 없거나 `https://` 가 아니면 워크플로가 **일부러 실패**한다 (잘못된 주소로 배포되는 것 방지 — Pages 는 https 라 http API 는 브라우저가 혼합 콘텐츠로 막고, 주소는 CSP connect-src 에도 들어간다). 없는 콘솔 주소는 한국어 404(콘솔 첫 화면·메인으로 가는 버튼)를 보여 준다.
 
 ## 2. web → Vercel (한 번만 설정)
 

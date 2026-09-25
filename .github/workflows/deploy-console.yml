@@ -53,6 +53,13 @@ jobs:
             echo "::error::Actions Variables 가 없습니다:$missing (docs/DEPLOY.md 참고)"
             exit 1
           fi
+          # Pages 는 https — http 주소면 브라우저가 혼합 콘텐츠로 막아(API) 로그인부터 안 된다. 주소는 CSP connect-src 에도 들어간다
+          for pair in "CONSOLE_API_BASE_URL=$API" "CONSOLE_WEB_URL=$WEB"; do
+            case "${pair#*=}" in
+              https://*) ;;
+              *) echo "::error::${pair%%=*} 는 https:// 로 시작해야 합니다 (지금: ${pair#*=})"; exit 1 ;;
+            esac
+          done
 
       - run: npm ci
 

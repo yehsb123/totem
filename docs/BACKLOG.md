@@ -133,3 +133,4 @@
 | 31 | AUTO-31 | ✅ | 성능: 로그인·가입·이메일 확인이 users 전체 스캔(부분 unique 인덱스는 `{ email }` 조회에 안 쓰임), 조직 영구 삭제가 review_imports·auth_handoffs 전체 스캔 (재점검 11차) |
 | 32 | AUTO-32 | ✅ | 리뷰 CSV 가져오기: 행마다 DB 왕복(수천 행 → 원격 DB 에서 분 단위, 요청 끊김), 날짜 열 없는 시트는 다시 가져올 때마다 중복 생성(“지금” 시각이 중복 판정 값에 들어감) (재점검 11차) |
 | 33 | AUTO-33 | ✅ | 운영: API Dockerfile 이 빌드 불가(실행 단계 npm install 이 devDependencies 의 @totem/shared 를 레지스트리에서 찾다 404, lockfile 없이 ^ 범위 설치), 배포 문서의 운영 시드 `npm run seed` 는 운영 이미지에 없는 tsx 사용 (재점검 12차) |
+| 34 | AUTO-34 | ✅ | 콘솔 배포: 없는 콘솔 주소가 Next 기본 영어 404("This page could not be found") — 돌아갈 길 없음. 배포 변수에 http 주소를 넣어도 통과(Pages 는 https → API 혼합 콘텐츠 차단으로 로그인 불가) (재점검 13차) |
