@@ -10,6 +10,7 @@
 | access token | JWT, 15분 (`JWT_ACCESS_TTL`). 매 요청마다 사용자 상태(활성)·조직(삭제 아님)을 DB 로 다시 확인 → 정지·탈퇴·조직 삭제가 **즉시** 반영 | `middlewares/auth.ts` · `auth.test.ts`, `org-lifecycle.test.ts` |
 | refresh token | 서명 토큰이 아닌 **난수 + DB 세션(SHA-256 해시만 저장)**, 14일 (`REFRESH_TOKEN_TTL_DAYS`) | `modules/auth/service.ts` |
 | 회전·재사용 탐지 | refresh 할 때마다 새 토큰으로 교체. 이미 교체된 토큰이 다시 오면 **탈취로 보고 그 사용자의 모든 세션 폐기**. 동시 refresh 경합은 조건부 업데이트로 1회만 | 같은 곳 · `auth.test.ts` "재사용하면 모든 세션이 폐기" |
+| 정상 사용자의 오탐 방지 | 클라이언트는 refresh 를 **탭 사이에서도 한 번에 하나**(Web Locks)만 하고, 다른 탭이 이미 교체했으면 새 토큰으로 재시도 → 탭 여러 개가 재사용 탐지에 걸려 강제 로그아웃되지 않는다. 네트워크 오류·5xx 는 로그아웃하지 않고 연결 오류로 알림 | `packages/shared/src/client.ts` · `client.test.ts` (수정 전 코드로 돌려 실패 확인), Chrome 두 탭 점검 |
 | 세션 폐기 | 로그아웃(그 세션) · 비밀번호 변경·탈퇴·멤버 제외(전 세션) | `users/router.ts`, `org/router.ts` |
 | 비밀번호 | bcrypt 12 rounds (`BCRYPT_ROUNDS`), 8~72자·영문+숫자. 없는 이메일도 같은 시간이 걸리도록 더미 해시 비교(계정 존재 추측 방지), 오류 문구 동일 | `auth/service.ts` · `auth.test.ts` "같은 메시지로 401" |
 | web → console 인계 | 도메인이 달라 토큰을 URL 로 넘기지 않는다. 60초·1회용 코드(해시 저장)를 넘기고 콘솔이 교환 | `auth/router.ts` handoff · `auth.test.ts` "한 번만 교환" |

@@ -144,30 +144,49 @@ function toQueryString(query?: Query): string {
   return s ? `?${s}` : "";
 }
 
+type RefreshResult = "ok" | "invalid" | "network";
+/** 탭 사이 refresh 직렬화용 Web Locks 이름 */
+const REFRESH_LOCK = "totem.auth.refresh";
+
 export function createApiClient(options: ApiClientOptions) {
   const baseUrl = options.baseUrl.replace(/\/+$/, "") + API_PREFIX;
   const store = options.tokenStore ?? browserTokenStore;
   const doFetch = options.fetchImpl ?? ((...args: Parameters<typeof fetch>) => fetch(...args));
 
-  // 동시에 여러 요청이 401 을 받아도 refresh 는 한 번만 한다
-  let refreshing: Promise<boolean> | null = null;
+  // 동시에 여러 요청이 401 을 받아도 refresh 는 한 번만 한다 (탭 안)
+  let refreshing: Promise<RefreshResult> | null = null;
 
-  async function refreshTokens(): Promise<boolean> {
-    const current = store.get();
-    if (!current?.refreshToken) return false;
-    try {
-      const res = await doFetch(`${baseUrl}${ROUTES.auth.refresh}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refreshToken: current.refreshToken }),
-      });
-      if (!res.ok) return false;
-      const json = (await res.json()) as ApiSuccess<AuthTokens>;
+  /**
+   * refresh token 은 1회용(회전)이고, 이미 교체된 토큰이 다시 오면 서버는 탈취로 보고 **모든 세션을 폐기**한다.
+   * 콘솔 탭 여러 개는 localStorage 의 같은 토큰을 쓰므로 탭끼리도 겹치면 안 된다:
+   *  1) Web Locks 로 탭 사이에서도 한 번에 하나만 refresh
+   *  2) 락을 잡은 뒤 저장된 access token 이 실패한 요청의 것과 다르면 → 다른 탭(또는 앞 요청)이 이미 교체함 → 그대로 재시도
+   * 네트워크 오류·5xx 는 로그아웃 사유가 아니다 ("network") — 서버가 refresh 를 거절(4xx)할 때만 "invalid".
+   */
+  async function refreshTokens(usedAccessToken: string | undefined): Promise<RefreshResult> {
+    const run = async (): Promise<RefreshResult> => {
+      const current = store.get();
+      if (!current?.refreshToken) return "invalid";
+      if (usedAccessToken && current.accessToken !== usedAccessToken) return "ok";
+      let res: Response;
+      try {
+        res = await doFetch(`${baseUrl}${ROUTES.auth.refresh}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ refreshToken: current.refreshToken }),
+        });
+      } catch {
+        return "network";
+      }
+      if (res.status >= 500) return "network";
+      if (!res.ok) return "invalid";
+      const json = (await res.json().catch(() => null)) as ApiSuccess<AuthTokens> | null;
+      if (!json?.data?.accessToken) return "network";
       store.set(json.data);
-      return true;
-    } catch {
-      return false;
-    }
+      return "ok";
+    };
+    const locks = typeof navigator !== "undefined" ? (navigator as Navigator & { locks?: LockManager }).locks : undefined;
+    return locks ? locks.request(REFRESH_LOCK, run) : run();
   }
 
   async function raw<T>(method: string, path: string, opts: RequestOptions = {}, retried = false): Promise<ApiSuccess<T>> {
@@ -189,10 +208,12 @@ export function createApiClient(options: ApiClientOptions) {
     }
 
     if (res.status === 401 && useAuth && !retried) {
-      refreshing ??= refreshTokens().finally(() => {
+      refreshing ??= refreshTokens(tokens?.accessToken).finally(() => {
         refreshing = null;
       });
-      if (await refreshing) return raw<T>(method, path, opts, true);
+      const result = await refreshing;
+      if (result === "ok") return raw<T>(method, path, opts, true);
+      if (result === "network") throw new ApiError(0, "NETWORK_ERROR", "서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.");
       store.clear();
       options.onUnauthorized?.();
     }
