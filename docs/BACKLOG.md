@@ -137,3 +137,4 @@
 | 35 | AUTO-35 | ✅ | web 배포: Vercel 에 `NEXT_PUBLIC_API_BASE_URL`·`CONSOLE_URL` 을 빠뜨려도 빌드 성공 → localhost 가 번들·CSP 에 박혀 운영 로그인 전부 실패. 카카오 redirect 가 `NEXT_PUBLIC_SITE_URL`(비우면 localhost) 기준이라 og 기준(Vercel 도메인 자동)과 어긋남 (재점검 14차) |
 | 36 | AUTO-36 | ✅ | 계약: 속도 제한(429) 응답 본문에 requestId 없음 (API.md "모든 오류 본문에 requestId" 와 불일치). 응답 모양 ↔ 공용 스키마 자동 대조 테스트 부재. 테스트용 인메모리 DB 기동 한도(10초) 초과로 API 테스트가 가끔 통째로 건너뛰어짐 (재점검 15차) |
 | 37 | AUTO-37 | ✅ | README 가 코드와 어긋남: Next.js 15(실제 16), 컬렉션 14종(15), 모듈·경로·공용 파일 목록 누락(org·invite·itinerary·robots·csp 등), 한 번에 띄우는 `npm run dev` 누락, env 파일 없이도 뜬다는 사실·복사 대상 파일명 불명확 (재점검 16차) |
+| 38 | AUTO-38 | ✅ | 결정 대기 항목이 WORKLOG 곳곳에 흩어져 있음 → docs/DECISIONS.md 한 곳에 (급함·정책·외부 서비스·화면 내용, 선택지·권장안·결정 후 할 일) (재점검 17차) |

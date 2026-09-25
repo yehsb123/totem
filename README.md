@@ -34,7 +34,7 @@ totem/
 ├─ packages/shared/src/          도메인별 계약(auth·users·members·billing·places·courses·tours·reviews·schedules·dashboard) · routes · client · navigation · zod-ko(오류 문구)
 ├─ packages/shared/csp.mjs       web·console 공통 CSP
 ├─ e2e/                          실제 브라우저 E2E (Playwright: 로그인 → 콘솔 전 화면, 모바일, 키보드, SEO)
-├─ docs/                         AUDIT · BACKLOG · API · DATABASE · ENV · DEPLOY · SECURITY · WORKLOG
+├─ docs/                         AUDIT · BACKLOG · DECISIONS · API · DATABASE · ENV · DEPLOY · SECURITY · WORKLOG
 └─ .github/workflows/            ci.yml · deploy-console.yml
 ```
 
@@ -68,6 +68,7 @@ npm run dev            # 세 앱을 한 번에 (아래 셋을 동시에 실행)
 |---|---|
 | [docs/AUDIT.md](docs/AUDIT.md) | 정합성 점검 결과 — 재구성 전 소스(§1~7)와 이후 재점검 1~16차(보안·성능·접근성·배포 등) |
 | [docs/BACKLOG.md](docs/BACKLOG.md) | 작업 백로그와 진행 상태 |
+| [docs/DECISIONS.md](docs/DECISIONS.md) | **결정 대기 목록** — 선택지·권장안·결정 후 할 일 |
 | [docs/API.md](docs/API.md) | 엔드포인트 ↔ 화면 매핑, 응답·오류 형식, 로그인 흐름 |
 | [docs/DATABASE.md](docs/DATABASE.md) | 컬렉션 ↔ 화면, 필드·인덱스·규칙 |
 | [docs/ENV.md](docs/ENV.md) | 환경변수 전체 (어디에 두는지, 구 이름 대응표) |

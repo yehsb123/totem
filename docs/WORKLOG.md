@@ -96,3 +96,4 @@
 - 재점검 15차(공용 계약) → AUTO-36 ✅ 응답 모양 ↔ 공용 스키마 자동 대조(읽기 API 14개, 불일치 0), 429 본문 requestId, 테스트 DB 기동 한도(간헐적 전체 건너뜀 해소). API 73 · E2E 24 — AUDIT §22
 - 재점검 16차(새 clone 으로 README 따라 하기: 설치·env 없이 실행·7개 화면·모든 명령 성공) → AUTO-37 ✅ README 의 버전·개수·목록·시작 순서 교정 — AUDIT §23
   - **책임님 확인 필요**: README 끝 "This project is private and proprietary." 인데 레포는 공개(SECURITY R7) — 라이선스 문구를 둘지·레포를 비공개로 돌릴지
+- AUTO-38 ✅ 결정 대기 17건을 **docs/DECISIONS.md** 로 모음 (급함 4 · 운영 정책 5 · 외부 서비스·도메인 4 · 화면 내용 3 + 카카오 키 등록 후 점검). 이후 "책임님 확인 필요" 는 이 문서에 추가한다
