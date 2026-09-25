@@ -291,3 +291,36 @@ test("데이터 관리: 소유자는 관광정보 동기화 상태를 보고, �
   await expect(page.getByText("TourAPI 서비스키")).toBeVisible();
   await expect(page.getByRole("button", { name: "지금 동기화" })).toBeDisabled();
 });
+
+test("소유권 이전: 넘기면 내 화면이 바로 관리자 권한으로 바뀐다 (새로고침 없이)", async ({ page, request }) => {
+  // 새 조직(소유자) + 멤버 한 명을 API 로 준비 — 데모 조직의 소유자는 다른 테스트가 쓰므로 건드리지 않는다
+  const API = "http://localhost:8000/api/v1";
+  const stamp = Date.now();
+  const owner = { email: `owner-${stamp}@example.com`, password: "password1" };
+  const signup = await request.post(`${API}/auth/signup`, {
+    data: { ...owner, name: "이전할 소유자", companyName: `이전 테스트 ${stamp}`, agreements: { terms: true, privacy: true, marketing: false } },
+  });
+  expect(signup.status()).toBe(201);
+  const ownerToken = (await signup.json()).data.accessToken as string;
+  const inv = await request.post(`${API}/org/invitations`, { headers: { Authorization: `Bearer ${ownerToken}` }, data: { email: `next-${stamp}@example.com`, role: "member" } });
+  const accept = await request.post(`${API}/auth/invitations/accept`, {
+    data: { token: (await inv.json()).data.token, name: "다음 소유자", password: "password1", agreements: { terms: true, privacy: true, marketing: false } },
+  });
+  expect(accept.status()).toBe(201);
+
+  await page.goto(`${WEB}/?login=1&next=%2Fsettings%2F`);
+  await page.getByPlaceholder("이메일을 입력해주세요").fill(owner.email);
+  await page.getByPlaceholder("비밀번호를 입력해주세요").fill(owner.password);
+  await page.locator('form button[type="submit"]').first().click();
+  await page.waitForURL(/localhost:3200\/settings/);
+  await page.getByRole("button", { name: "멤버 관리" }).click();
+  await expect(page.locator("select option", { hasText: "관리자" })).toHaveCount(2); // 멤버 역할 변경 + 관리자 초대 선택지 (소유자 전용)
+
+  page.once("dialog", (d) => d.accept());
+  await page.getByRole("button", { name: "소유권 이전" }).click();
+  await expect(page.getByText("소유권을 이전했습니다. 나는 이제 관리자입니다.")).toBeVisible();
+  // 새로고침 없이: 상단바 역할 표시가 관리자, 소유자 전용 컨트롤(소유권 이전·관리자 초대 선택지)이 사라짐
+  await expect(page.getByText("(관리자)")).toBeVisible();
+  await expect(page.getByRole("button", { name: "소유권 이전" })).toHaveCount(0);
+  await expect(page.locator("select option", { hasText: "관리자" })).toHaveCount(0);
+});

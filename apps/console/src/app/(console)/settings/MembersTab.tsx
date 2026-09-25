@@ -25,7 +25,7 @@ const STATUS_LABEL: Record<Invitation["status"], string> = { pending: "대기 �
  * 소유자: 역할 변경·소유권 이전·관리자 초대 / 관리자: 멤버 초대·멤버 제외 / 멤버: 목록 조회만
  */
 export default function MembersTab() {
-  const { user } = useSession();
+  const { user, setUser } = useSession();
   const toast = useToast();
   const isOwner = user.role === "owner";
   const canManage = user.role === "owner" || user.role === "admin";
@@ -121,7 +121,11 @@ export default function MembersTab() {
                     className={btn.ghost}
                     onClick={() =>
                       window.confirm(`${m.name}님에게 소유권을 이전할까요? 나는 관리자가 됩니다.`) &&
-                      act(() => api.org.transferOwnership({ userId: m.id }), "소유권을 이전했습니다. 새로고침하면 권한이 반영됩니다.")
+                      act(async () => {
+                        await api.org.transferOwnership({ userId: m.id });
+                        // 내 역할이 관리자로 바뀌었으니 세션을 다시 받아 화면 권한(버튼·탭)을 바로 맞춘다
+                        setUser(await api.users.me());
+                      }, "소유권을 이전했습니다. 나는 이제 관리자입니다.")
                     }
                   >
                     소유권 이전
@@ -167,7 +171,7 @@ export default function MembersTab() {
                       {STATUS_LABEL[i.status]}
                       {i.status === "pending" && ` · ${formatDateKo(i.expiresAt)}까지`}
                     </span>
-                    {i.status === "pending" && (
+                    {i.status === "pending" && (isOwner || i.role === "member") && (
                       <button className="text-xs text-red-600 hover:underline" onClick={() => act(() => api.org.revokeInvitation(i.id), "초대를 취소했습니다.")}>
                         취소
                       </button>

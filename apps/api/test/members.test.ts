@@ -63,6 +63,20 @@ describe("초대", () => {
     expect((await authed(a.token).post("/org/invitations", { email: "y@example.com", role: "admin" })).status).toBe(403);
     expect((await authed(a.token).post("/org/invitations", { email: "y@example.com", role: "member" })).status).toBe(201);
   });
+
+  it("관리자 초대는 소유자만 취소·덮어쓸 수 있다 (관리자는 멤버 초대만 취소)", async () => {
+    const owner = await signup();
+    const a = await inviteAndJoin(owner.token, "a@example.com", "admin");
+    const adminInv = (await authed(owner.token).post("/org/invitations", { email: "boss@example.com", role: "admin" })).body.data;
+    // 관리자가 같은 이메일을 멤버로 재초대해 소유자의 관리자 초대를 무효화하지 못한다
+    expect((await authed(a.token).post("/org/invitations", { email: "boss@example.com", role: "member" })).status).toBe(403);
+    expect((await authed(a.token).delete(`/org/invitations/${adminInv.invitation.id}`)).status).toBe(404);
+    expect((await request(app).get(`${P}/auth/invitations/${adminInv.token}`)).status).toBe(200);
+    // 멤버 초대는 관리자도 취소, 관리자 초대는 소유자가 취소
+    const memberInv = (await authed(owner.token).post("/org/invitations", { email: "m2@example.com", role: "member" })).body.data;
+    expect((await authed(a.token).delete(`/org/invitations/${memberInv.invitation.id}`)).status).toBe(204);
+    expect((await authed(owner.token).delete(`/org/invitations/${adminInv.invitation.id}`)).status).toBe(204);
+  });
 });
 
 describe("멤버 관리", () => {

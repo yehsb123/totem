@@ -190,6 +190,9 @@ orgRouter.post(ROUTES.org.invitations, requireRole("owner", "admin"), async (req
   const { organizationId, userId, role: myRole } = authOf(req);
   if (role === "admin" && myRole !== "owner") throw forbidden("관리자 초대는 소유자만 할 수 있습니다.");
   if (await User.exists({ email })) throw conflict("이미 가입된 이메일입니다. 한 계정은 한 조직에만 속할 수 있습니다.");
+  // 같은 이메일로 다시 초대하면 기존 대기 초대가 취소되므로, 관리자가 멤버로 재초대해 소유자의 관리자 초대를 덮어쓰지 못하게
+  if (myRole !== "owner" && (await Invitation.exists({ organizationId, email, role: "admin", acceptedAt: null, revokedAt: null, expiresAt: { $gt: new Date() } })))
+    throw forbidden("소유자가 보낸 관리자 초대가 대기 중입니다. 소유자만 바꿀 수 있습니다.");
   await Invitation.updateMany({ organizationId, email, acceptedAt: null, revokedAt: null }, { $set: { revokedAt: new Date() } });
   const token = randomToken(32);
   const inv = await Invitation.create({
@@ -204,9 +207,11 @@ orgRouter.post(ROUTES.org.invitations, requireRole("owner", "admin"), async (req
   ok(res, { invitation: toInvitation(inv.toObject(), me?.name ?? ""), token }, 201);
 });
 
+/** 초대 취소 — 관리자 초대는 만들 때와 같이 소유자만 취소할 수 있다 */
 orgRouter.delete(ROUTES.org.invitation(":id"), requireRole("owner", "admin"), async (req, res) => {
+  const { organizationId, role } = authOf(req);
   const r = await Invitation.updateOne(
-    { _id: objectIdParam(req.params.id, "초대"), organizationId: authOf(req).organizationId, acceptedAt: null, revokedAt: null },
+    { _id: objectIdParam(req.params.id, "초대"), organizationId, acceptedAt: null, revokedAt: null, ...(role !== "owner" && { role: "member" }) },
     { $set: { revokedAt: new Date() } },
   );
   if (r.matchedCount === 0) throw notFound("대기 중인 초대");

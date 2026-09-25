@@ -120,7 +120,7 @@
 | DELETE | `/org/members/:id` | 제외(개인정보 삭제·세션 폐기) — 관리자 이상, 관리자 제외는 소유자만 |
 | POST | `/org/transfer-ownership` | `{userId}` 소유권 이전 — 소유자만, 기존 소유자는 관리자 |
 | GET·POST | `/org/invitations` | 초대 내역 / 링크 만들기(토큰은 이 응답에만) — 관리자 이상, 관리자 초대는 소유자만 |
-| DELETE | `/org/invitations/:id` | 대기 중 초대 취소 |
+| DELETE | `/org/invitations/:id` | 대기 중 초대 취소. 관리자 초대는 소유자만(관리자에게는 404) — 관리자가 같은 이메일을 멤버로 재초대해 덮어쓰는 것도 403 |
 
 ### 설정
 | 메서드 | 경로 | |
