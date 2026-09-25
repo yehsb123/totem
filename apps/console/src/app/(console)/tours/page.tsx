@@ -38,6 +38,11 @@ export default function ToursPage() {
         api.tours.list({ q: q.trim() || undefined, date: date || undefined, type: type || undefined, status: status || undefined, page, limit: PAGE_SIZE }),
         api.tours.types(),
       ]);
+      // 마지막 페이지의 마지막 투어를 지우면 없는 페이지에 남아 "조건에 맞는 투어가 없습니다"가 떴다 → 있는 마지막 페이지로
+      if (list.items.length === 0 && page > 1 && list.meta.totalPages < page) {
+        setPage(Math.max(1, list.meta.totalPages));
+        return;
+      }
       setTours(list.items);
       setMeta(list.meta);
       setTypes(t);

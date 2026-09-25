@@ -413,3 +413,29 @@ test("일정 검색은 전체 기간 — 다른 달의 일정도 결과에 나�
   await expect(page.getByText("2027년 5월").first()).toBeVisible();
   await expect(page.getByText("기간: 2027-05-10 ~ 2027-05-11").filter({ visible: true })).toBeVisible();
 });
+
+test("투어관리 페이지: 마지막 페이지의 마지막 투어를 지우면 빈 페이지가 아니라 앞 페이지로", async ({ page, request }) => {
+  const API = "http://localhost:8000/api/v1";
+  const stamp = Date.now();
+  const user = { email: `pages-${stamp}@example.com`, password: "password1" };
+  const token = (await (await request.post(`${API}/auth/signup`, { data: { ...user, name: "페이지", companyName: `페이지 ${stamp}`, agreements: { terms: true, privacy: true, marketing: false } } })).json()).data.accessToken;
+  const H = { Authorization: `Bearer ${token}` };
+  // 21개 = 20개(1페이지) + 1개(2페이지). 가장 오래된 날짜의 투어가 2페이지로 간다(시작일 내림차순)
+  for (let i = 0; i < 21; i++) {
+    const day = String(i + 1).padStart(2, "0");
+    await request.post(`${API}/tours`, { headers: H, data: { title: `페이지 투어 ${day}`, startDate: `2026-12-${day}`, endDate: `2026-12-${day}` } });
+  }
+  await page.goto(`${WEB}/?login=1&next=%2Ftours%2F`);
+  await page.getByPlaceholder("이메일을 입력해주세요").fill(user.email);
+  await page.getByPlaceholder("비밀번호를 입력해주세요").fill(user.password);
+  await page.locator('form button[type="submit"]').first().click();
+  await page.waitForURL(`${CONSOLE}/tours/`);
+  await expect(page.getByText("1 / 2")).toBeVisible();
+  await page.getByRole("button", { name: "다음" }).click();
+  await expect(page.getByText("2 / 2")).toBeVisible();
+  page.once("dialog", (d) => d.accept());
+  await page.locator("tr", { hasText: "페이지 투어 01" }).getByRole("button", { name: "삭제" }).click();
+  await expect(page.getByText("페이지 투어 21")).toBeVisible(); // 1페이지 첫 줄
+  await expect(page.getByText("조건에 맞는 투어가 없습니다.")).toHaveCount(0);
+  await expect(page.getByText("아직 등록한 투어가 없습니다.")).toHaveCount(0);
+});
