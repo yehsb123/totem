@@ -41,3 +41,18 @@ test("콘솔 모달: 키보드로 열고 → 첫 입력칸 포커스 → Tab 가
   await expect(dialog).toHaveCount(0);
   await expect(opener).toBeFocused();
 });
+
+test("메인 모바일 메뉴: Esc 로 닫히고, 이동하면 닫힌다", async ({ browser }) => {
+  const page = await browser.newPage({ viewport: { width: 375, height: 800 } });
+  await page.goto(WEB);
+  const toggle = page.getByRole("banner").getByRole("button", { name: /메뉴/ });
+  await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-expanded", "true");
+  await page.keyboard.press("Escape");
+  await expect(toggle).toHaveAttribute("aria-expanded", "false");
+  await toggle.click();
+  await page.getByRole("banner").getByRole("link", { name: "요금제" }).filter({ visible: true }).first().click();
+  await page.waitForURL(`${WEB}/pricing`);
+  await expect(toggle).toHaveAttribute("aria-expanded", "false");
+  await page.close();
+});

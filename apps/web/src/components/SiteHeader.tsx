@@ -39,6 +39,16 @@ export default function SiteHeader() {
     setMobileOpen(false);
   }
 
+  // 모바일 메뉴도 ESC 로 닫는다 (기능 드롭다운과 같은 동작)
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMobileOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [mobileOpen]);
+
   // 드롭다운 바깥 클릭·ESC 로 닫기
   useEffect(() => {
     if (!featuresOpen) return;

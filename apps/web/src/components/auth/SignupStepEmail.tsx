@@ -32,7 +32,7 @@ export default function SignupStepEmail({
     >
       <StepIndicator currentStep={0} />
       <p id="auth-modal-title" className="mb-5 text-center text-[15px] leading-relaxed text-slate-900">
-        별도의 설치과정 없이도 <br /> 모든 기능을 무료로 체험할 수 있습니다
+        별도의 설치과정 없이도 <br /> 지금 제공되는 기능을 무료로 체험할 수 있습니다
       </p>
       <label className="sr-only" htmlFor="signup-email">
         업무용 이메일

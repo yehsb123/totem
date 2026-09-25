@@ -81,7 +81,9 @@ export default function PricingPage() {
 
       <div className="mt-12 text-center">
         <StartButton className="rounded-full bg-indigo-500 px-8 py-3.5 text-base font-semibold text-white transition hover:bg-indigo-600" />
-        <p className="mt-6 text-sm text-slate-500">* 모든 요금제는 부가세(VAT) 별도입니다.</p>
+        {/* 실제 동작: 가입하면 무료 체험 요금제로 시작(콘솔 결제 정보 "무료 체험"), 결제는 PG 연동 후 — DECISIONS 참고 */}
+        <p className="mt-4 text-sm text-slate-600">가입하면 무료 체험으로 바로 시작합니다. 유료 요금제 전환은 결제 연동 후 안내해 드립니다.</p>
+        <p className="mt-2 text-sm text-slate-500">* 모든 요금제는 부가세(VAT) 별도입니다.</p>
       </div>
     </section>
   );

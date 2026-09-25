@@ -8,6 +8,6 @@ export const FEATURE_LINKS = [
 ] as const;
 
 export const MAIN_LINKS = [
-  { label: "가격안내", href: "/pricing" },
+  { label: "요금제", href: "/pricing" }, // 페이지 제목("요금제 안내")·콘솔 안내 문구와 같은 이름
   { label: "리소스", href: "/resources" },
 ] as const;
