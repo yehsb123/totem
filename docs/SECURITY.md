@@ -51,7 +51,7 @@
 | 통제 | 내용 |
 |---|---|
 | 탈퇴·멤버 제외 | 이메일·이름·전화·인증수단 **즉시 삭제**, 세션 폐기. 레코드는 남겨 작성자 참조 유지 |
-| 조직 삭제 | 삭제 표시 즉시 접근 차단 → 30일(`ORG_PURGE_AFTER_DAYS`) 뒤 `npm run purge` 로 영구 삭제. 결제 기록만 5년 보존(개인정보 없음) — `docs/DATABASE.md` |
+| 조직 삭제 | 삭제 표시 즉시 접근 차단 → 30일(`ORG_PURGE_AFTER_DAYS`) 뒤 정리 작업(운영 `node dist/db/purge-run.js`)으로 영구 삭제. 결제 기록만 보존(개인정보 없음, 5년 경과분 삭제는 미구현) — `docs/DATABASE.md` |
 | 약관 동의 | 이용약관·개인정보 동의 시각을 사용자에 기록 |
 | 비밀값 저장 | 비밀번호(bcrypt), refresh token·인계 코드·초대 토큰(SHA-256) — 원문은 DB 에 없음 |
 | 운영 설정 | `NODE_ENV=production` 에서 `MONGO_URI`·`JWT_ACCESS_SECRET`(32자↑)·`CORS_ORIGINS` 없으면 **기동 거부**. DB 연결 실패 시 기동 중단 |

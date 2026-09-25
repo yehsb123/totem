@@ -152,7 +152,7 @@ region · month(`YYYY-MM`) — **(region, month) unique** · source(기본 `한�
 |---|---|---|
 | 1. 삭제 표시 | 소유자가 혼자 남은 상태에서 탈퇴 | `organizations.deletedAt`, 대기 초대 취소, 소유자 개인정보 즉시 삭제. 이후 **모든 요청·로그인 401**("삭제된 조직입니다.") |
 | 2. 유예 | `ORG_PURGE_AFTER_DAYS`(기본 30일) | 데이터는 남아 있지만 누구도 접근 불가 (복구 요청 대응 기간) |
-| 3. 영구 삭제 | `npm run purge -w @totem/api` (운영: 하루 1회 예약 실행) | 코스·투어·리뷰·가져오기 이력·일정·라벨·초대·구독·사용자·세션·인계 코드 삭제. 조직 문서는 이름을 지운 표지(`purgedAt`)로만 남김 |
+| 3. 영구 삭제 | 개발 `npm run purge -w @totem/api` / 운영 이미지 `node dist/db/purge-run.js` (하루 1회 예약 실행, docs/DEPLOY.md) | 코스·투어·리뷰·가져오기 이력·일정·라벨·초대·구독·사용자·세션·인계 코드 삭제. 조직 문서는 이름을 지운 표지(`purgedAt`)로만 남김 |
 | 보존 | 5년 (목표) | `payments` — 전자상거래법 대금결제 기록 보존. 개인정보 없음. **5년 경과분 삭제는 아직 구현하지 않음**(현재는 계속 보존) — 보존 기간 확정 후 purge 에 추가 |
 
 멤버 제외·개인 탈퇴는 조직과 무관하게 **즉시** 개인정보(이메일·이름·전화·인증수단)를 지우고 세션을 폐기한다.
@@ -161,7 +161,7 @@ region · month(`YYYY-MM`) — **(region, month) unique** · source(기본 `한�
 
 | 명령 | 내용 |
 |---|---|
-| `npm run seed` | 공용 데이터(통계 12개월·제주 장소 17곳) upsert. `SEED_DEMO_PASSWORD` 가 있으면 데모 조직도 |
+| `npm run seed` (운영 이미지는 `node dist/db/seed/run.js`) | 공용 데이터(통계 12개월·제주 장소 17곳) upsert. `SEED_DEMO_PASSWORD` 가 있으면 데모 조직도 |
 | 개발 서버(`MONGO_URI` 비움) | 인메모리 DB 에 공용 데이터 + 데모 조직 자동. 계정 `demo@totem.dev` / `demo1234` |
 | `SEED_ON_EMPTY=true` + 영속 DB | 비어 있으면 공용 데이터. 데모 조직은 `SEED_DEMO_PASSWORD` 가 있을 때만 (알려진 기본 비밀번호는 인메모리 전용) |
 

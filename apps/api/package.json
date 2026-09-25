@@ -8,6 +8,8 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsup",
     "start": "node dist/server.js",
+    "start:seed": "node dist/db/seed/run.js",
+    "start:purge": "node dist/db/purge-run.js",
     "seed": "tsx src/db/seed/run.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",

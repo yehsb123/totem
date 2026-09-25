@@ -46,9 +46,10 @@ docker run -p 8000:8000 --env-file apps/api/.env totem-api
 운영 체크리스트
 - `NODE_ENV=production`, `MONGO_URI`, `JWT_ACCESS_SECRET`(32자↑), `CORS_ORIGINS`(= web 도메인, `https://yehsb123.github.io`) — 없으면 기동 거부
 - 프록시 뒤면 `TRUST_PROXY=1`
-- 최초 1회 `npm run seed -w @totem/api` (대시보드 통계·장소 샘플), 이후 관리자 계정으로 `POST /places/sync` 로 TourAPI 전체 동기화
+- 최초 1회 시드(대시보드 통계·장소 샘플): **같은 이미지로** `docker run --rm --env-file apps/api/.env totem-api node dist/db/seed/run.js` (이미지 밖이면 `npm run start:seed -w @totem/api`, 빌드 후). `npm run seed` 는 개발용(tsx)이라 운영 이미지에는 없다. 이후 관리자 계정으로 `POST /places/sync` 로 TourAPI 전체 동기화
 - 헬스체크: `GET /api/v1/health` → 200 이면 정상 (DB 끊기면 503)
-- 삭제된 조직 정리: `node dist/db/purge-run.js` 를 하루 1회 예약 실행 (호스팅의 cron·스케줄러). 여러 번 돌아도 안전
+- 삭제된 조직 정리: `docker run --rm --env-file … totem-api node dist/db/purge-run.js` (또는 `npm run start:purge`) 를 하루 1회 예약 실행 (호스팅의 cron·스케줄러). 여러 번 돌아도 안전
+- 이 절차는 CI `api-image` 잡이 매 push 마다 그대로 실행한다(이미지 빌드 → 운영 모드 기동·헬스체크 → 시드·정리 → 필수값 없으면 기동 거부)
 
 ## 4. 외부 콘솔 설정
 

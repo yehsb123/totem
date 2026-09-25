@@ -81,3 +81,37 @@ jobs:
             e2e/playwright-report
             e2e/test-results
           retention-days: 7
+
+  # API 운영 이미지가 실제로 빌드되고, 운영 모드로 떠서 헬스체크·시드·정리가 되는지 (docs/DEPLOY.md 3절 그대로)
+  api-image:
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      mongo:
+        image: mongo:7
+        ports: ["27017:27017"]
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: 이미지 빌드
+        run: docker build -f apps/api/Dockerfile -t totem-api:ci .
+
+      - name: 운영 모드 기동 → 헬스체크
+        run: |
+          docker run -d --name api --network host \
+            -e NODE_ENV=production -e PORT=8000 -e MONGO_URI=mongodb://127.0.0.1:27017 -e MONGO_DB_NAME=ci \
+            -e JWT_ACCESS_SECRET=ci-only-secret-0123456789abcdef0123 -e CORS_ORIGINS=https://example.com \
+            totem-api:ci
+          for i in $(seq 1 30); do curl -fs http://127.0.0.1:8000/api/v1/health && exit 0; sleep 1; done
+          docker logs api; exit 1
+
+      - name: 같은 이미지로 시드·정리 (운영 문서의 명령)
+        run: |
+          E="-e NODE_ENV=production -e MONGO_URI=mongodb://127.0.0.1:27017 -e MONGO_DB_NAME=ci -e JWT_ACCESS_SECRET=ci-only-secret-0123456789abcdef0123 -e CORS_ORIGINS=https://example.com"
+          docker run --rm --network host $E totem-api:ci node dist/db/seed/run.js
+          docker run --rm --network host $E totem-api:ci node dist/db/purge-run.js
+
+      - name: 필수 환경변수 없이 기동하면 거부
+        run: |
+          if docker run --rm -e NODE_ENV=production totem-api:ci; then echo "기동 거부가 안 됨"; exit 1; fi
