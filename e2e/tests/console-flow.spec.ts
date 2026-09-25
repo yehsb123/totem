@@ -324,3 +324,44 @@ test("소유권 이전: 넘기면 내 화면이 바로 관리자 권한으로 �
   await expect(page.getByRole("button", { name: "소유권 이전" })).toHaveCount(0);
   await expect(page.locator("select option", { hasText: "관리자" })).toHaveCount(0);
 });
+
+test("일정표는 투어 출발일 기준 — 투어 날짜를 옮기면 일정표 날짜도 바뀐다 (코스 날짜 그대로 인쇄되지 않음)", async ({ page, request }) => {
+  const API = "http://localhost:8000/api/v1";
+  const stamp = Date.now();
+  const user = { email: `itin-${stamp}@example.com`, password: "password1" };
+  const token = (await (await request.post(`${API}/auth/signup`, { data: { ...user, name: "일정표", companyName: `일정표 ${stamp}`, agreements: { terms: true, privacy: true, marketing: false } } })).json()).data.accessToken;
+  const H = { Authorization: `Bearer ${token}` };
+  const spot = (await (await request.get(`${API}/places?category=attraction&limit=1`, { headers: H })).json()).data[0];
+  const { DEFAULT_TIME_SLOTS } = await import("@totem/shared");
+  const place = { placeId: spot.id, contentId: spot.contentId, title: spot.title, addr1: spot.addr1, category: spot.category, mapX: spot.mapX, mapY: spot.mapY, imageUrl: spot.imageUrl };
+  const created = await request.post(`${API}/courses`, {
+    headers: H,
+    data: {
+      title: "옮길 코스", startDate: "2026-10-01", endDate: "2026-10-02", timeSlots: [...DEFAULT_TIME_SLOTS],
+      days: [{ dayNumber: 1, date: "2026-10-01", slots: [{ slotIndex: 3, place }] }, { dayNumber: 2, date: "2026-10-02", slots: [] }],
+      tour: { type: "일반", managerName: "박가이드", capacity: 8 },
+    },
+  });
+  expect(created.status()).toBe(201);
+  const { course, tour } = (await created.json()).data;
+  await request.patch(`${API}/tours/${tour.id}`, { headers: H, data: { startDate: "2026-12-24", endDate: "2026-12-25" } });
+
+  await page.goto(`${WEB}/?login=1&next=%2Ftours%2F`);
+  await page.getByPlaceholder("이메일을 입력해주세요").fill(user.email);
+  await page.getByPlaceholder("비밀번호를 입력해주세요").fill(user.password);
+  await page.locator('form button[type="submit"]').first().click();
+  await page.waitForURL(`${CONSOLE}/tours/`);
+  await page.locator("tr", { hasText: "옮길 코스" }).getByRole("link", { name: "일정표" }).click();
+  await expect(page.getByText("2026-12-24")).toBeVisible();
+  await expect(page.getByText("2026년 12월 24일 목요일")).toBeVisible();
+  await expect(page.getByText("2026년 12월 25일 금요일")).toBeVisible();
+  await expect(page.getByText("2026년 10월 1일")).toHaveCount(0);
+
+  // 코스만으로 열면(투어 지정 없음) 코스에 투어가 하나라 그 투어 기준
+  await page.goto(`${CONSOLE}/itinerary/?courseId=${course.id}`);
+  await expect(page.getByText("2026년 12월 24일 목요일")).toBeVisible();
+  // 기간이 달라지면 경고
+  await request.patch(`${API}/tours/${tour.id}`, { headers: H, data: { startDate: "2026-12-24", endDate: "2026-12-27" } });
+  await page.reload();
+  await expect(page.getByText("투어 기간(4일)과 코스 일정(2일)이 다릅니다.", { exact: false })).toBeVisible();
+});

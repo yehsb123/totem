@@ -153,7 +153,7 @@ export default function ToursPage() {
                         <Link href={`/coursemaker/?courseId=${t.courseId}`} className="ml-2 text-xs font-normal text-blue-600 hover:underline">
                           코스
                         </Link>
-                        <Link href={`/itinerary/?courseId=${t.courseId}`} className="ml-2 text-xs font-normal text-blue-600 hover:underline">
+                        <Link href={`/itinerary/?courseId=${t.courseId}&tourId=${t.id}`} className="ml-2 text-xs font-normal text-blue-600 hover:underline">
                           일정표
                         </Link>
                       </>
