@@ -1,7 +1,7 @@
 "use client";
 
 import { ApiError } from "@totem/shared";
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode, useSyncExternalStore } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
 import { api } from "@/lib/api";
 import { redirectToConsole, sanitizeNext } from "@/lib/handoff";
 import AuthModal, { type AuthMode } from "./AuthModal";
@@ -43,6 +43,18 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
   // 로그인 여부의 출처는 localStorage(외부 저장소) — effect 로 복사하지 않고 구독한다.
   // 서버 렌더에서는 항상 false (hydration 불일치 방지)
   const isLoggedIn = useSyncExternalStore(subscribeAuth, () => api.isLoggedIn(), () => false);
+
+  // 저장된 토큰이 아직 유효한지 한 번 확인 — 탈퇴·다른 기기에서 비밀번호 변경·세션 폐기 뒤에도
+  // 토큰이 남아 헤더가 "로그인됨"으로 보이던 문제 (AUDIT §30). 서버가 거절(401·403)할 때만 비운다(네트워크 오류는 그대로)
+  useEffect(() => {
+    if (!api.isLoggedIn()) return;
+    api.users.me().catch((e) => {
+      if (e instanceof ApiError && (e.status === 401 || e.status === 403)) {
+        api.tokens.clear();
+        notifyAuthChanged();
+      }
+    });
+  }, []);
 
   const openAuth = useCallback((mode: AuthMode, next?: string | null) => {
     setModal({ mode, next: sanitizeNext(next) });

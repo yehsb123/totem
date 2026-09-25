@@ -195,6 +195,8 @@ function WithdrawSection({ hasPassword }: { hasPassword: boolean }) {
     setError(null);
     try {
       await api.users.withdraw({ password: hasPassword ? password : undefined, confirm: confirm as "탈퇴합니다" });
+      // 서버 세션은 이미 폐기됨 — 이 브라우저에 남은 토큰도 지운다 (메인 사이트는 첫 화면에서 스스로 확인해 지움)
+      api.tokens.clear();
       window.location.assign(new URL("/", env.webUrl).href);
     } catch (e) {
       setError(errorMessage(e));

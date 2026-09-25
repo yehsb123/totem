@@ -439,3 +439,32 @@ test("투어관리 페이지: 마지막 페이지의 마지막 투어를 지우�
   await expect(page.getByText("조건에 맞는 투어가 없습니다.")).toHaveCount(0);
   await expect(page.getByText("아직 등록한 투어가 없습니다.")).toHaveCount(0);
 });
+
+test("메인 사이트: 다른 곳에서 세션이 폐기되면(비밀번호 변경·탈퇴) 다시 열었을 때 로그인 상태로 보이지 않는다", async ({ page, request }) => {
+  const API = "http://localhost:8000/api/v1";
+  const stamp = Date.now();
+  const user = { email: `revoke-${stamp}@example.com`, password: "password1" };
+  const signup = await request.post(`${API}/auth/signup`, { data: { ...user, name: "폐기", companyName: `폐기 ${stamp}`, agreements: { terms: true, privacy: true, marketing: false } } });
+  const token = (await signup.json()).data.accessToken;
+
+  await page.goto(`${WEB}/?login=1`);
+  await page.getByPlaceholder("이메일을 입력해주세요").fill(user.email);
+  await page.getByPlaceholder("비밀번호를 입력해주세요").fill(user.password);
+  await page.locator('form button[type="submit"]').first().click();
+  await page.waitForURL(`${CONSOLE}/schedule/`);
+  await page.goto(WEB);
+  const banner = page.getByRole("banner");
+  await expect(banner.getByRole("button", { name: "콘솔로 이동" }).first()).toBeVisible();
+
+  // 다른 기기에서 비밀번호 변경 → 모든 세션 폐기
+  const changed = await request.put(`${API}/users/me/password`, { headers: { Authorization: `Bearer ${token}` }, data: { currentPassword: "password1", newPassword: "password2" } });
+  expect(changed.status()).toBe(204);
+  // 메인의 access token 이 아직 살아 있어도(15분) 다시 열면 확인 → refresh 거절 시 비움. 만료된 상황을 흉내 내 access 만 망가뜨린다
+  await page.evaluate(() => {
+    const t = JSON.parse(localStorage.getItem("totem.auth")!);
+    localStorage.setItem("totem.auth", JSON.stringify({ ...t, accessToken: "expired" }));
+  });
+  await page.reload();
+  await expect(banner.getByRole("button", { name: "로그인", exact: true }).first()).toBeVisible();
+  await expect(banner.getByRole("button", { name: "콘솔로 이동" })).toHaveCount(0);
+});
