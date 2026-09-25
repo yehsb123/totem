@@ -88,18 +88,37 @@ reviewsRouter.post(ROUTES.tours.reviewImport(":tourId"), async (req, res) => {
   const totalRows = parsed.length + errors.length;
   const batch = await ReviewImport.create({ organizationId, tourId, csvUrl, createdBy: userId });
 
-  let imported = 0;
-  let ratingSum = 0;
-  for (const { row, review } of parsed) {
-    const fingerprint = sha256(`${tourId}|${JSON.stringify(review)}`);
+  // 한 번에 넣는다 (행마다 왕복하면 수천 행 시트가 원격 DB 에서 분 단위로 걸려 요청이 끊긴다).
+  // ordered:false → 중복(같은 투어·같은 원본 행 = unique fingerprint)만 실패하고 나머지는 모두 들어간다
+  const docs = parsed.map(({ review, identity }) => ({
+    ...review,
+    organizationId,
+    tourId,
+    source: "csv" as const,
+    importBatchId: batch._id,
+    fingerprint: sha256(`${tourId}|${identity}`),
+    submittedAt: new Date(review.submittedAt),
+  }));
+  const failed = new Map<number, string>();
+  if (docs.length) {
     try {
-      await Review.create({ ...review, organizationId, tourId, source: "csv", importBatchId: batch._id, fingerprint, submittedAt: new Date(review.submittedAt) });
-      imported++;
-      ratingSum += review.totalRating;
+      await Review.insertMany(docs, { ordered: false });
     } catch (e) {
-      errors.push({ row, message: (e as { code?: number }).code === 11000 ? "이미 가져온 리뷰입니다." : "저장 실패" });
+      const writeErrors = (e as { writeErrors?: { index: number; code?: number; err?: { code?: number } }[] }).writeErrors;
+      if (!writeErrors) throw e;
+      for (const w of writeErrors) failed.set(w.index, (w.code ?? w.err?.code) === 11000 ? "이미 가져온 리뷰입니다." : "저장 실패");
     }
   }
+  let imported = 0;
+  let ratingSum = 0;
+  parsed.forEach(({ row, review }, i) => {
+    const message = failed.get(i);
+    if (message) errors.push({ row, message });
+    else {
+      imported++;
+      ratingSum += review.totalRating;
+    }
+  });
   if (imported) await bumpStats(tourId, ratingSum, imported);
 
   const result = {

@@ -56,6 +56,8 @@ const userSchema = new Schema(
 );
 // 탈퇴(email=null 로 비움)·카카오 무이메일 계정이 여러 개여도 충돌하지 않도록 문자열일 때만 unique
 userSchema.index({ email: 1 }, { unique: true, partialFilterExpression: { email: { $type: "string" } } });
+// 위 unique 는 부분 인덱스라 평범한 { email } 조회(로그인·가입·중복 확인)에는 쓰이지 않는다 → 조회용 일반 인덱스 (AUDIT §18)
+userSchema.index({ email: 1, _id: 1 });
 userSchema.index({ "identities.provider": 1, "identities.providerUserId": 1 }, { unique: true, sparse: true });
 userSchema.index({ name: 1, phone: 1 });
 export const User = model("User", userSchema, "users");
@@ -92,6 +94,7 @@ const authHandoffSchema = new Schema(
   { timestamps: true },
 );
 authHandoffSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+authHandoffSchema.index({ userId: 1 }); // 조직 영구 삭제(purge) 시 사용자별 정리
 export const AuthHandoff = model("AuthHandoff", authHandoffSchema, "auth_handoffs");
 
 /**

@@ -133,6 +133,7 @@ const reviewImportSchema = new Schema(
   },
   { timestamps: true, suppressReservedKeysWarning: true },
 );
+reviewImportSchema.index({ organizationId: 1, tourId: 1, createdAt: -1 }); // 조직별 정리(purge)·투어별 가져오기 이력
 export const ReviewImport = model("ReviewImport", reviewImportSchema, "review_imports");
 
 /* ───────────── 일정관리 ───────────── */

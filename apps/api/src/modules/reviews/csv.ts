@@ -97,6 +97,11 @@ function rating(v: string | undefined, required: boolean): number | null {
 export interface ParsedRow {
   row: number;
   review: CreateReviewRequest & { submittedAt: string };
+  /**
+   * 같은 행인지 판단하는 원본 값(시트에 적힌 그대로). 날짜 칸이 비어 "지금"으로 채운 값은 넣지 않는다 —
+   * 넣으면 가져올 때마다 달라져 같은 시트를 다시 가져오면 리뷰가 두 번 쌓인다 (AUDIT §18).
+   */
+  identity: string;
 }
 
 export function mapRows(rows: string[][]): { parsed: ParsedRow[]; errors: { row: number; message: string }[] } {
@@ -118,6 +123,7 @@ export function mapRows(rows: string[][]): { parsed: ParsedRow[]; errors: { row:
       const submitted = submittedRaw ? new Date(submittedRaw.replace(/\. /g, "-").replace(/\.$/, "")) : new Date();
       parsed.push({
         row: rowNo,
+        identity: JSON.stringify(["totalRating", "restaurantRating", "accommodationRating", "attractionRating", "guideRating", "comment", "reviewerName", "submittedAt"].map((k) => get(k)?.trim() ?? "")),
         review: {
           totalRating: rating(get("totalRating"), true)!,
           restaurantRating: rating(get("restaurantRating"), false),

@@ -58,6 +58,8 @@ index: (deletedAt, purgedAt) — 영구 삭제 대상 찾기
 | agreements | {terms, privacy, marketing: Date?} | 약관 동의 시각 (증빙) |
 | lastLoginAt, deletedAt | Date? | |
 
+index: email unique(부분: 문자열만) + **email 조회용 일반 인덱스** (email, _id) — 부분 인덱스는 평범한 `{ email }` 조회에 쓰이지 않아 로그인·가입이 전체 스캔하던 문제 (AUDIT §18) · (name, phone) · organizationId
+
 ### sessions
 | 필드 | 타입 | 비고 |
 |---|---|---|
@@ -69,7 +71,7 @@ index: (deletedAt, purgedAt) — 영구 삭제 대상 찾기
 | userAgent, ip | string? | |
 
 ### auth_handoffs
-codeHash(unique) · userId · expiresAt(**TTL**) · usedAt — 조건부 업데이트로 1회만 사용
+codeHash(unique) · userId(index — 조직 영구 삭제 시 정리) · expiresAt(**TTL**) · usedAt — 조건부 업데이트로 1회만 사용
 
 ### invitations
 organizationId · email(소문자) · role(`admin`·`member`) · tokenHash(unique, 원문은 생성 응답에만) · invitedBy · expiresAt(7일) · acceptedAt · acceptedUserId · revokedAt
@@ -124,7 +126,7 @@ index: category, (areaCode, category, popularity↓), text(title, addr1)
 
 ### reviews / review_imports
 - reviews: organizationId · tourId · reviewerName? · totalRating(1~5 필수) · restaurant/accommodation/attraction/guideRating(1~5?) · comment? · source(`manual`·`csv`) · importBatchId? · fingerprint?(tourId+행 내용 해시, **(tourId,fingerprint) unique** → 같은 CSV 재가져오기 중복 방지) · submittedAt
-- review_imports: organizationId · tourId · csvUrl · totalRows · imported · skipped · errors[{row,message}] · createdBy
+- review_imports: organizationId · tourId · csvUrl · totalRows · imported · skipped · errors[{row,message}] · createdBy — index (organizationId, tourId, createdAt↓)
 
 ### schedule_labels / schedule_events
 - labels: organizationId · name(**조직 내 unique**) · emoji · color(`blue`·`red`·`purple`·`green`·`yellow`·`teal`·`indigo`·`pink`·`gray`) · defaultPlace · defaultManager

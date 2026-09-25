@@ -12,6 +12,8 @@ export const P = "/api/v1";
 export function useDb() {
   beforeAll(async () => {
     await connectDb("");
+    // 인덱스 없이 컬렉션 전체를 훑는 조회는 오류로 — 새 조회에 인덱스를 빠뜨리면 테스트가 실패한다 (AUDIT §18)
+    await mongoose.connection.db!.admin().command({ setParameter: 1, notablescan: 1 });
   });
   beforeEach(async () => {
     const collections = await mongoose.connection.db!.collections();
