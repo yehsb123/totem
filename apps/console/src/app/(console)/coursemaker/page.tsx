@@ -112,8 +112,8 @@ function CourseMaker({ courseId }: { courseId: string | null }) {
                 value={c.startDate}
                 onChange={(e) => {
                   const s = e.target.value;
-                  // 시작일을 종료일 뒤로 옮기면 종료일을 같은 날로 맞춘다 (구 코드는 경고 후 둘 다 지웠다)
-                  c.setPeriod(s, c.endDate < s ? s : c.endDate);
+                  // 시작일을 바꾸면 코스를 통째로 옮긴다 — 일수는 그대로, 종료일이 따라간다 (길이는 종료일로 조절)
+                  if (s) c.setPeriod(s, addDays(s, Math.max(c.days.length, 1) - 1));
                 }}
               />
               <span className="text-slate-400">~</span>

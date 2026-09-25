@@ -365,3 +365,30 @@ test("일정표는 투어 출발일 기준 — 투어 날짜를 옮기면 일정
   await page.reload();
   await expect(page.getByText("투어 기간(4일)과 코스 일정(2일)이 다릅니다.", { exact: false })).toBeVisible();
 });
+
+test("코스메이커 기간 변경: 시작일을 옮겨도 담은 장소가 일차대로 남고, 줄여서 지워질 땐 먼저 묻는다", async ({ page }) => {
+  await page.goto(`${WEB}/?login=1&next=%2Fcoursemaker%2F`);
+  await page.getByPlaceholder("이메일을 입력해주세요").fill(DEMO.email);
+  await page.getByPlaceholder("비밀번호를 입력해주세요").fill(DEMO.password);
+  await page.locator('form button[type="submit"]').first().click();
+  await page.waitForURL(`${CONSOLE}/coursemaker/`);
+  await page.getByRole("button", { name: /내 코스/ }).click();
+  // 다른 테스트가 만든 코스가 목록 위에 올 수 있으므로 데모 코스를 이름으로 고른다
+  await page.getByRole("dialog").locator("li", { hasText: "제주 동부 2박 3일" }).getByRole("button", { name: "불러오기" }).click();
+  const days = page.getByRole("main").first();
+  await expect(days.getByText("우진해장국").filter({ visible: true }).first()).toBeVisible();
+
+  // 코스를 다른 달로 옮김 — 예전에는 날짜가 안 맞아 장소가 전부 사라졌다
+  const [startInput, endInput] = [page.locator('input[type="date"]').nth(0), page.locator('input[type="date"]').nth(1)];
+  const before = { start: await startInput.inputValue(), end: await endInput.inputValue() };
+  await startInput.fill("2027-03-01");
+  await expect(endInput).toHaveValue(before.start === before.end ? "2027-03-01" : /^2027-03-0\d$/);
+  await expect(days.getByText("우진해장국").filter({ visible: true }).first()).toBeVisible();
+
+  // 줄이면 2·3일차 장소가 지워지므로 확인창 → 취소하면 그대로
+  let asked = "";
+  page.once("dialog", (d) => ((asked = d.message()), d.dismiss()));
+  await endInput.fill("2027-03-01");
+  expect(asked).toContain("장소가 담긴");
+  await expect(endInput).not.toHaveValue("2027-03-01");
+});

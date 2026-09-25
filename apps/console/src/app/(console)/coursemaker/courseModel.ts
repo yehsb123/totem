@@ -59,10 +59,18 @@ export const routeSignature = (points: { x: number; y: number }[]) => points.map
 const emptySlots = (n: number) => Array<CoursePlace | null>(n).fill(null);
 
 /** 기간이 바뀌면 날짜별로 기존 편집 내용을 보존하며 일차 배열을 다시 만든다 */
+/**
+ * 기간이 바뀌면 일차 내용은 **순서(1일차, 2일차…)로** 유지한다.
+ * (예전에는 날짜로 맞춰, 코스를 다른 달로 옮기면 날짜가 하나도 안 맞아 담은 장소가 전부 사라졌다 — AUDIT §27)
+ */
 export function resizeDays(start: string, end: string, prev: EditorDay[], slotCount = TIME_SLOTS.length): EditorDay[] {
   if (!start || !end || start > end) return [];
-  const byDate = new Map(prev.map((d) => [d.date, d]));
-  return enumerateDates(start, end).map((date) => byDate.get(date) ?? { date, slots: emptySlots(slotCount) });
+  return enumerateDates(start, end).map((date, i) => ({ date, slots: prev[i]?.slots ?? emptySlots(slotCount) }));
+}
+
+/** 기간을 줄이면 사라질 일차 중 장소가 담긴 일차 수 */
+export function droppedDaysWithPlaces(prev: EditorDay[], nextLength: number): number {
+  return prev.slice(nextLength).filter((d) => d.slots.some(Boolean)).length;
 }
 
 export function toRequestDays(days: EditorDay[]): CourseDay[] {

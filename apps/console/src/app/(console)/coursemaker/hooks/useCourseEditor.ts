@@ -1,10 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { createCourseRequest, type Course, type CoursePlace, type Nation } from "@totem/shared";
+import { MAX_COURSE_DAYS, createCourseRequest, enumerateDates, type Course, type CoursePlace, type Nation } from "@totem/shared";
 import { api, errorMessage } from "@/lib/api";
-import { today } from "@/lib/format";
-import { HOTEL_SLOT_INDEX, TIME_SLOTS, fromCourse, placementError, resizeDays, toRequestDays, type EditorDay } from "../courseModel";
+import { addDays, today } from "@/lib/format";
+import { HOTEL_SLOT_INDEX, TIME_SLOTS, droppedDaysWithPlaces, fromCourse, placementError, resizeDays, toRequestDays, type EditorDay } from "../courseModel";
 
 export interface TourOptions {
   enabled: boolean;
@@ -54,13 +54,26 @@ export function useCourseEditor(courseId: string | null) {
       .finally(() => setLoading(false));
   }, [courseId]);
 
-  const setPeriod = useCallback((start: string, end: string) => {
-    setStartDateRaw(start);
-    setEndDateRaw(end);
-    setDays((prev) => resizeDays(start, end, prev));
-    setDayIndex(0);
-    setDirty(true);
-  }, []);
+  /**
+   * 기간 변경. 최대 MAX_COURSE_DAYS 일로 맞추고(달력에서 직접 입력하면 max 를 넘길 수 있다),
+   * 줄여서 장소가 담긴 일차가 사라지면 먼저 묻는다. 적용된 [시작, 종료] 를 돌려준다(취소하면 null).
+   */
+  const setPeriod = useCallback(
+    (start: string, rawEnd: string): [string, string] | null => {
+      const maxEnd = start ? addDays(start, MAX_COURSE_DAYS - 1) : rawEnd;
+      const end = rawEnd > maxEnd ? maxEnd : rawEnd;
+      const nextLength = start && end && start <= end ? enumerateDates(start, end).length : 0;
+      const lost = droppedDaysWithPlaces(days, nextLength);
+      if (lost > 0 && !window.confirm(`기간을 줄이면 장소가 담긴 ${lost}개 일차가 지워집니다. 계속할까요?`)) return null;
+      setStartDateRaw(start);
+      setEndDateRaw(end);
+      setDays((prev) => resizeDays(start, end, prev));
+      setDayIndex(0);
+      setDirty(true);
+      return [start, end];
+    },
+    [days],
+  );
 
   const current = days[dayIndex] ?? null;
 

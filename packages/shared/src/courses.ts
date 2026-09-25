@@ -73,7 +73,7 @@ const courseFields = z.object({
   endDate: isoDate,
   nation: z.enum(NATIONS).default("KR"),
   note: z.string().max(1000).default(""),
-  timeSlots: z.array(timeSlotLabel).min(2).default([...DEFAULT_TIME_SLOTS]),
+  timeSlots: z.array(timeSlotLabel).min(2).max(48).default([...DEFAULT_TIME_SLOTS]), // 상한: 30분 단위 하루(48칸) — 없으면 한 요청에 수만 칸도 저장됐다
   days: z.array(courseDay),
 });
 type CourseFields = z.infer<typeof courseFields>;
