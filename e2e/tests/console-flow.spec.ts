@@ -190,7 +190,7 @@ test("회원가입 → 콘솔 진입 → 새 조직은 빈 데이터 + 기본 �
   await page.waitForURL(/localhost:3200/);
   await expect(page.getByText("E2E 여행사").first()).toBeVisible();
   await page.goto(`${CONSOLE}/tours/`);
-  await expect(page.getByText("조건에 맞는 투어가 없습니다.")).toBeVisible();
+  await expect(page.getByText("아직 등록한 투어가 없습니다.")).toBeVisible(); // 필터가 없으면 "조건에 맞는" 이 아니다
   await page.goto(`${CONSOLE}/schedule/`);
   for (const name of ["투어", "미팅", "휴무"]) await expect(page.getByTitle(`${name} 일정 추가`)).toBeVisible();
   await page.goto(`${CONSOLE}/settings/`);

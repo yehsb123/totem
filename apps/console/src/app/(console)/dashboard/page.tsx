@@ -62,7 +62,7 @@ export default function DashboardPage() {
 
   if (error) return <ErrorState message={error} onRetry={retryLoad} />;
   if (!data) return <LoadingState />;
-  if (data.months.length === 0) return <EmptyState text="관광 통계 데이터가 없습니다. API 서버에서 npm run seed 를 실행해주세요." />;
+  if (data.months.length === 0) return <EmptyState text="관광 통계 데이터가 아직 준비되지 않았습니다. 잠시 후 다시 확인해주세요." />;
 
   const idx = data.months.indexOf(month);
   const go = (d: number) => {

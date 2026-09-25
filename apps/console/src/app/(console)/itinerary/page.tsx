@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { FileDown } from "lucide-react";
 import { Suspense, useEffect, useState } from "react";
 import { HOTEL_SLOT_INDEX, NATION_LABELS, PLACE_CATEGORY_LABELS, type Course, type Tour } from "@totem/shared";
-import { ErrorState, LoadingState, btn } from "@/components/ui";
+import { EmptyState, ErrorState, LoadingState, btn } from "@/components/ui";
 import { api, errorMessage } from "@/lib/api";
 import { formatDateKo, parseLocalDate } from "@/lib/format";
 import { useSession } from "@/lib/session";
@@ -22,7 +22,7 @@ function Itinerary() {
   const [course, setCourse] = useState<Course | null>(null);
   const [tour, setTour] = useState<Tour | null>(null);
   const [fetchError, setError] = useState<string | null>(null);
-  const error = courseId ? fetchError : "코스가 지정되지 않았습니다.";
+  const error = courseId ? fetchError : null;
 
   useEffect(() => {
     if (!courseId) return;
@@ -35,6 +35,18 @@ function Itinerary() {
       .catch((e) => setError(errorMessage(e)));
   }, [courseId]);
 
+  // 주소에 코스가 없으면(북마크·직접 입력) 오류가 아니라 고르는 곳으로 안내
+  if (!courseId)
+    return (
+      <EmptyState
+        text="일정표를 볼 코스를 먼저 고르세요."
+        action={
+          <Link href="/coursemaker/" className={btn.primary}>
+            코스메이커에서 내 코스 열기
+          </Link>
+        }
+      />
+    );
   if (error) return <ErrorState message={error} />;
   if (!course) return <LoadingState />;
 

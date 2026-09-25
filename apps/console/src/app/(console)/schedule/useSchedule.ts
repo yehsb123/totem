@@ -59,6 +59,15 @@ export function useSchedule() {
   /** 오류 화면의 [다시 시도] — 이벤트 핸들러에서 조회 키를 바꿔 다시 불러온다 */
   const reload = useCallback(() => setRetry((n) => n + 1), []);
 
+  /**
+   * 저장·삭제 뒤 목록 갱신. 저장은 이미 성공했으므로 갱신 실패를 "저장 실패"로 알리면 안 된다
+   * (사용자가 다시 눌러 일정이 두 번 생긴다) → 실패하면 조회를 다시 걸어 화면의 오류·재시도로 넘긴다.
+   */
+  const refreshAfterWrite = useCallback(
+    (what: "all" | "labels" = "all") => (what === "all" ? Promise.all([loadEvents(), loadLabels()]) : loadLabels()).then(() => undefined, reload),
+    [loadEvents, loadLabels, reload],
+  );
+
   const labelById = useMemo(() => new Map(labels.map((l) => [l.id, l])), [labels]);
 
   return {
@@ -74,26 +83,26 @@ export function useSchedule() {
     reload,
     createEvent: async (body: CreateEventRequest) => {
       const e = await api.schedule.createEvent(body);
-      await Promise.all([loadEvents(), loadLabels()]);
+      await refreshAfterWrite();
       return e;
     },
     updateEvent: async (id: string, body: UpdateEventRequest) => {
       const e = await api.schedule.updateEvent(id, body);
-      await Promise.all([loadEvents(), loadLabels()]);
+      await refreshAfterWrite();
       return e;
     },
     removeEvent: async (id: string) => {
       await api.schedule.removeEvent(id);
-      await Promise.all([loadEvents(), loadLabels()]);
+      await refreshAfterWrite();
     },
     saveLabel: async (id: string | null, body: UpsertLabelRequest) => {
       const l = id ? await api.schedule.updateLabel(id, body) : await api.schedule.createLabel(body);
-      await loadLabels();
+      await refreshAfterWrite("labels");
       return l;
     },
     removeLabel: async (id: string, reassignTo?: string) => {
       await api.schedule.removeLabel(id, reassignTo);
-      await Promise.all([loadEvents(), loadLabels()]);
+      await refreshAfterWrite();
     },
   };
 }

@@ -120,7 +120,7 @@ export default function ToursPage() {
           <LoadingState />
         ) : tours.length === 0 ? (
           <EmptyState
-            text="조건에 맞는 투어가 없습니다."
+            text={q || date || type || status ? "조건에 맞는 투어가 없습니다." : "아직 등록한 투어가 없습니다."}
             action={
               <Link href="/coursemaker/" className={btn.primary}>
                 코스 만들고 투어 등록하기

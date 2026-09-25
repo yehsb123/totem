@@ -104,11 +104,18 @@ export default function ReviewsPage() {
     [toast],
   );
 
-  /** 리뷰가 바뀌면 투어 목록의 평균·개수도 서버 값으로 다시 받는다 */
+  /**
+   * 리뷰가 바뀌면 투어 목록의 평균·개수도 서버 값으로 다시 받는다.
+   * 저장은 이미 끝났으므로 여기서 실패해도 던지지 않는다 — 던지면 입력 창이 "저장 실패"로 남아 다시 눌러 리뷰가 두 번 생긴다.
+   */
   const refreshSelected = async (tour: Tour) => {
-    const fresh = await api.tours.get(tour.id);
-    setTours((arr) => arr.map((t) => (t.id === fresh.id ? fresh : t)));
-    await openTour(fresh);
+    try {
+      const fresh = await api.tours.get(tour.id);
+      setTours((arr) => arr.map((t) => (t.id === fresh.id ? fresh : t)));
+      await openTour(fresh);
+    } catch {
+      toast.error("저장은 됐지만 목록을 새로 불러오지 못했습니다. 잠시 후 투어를 다시 선택해주세요.");
+    }
   };
 
   const removeReview = async (r: Review) => {
