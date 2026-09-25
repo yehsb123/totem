@@ -54,6 +54,29 @@ function hostAllowed(host: string) {
   return env.REVIEW_IMPORT_ALLOWED_HOSTS.some((h) => host === h || host.endsWith(`.${h}`));
 }
 
+/**
+ * 본문을 **바이트 단위로 세며** 읽고, 한도를 넘는 순간 끊는다.
+ * (예전: content-length 가 없으면 전부 메모리에 받은 뒤 `text.length`(글자 수)로 비교 —
+ *  한글은 글자당 3바이트라 한도의 약 3배까지 통과했고, 끝없는 응답이면 메모리를 다 쓸 수 있었다 — AUDIT §32)
+ */
+async function readLimited(res: Response, maxBytes: number): Promise<string> {
+  if (!res.body) return "";
+  const reader = res.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > maxBytes) {
+      await reader.cancel().catch(() => undefined);
+      throw badRequest("CSV 파일이 너무 큽니다.");
+    }
+    chunks.push(value);
+  }
+  return new TextDecoder("utf-8").decode(Buffer.concat(chunks));
+}
+
 /** 허용 호스트만, https 만, 최대 크기까지만 받는다. 리다이렉트도 매 단계 호스트를 검사한다 (SSRF 방지) */
 export async function downloadCsv(inputUrl: string): Promise<string> {
   let url = toCsvExportUrl(inputUrl);
@@ -72,8 +95,7 @@ export async function downloadCsv(inputUrl: string): Promise<string> {
     if (!res.ok) throw badRequest(`CSV 를 내려받지 못했습니다 (${res.status}). 시트가 '링크가 있는 모든 사용자' 공개인지 확인해주세요.`);
     const length = Number(res.headers.get("content-length") ?? 0);
     if (length > env.REVIEW_IMPORT_MAX_BYTES) throw badRequest("CSV 파일이 너무 큽니다.");
-    const text = await res.text();
-    if (text.length > env.REVIEW_IMPORT_MAX_BYTES) throw badRequest("CSV 파일이 너무 큽니다.");
+    const text = await readLimited(res, env.REVIEW_IMPORT_MAX_BYTES);
     if (/^\s*<(!doctype|html)/i.test(text)) throw badRequest("CSV 가 아니라 웹페이지가 내려왔습니다. 시트 공개 설정을 확인해주세요.");
     return text;
   }

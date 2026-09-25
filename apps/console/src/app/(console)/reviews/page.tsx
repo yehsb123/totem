@@ -335,7 +335,7 @@ function CsvImportForm({ tour, onClose, onImported }: { tour: Tour; onClose: () 
         {result && (
           <div className="space-y-2">
             <p className="font-medium text-slate-800">
-              전체 {result.totalRows}행 중 <span className="text-green-700">{result.imported}건 저장</span>, {result.skipped}건 건너뜀
+              전체 {result.totalRows.toLocaleString("ko-KR")}행 중 <span className="text-green-700">{result.imported.toLocaleString("ko-KR")}건 저장</span>, {result.skipped.toLocaleString("ko-KR")}건 건너뜀
             </p>
             {result.errors.length > 0 && (
               <ul className="max-h-48 overflow-y-auto rounded-md border border-slate-200 p-2 text-xs">
@@ -345,6 +345,12 @@ function CsvImportForm({ tour, onClose, onImported }: { tour: Tour; onClose: () 
                   </li>
                 ))}
               </ul>
+            )}
+            {/* 서버는 사유를 앞 100건까지만 돌려준다 — 나머지가 없는 게 아님을 알린다 */}
+            {result.skipped > result.errors.length && (
+              <p className="text-xs text-slate-500">
+                건너뛴 {result.skipped.toLocaleString("ko-KR")}건 중 앞 {result.errors.length}건의 사유만 보여 줍니다.
+              </p>
             )}
           </div>
         )}

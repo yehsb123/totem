@@ -31,7 +31,7 @@
 |---|---|---|
 | 입력 검증 | 모든 요청 본문·쿼리를 `@totem/shared` zod 스키마로 검증(화면도 같은 스키마로 먼저 검증). 코스 규칙·시간 형식·좌석 수 등 | `lib/http.ts parse` · 각 테스트 |
 | 본문 크기 | JSON 1MB | `app.ts` |
-| SSRF (리뷰 CSV) | https 만, 허용 호스트(`REVIEW_IMPORT_ALLOWED_HOSTS`, 하위 도메인 포함)만, **리다이렉트도 매 단계 호스트 검사**, 2MB 상한, HTML 응답 거부 | `reviews/csv.ts` · `domain.test.ts` "허용되지 않은 호스트를 거부" |
+| SSRF (리뷰 CSV) | https 만, 허용 호스트(`REVIEW_IMPORT_ALLOWED_HOSTS`, 하위 도메인 포함)만, **리다이렉트도 매 단계 호스트 검사**, 2MB 상한(**바이트 기준, 스트림으로 읽다 넘는 순간 중단** — 끝없는 응답으로 메모리를 채울 수 없음), HTML 응답 거부 | `reviews/csv.ts` · `domain.test.ts` "허용되지 않은 호스트를 거부" |
 | 정규식 검색 | 사용자 검색어는 이스케이프 후 `$regex` | `lib/http.ts escapeRegex` |
 | XSS | 화면은 React 텍스트 렌더(`dangerouslySetInnerHTML` 사용 0건). 카카오 지도 인포윈도우(HTML 문자열)는 장소명을 이스케이프 | `coursemaker/hooks/useKakaoMap.ts` |
 | 오픈 리다이렉트 | 로그인 후 이동할 `next` 는 `/` 로 시작하고 `//`·`/\`·제어문자가 없는 내부 경로만 — web·console 이 **같은 구현**(`@totem/shared sanitizeNext`) | `packages/shared/src/navigation.ts` · `observability.test.ts`, E2E "//evil.com" |
