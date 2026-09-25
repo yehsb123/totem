@@ -87,3 +87,24 @@ describe("sanitizeNext (web·console 공통 오픈 리다이렉트 방지)", () 
     }
   });
 });
+
+describe("검증 오류 문구는 한국어 (web·console 폼과 API 400 이 같은 문구)", () => {
+  it("스키마에 문구가 없는 길이·숫자·형식 오류도 영어로 나가지 않는다", async () => {
+    const { createTourRequest, updateTourRequest, findEmailRequest } = await import("@totem/shared");
+    const msg = (r: { success: boolean; error?: { issues: { message: string }[] } }) => r.error?.issues[0]?.message;
+    expect(msg(createTourRequest.safeParse({ title: "가".repeat(101), startDate: "2026-10-01", endDate: "2026-10-01" }))).toBe("100자 이하로 입력해주세요.");
+    expect(msg(updateTourRequest.safeParse({ capacity: 10001 }))).toBe("10,000 이하여야 합니다.");
+    expect(msg(updateTourRequest.safeParse({ capacity: 1.5 }))).toBe("정수로 입력해주세요.");
+    expect(msg(findEmailRequest.safeParse({ name: "홍길동", phone: "0".repeat(21) }))).toBe("20자 이하로 입력해주세요.");
+    // 스키마에 직접 적은 문구가 우선
+    expect(msg(createTourRequest.safeParse({ title: " ", startDate: "2026-10-01", endDate: "2026-10-01" }))).toBe("투어명을 입력해주세요.");
+  });
+
+  it("API 400 응답의 message·details 도 한국어", async () => {
+    const api = authed((await signup()).token);
+    const r = await api.post("/tours", { title: "가".repeat(101), startDate: "2026-10-01", endDate: "2026-10-01" });
+    expect(r.status).toBe(400);
+    expect(JSON.stringify(r.body.error)).not.toMatch(/String must|Number must|Expected|Required/);
+    expect(r.body.error.details.fields[0]).toMatchObject({ path: "title", message: "100자 이하로 입력해주세요." });
+  });
+});

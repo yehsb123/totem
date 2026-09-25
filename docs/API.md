@@ -32,7 +32,7 @@
 
 | code | HTTP | 의미 |
 |---|---|---|
-| `VALIDATION_ERROR` | 400 · 422 | 입력값 오류 (`details.fields` 에 필드별 메시지). 422 는 형식은 맞지만 처리할 수 없는 요청 — 동선 계산(`/maps/directions`)에서 카카오가 경로를 찾지 못한 경우 |
+| `VALIDATION_ERROR` | 400 · 422 | 입력값 오류 (`details.fields` 에 필드별 메시지 — 항상 한국어, `@totem/shared` 의 오류 문구 한국어화). 422 는 형식은 맞지만 처리할 수 없는 요청 — 동선 계산(`/maps/directions`)에서 카카오가 경로를 찾지 못한 경우 |
 | `UNAUTHORIZED` / `TOKEN_EXPIRED` | 401 | 로그인 필요 / access 만료 |
 | `FORBIDDEN` | 403 | 권한 없음·정지 계정 |
 | `NOT_FOUND` | 404 | 없음 **또는 다른 조직 데이터** |

@@ -72,8 +72,9 @@ export const handoffExchangeRequest = z.object({ code: z.string().min(16) });
 export type HandoffExchangeRequest = z.infer<typeof handoffExchangeRequest>;
 
 export const findEmailRequest = z.object({
-  name: z.string().trim().min(1),
-  phone: z.string().trim().min(8),
+  // 저장 규칙(users: 이름 ≤50, 전화 8~20자)과 같은 상한 — 그보다 긴 값은 찾을 수도 없다
+  name: z.string().trim().min(1, "이름을 입력해주세요.").max(50),
+  phone: z.string().trim().min(8, "전화번호를 입력해주세요.").max(20),
 });
 export type FindEmailRequest = z.infer<typeof findEmailRequest>;
 export interface FindEmailResponse {
