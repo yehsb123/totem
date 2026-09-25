@@ -16,7 +16,12 @@ export function buildDashboardData(stats: MonthlyTourismStats[]) {
   const monthlyInternationalVisitors = sorted.map((s) => ({ month: s.month, totalVisitors: s.internationalVisitors, countryRatios: s.countryRatios }));
   const jejuMentionsData = sorted.map((s) => ({ name: s.month, 언급량: s.snsMentions }));
 
-  const toBreakdown = (items: { category: string; amount: number }[]) => items.map((c) => ({ category: c.category, spending: c.amount }));
+  /** 같은 항목이 두 번 들어 있는 달이 있어(원본 데이터 — AUDIT §26) 항목별로 합쳐 막대·조각이 겹치지 않게 */
+  const toBreakdown = (items: { category: string; amount: number }[]) => {
+    const merged = new Map<string, number>();
+    for (const c of items) merged.set(c.category, (merged.get(c.category) ?? 0) + c.amount);
+    return [...merged].map(([category, spending]) => ({ category, spending }));
+  };
 
   /** 선택한 달을 끝으로 최근 12개월 언급량 */
   const getJejuMentionsForChart = (month: string) => {

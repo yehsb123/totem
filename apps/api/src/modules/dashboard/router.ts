@@ -29,6 +29,8 @@ function previousMonth(month: string) {
   return d.toISOString().slice(0, 7);
 }
 
+const sumAmounts = (items: { amount?: number | null }[] | undefined) => (items ?? []).reduce((n, c) => n + (c.amount ?? 0), 0);
+
 const pct = (cur: number, prev: number | undefined) =>
   prev === undefined || prev === 0 ? null : Math.round(((cur - prev) / prev) * 1000) / 10;
 
@@ -47,7 +49,9 @@ dashboardRouter.get(ROUTES.dashboard.overview, async (req, res) => {
       domestic,
       international,
       visitors: domestic + international,
-      spending: (s?.domesticSpending?.total ?? 0) + (s?.internationalSpending?.total ?? 0),
+      // 항목별 합으로 계산 — 저장된 total 은 원본(구 콘솔 정적 데이터)에서 항목 합과 최대 35% 달라,
+      // 쓰면 대시보드 탭(항목 합·비율)과 종합 현황판이 서로 다른 총액을 보인다 (AUDIT §26, DECISIONS CNT-001)
+      spending: sumAmounts(s?.domesticSpending?.byCategory) + sumAmounts(s?.internationalSpending?.byCategory),
       sns: s?.snsMentions ?? 0,
     };
   };

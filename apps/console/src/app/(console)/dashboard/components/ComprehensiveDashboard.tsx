@@ -88,16 +88,9 @@ const ComprehensiveDashboard = ({
       ? summaryMetrics.snsMentions.toLocaleString() + "회"
       : "데이터 없음";
 
-  const visitorGrowthRate = useMemo(() => {
-    const currentIndex = monthlyVisitorsData.findIndex(
-      (item) => item.name === selectedMonth
-    );
-    if (currentIndex <= 0) return "N/A";
-    const currentVisitors = monthlyVisitorsData[currentIndex].방문자수;
-    const prevVisitors = monthlyVisitorsData[currentIndex - 1].방문자수;
-    const rate = ((currentVisitors - prevVisitors) / prevVisitors) * 100;
-    return `${rate.toFixed(1)}%`;
-  }, [selectedMonth, monthlyVisitorsData]);
+  // 서버가 "월 방문자 수"(내국인+외국인)와 같은 기준으로 계산한 전월 대비 — 예전에는 내국인만으로 계산해
+  // 바로 옆 카드의 총 방문자와 기준이 달랐다 (2025-06: 총 -7.5% 인데 -9.6% 표시, AUDIT §26)
+  const visitorGrowthRate = summaryMetrics.change.totalVisitors === null ? "N/A" : `${summaryMetrics.change.totalVisitors.toFixed(1)}%`;
 
   const getVisitorGrowthIcon = () => {
     const rate = parseFloat(visitorGrowthRate);
